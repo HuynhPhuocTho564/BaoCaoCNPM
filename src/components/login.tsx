@@ -14,11 +14,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useId, useState } from "react";
 import { Register } from "./register";
+import { ForgotPassword } from "./forgot-password";
 
 function Login() {
   const id = useId();
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const handleSwitchToRegister = () => {
     setShowLogin(false);
@@ -26,8 +28,15 @@ function Login() {
   };
 
   const handleSwitchToLogin = () => {
+    setShowForgotPassword(false);
     setShowRegister(false);
     setShowLogin(true);
+  };
+
+  const handleSwitchToForgotPassword = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setShowLogin(false);
+    setShowForgotPassword(true);
   };
 
   return (
@@ -69,9 +78,14 @@ function Login() {
                   Ghi nhớ đăng nhập
                 </Label>
               </div>
-              <a className="text-sm underline hover:no-underline" href="#">
+              <Button 
+                type="button"
+                variant="link" 
+                className="text-sm p-0" 
+                onClick={handleSwitchToForgotPassword}
+              >
                 Quên mật khẩu?
-              </a>
+              </Button>
             </div>
             <Button type="button" className="w-full">
               Đăng nhập
@@ -96,6 +110,12 @@ function Login() {
       <Register 
         open={showRegister} 
         onOpenChange={setShowRegister}
+        onSwitchToLogin={handleSwitchToLogin}
+      />
+
+      <ForgotPassword
+        open={showForgotPassword}
+        onOpenChange={setShowForgotPassword}
         onSwitchToLogin={handleSwitchToLogin}
       />
     </>
