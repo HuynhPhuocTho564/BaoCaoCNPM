@@ -28,7 +28,12 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.5rem
+    --radius: 0.5rem;
+    --navbar-height: 4rem;
+    --navbar-light-text: rgb(0 0 0);
+    --navbar-dark-text: rgb(255 255 255);
+    --navbar-light-hover: rgb(245 245 245);
+    --navbar-dark-hover: rgb(22 24 29);
   }
   .dark {
     --background: 240 10% 3.9%;
@@ -64,5 +69,66 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .navbar-dropdown {
+    @apply invisible opacity-0 pointer-events-none;
+    @apply group-hover:visible group-hover:opacity-100 group-hover:pointer-events-auto;
+    @apply animate-navbar-dropdown;
+  }
+
+  .navbar-sticky {
+    @apply sticky top-0;
+    @apply animate-navbar-slide-down;
+    @apply backdrop-blur-navbar;
+    height: var(--navbar-height);
+  }
+
+  .navbar-menu-item {
+    @apply flex items-center gap-x-1 whitespace-pre text-sm;
+    @apply transition-colors duration-200;
+    @apply hover:text-navbar-light-text dark:hover:text-navbar-dark-text;
+  }
+
+  .navbar-dropdown-item {
+    @apply flex items-center gap-3 rounded-[14px] p-2;
+    @apply transition-colors duration-200;
+    @apply hover:bg-navbar-light-hover dark:hover:bg-navbar-dark-hover;
+  }
+
+  @keyframes navbar-dropdown {
+    from {
+      opacity: 0;
+      transform: rotateX(-12deg) scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: rotateX(0) scale(1);
+    }
+  }
+
+  .animate-navbar-dropdown {
+    animation: navbar-dropdown 0.2s ease-out;
+  }
+
+  @keyframes navbar-slide-down {
+    from {
+      transform: translateY(-100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  .animate-navbar-slide-down {
+    animation: navbar-slide-down 0.3s ease-out;
+  }
+}
+
+@layer utilities {
+  .backdrop-blur-navbar {
+    backdrop-filter: blur(12px);
   }
 }

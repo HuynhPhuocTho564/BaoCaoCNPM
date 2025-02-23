@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { useId, useState } from "react";
 import { Register } from "./register";
 import { ForgotPassword } from "./forgot-password";
+import { NavButton } from "@/components/21st/navbar";
 
 function Login() {
   const id = useId();
@@ -43,7 +44,9 @@ function Login() {
     <>
       <Dialog open={showLogin} onOpenChange={setShowLogin}>
         <DialogTrigger asChild>
-          <Button variant="outline">Đăng nhập</Button>
+          <NavButton variant="outline">
+            Đăng nhập
+          </NavButton>
         </DialogTrigger>
         <DialogContent>
           <div className="flex flex-col items-center gap-2">

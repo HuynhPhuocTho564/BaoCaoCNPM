@@ -1,9 +1,9 @@
-import { Login } from "@/components/login";
+import { Nav } from "@/components/nav";
 
 export default function Home() {
   return (
     <div>
-      <Login />
+      <Nav />
     </div>
   );
 }
