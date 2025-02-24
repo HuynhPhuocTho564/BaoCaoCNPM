@@ -178,7 +178,7 @@ const MobileMenuItem: React.FC<{
   isDarkTheme?: boolean;
   onClose?: () => void;
 }> = ({ item, isDarkTheme, onClose }) => {
-  const [isOpen, setIsOpen] = React.useState(false)
+  const [isOpen, setIsOpen] = React.useState(item.items && item.items.length > 0)
 
   if (item.to) {
     return (
@@ -188,11 +188,14 @@ const MobileMenuItem: React.FC<{
           "flex items-center w-full px-6 py-4",
           "text-base font-semibold tracking-tight",
           "hover:bg-gray-100 dark:hover:bg-[#1C1D21]",
+          "active:bg-gray-200 dark:active:bg-[#2C2D31]",
+          "transition-colors duration-100",
           isDarkTheme ? 'text-white' : 'text-gray-900'
         )}
         onClick={onClose}
       >
-        {item.text}
+        <span className="flex-1">{item.text}</span>
+        <ChevronRight className="h-4 w-4 text-gray-400" />
       </a>
     )
   }
@@ -204,6 +207,9 @@ const MobileMenuItem: React.FC<{
         className={clsx(
           "flex w-full items-center justify-between px-6 py-4",
           "text-base font-semibold tracking-tight",
+          "hover:bg-gray-100 dark:hover:bg-[#1C1D21]",
+          "active:bg-gray-200 dark:active:bg-[#2C2D31]",
+          "transition-colors duration-100",
           isDarkTheme ? 'text-white' : 'text-gray-900'
         )}
       >
@@ -211,6 +217,7 @@ const MobileMenuItem: React.FC<{
         <ChevronRight 
           className={clsx(
             "h-5 w-5 transition-transform duration-200",
+            !isOpen && "text-gray-400",
             isOpen && "rotate-90"
           )}
         />
@@ -222,18 +229,23 @@ const MobileMenuItem: React.FC<{
               key={index}
               href={subItem.to}
               className={clsx(
-                "block px-8 py-3",
+                "flex items-center px-8 py-3",
                 "hover:bg-gray-100 dark:hover:bg-[#1C1D21]",
+                "active:bg-gray-200 dark:active:bg-[#2C2D31]",
+                "transition-colors duration-100",
                 isDarkTheme ? 'text-white' : 'text-gray-900'
               )}
               onClick={onClose}
             >
-              <div className="text-base font-semibold tracking-tight">{subItem.text}</div>
-              {subItem.description && (
-                <div className="mt-1 text-sm font-medium text-gray-600 dark:text-gray-400">
-                  {subItem.description}
-                </div>
-              )}
+              <div className="flex-1">
+                <div className="text-base font-semibold tracking-tight">{subItem.text}</div>
+                {subItem.description && (
+                  <div className="mt-1 text-sm font-medium text-gray-600 dark:text-gray-400">
+                    {subItem.description}
+                  </div>
+                )}
+              </div>
+              <ChevronRight className="h-4 w-4 text-gray-400" />
             </a>
           ))}
         </div>
