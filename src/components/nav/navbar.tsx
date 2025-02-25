@@ -3,8 +3,8 @@
 import * as React from "react"
 import clsx from 'clsx'
 import { Sun, Moon } from 'lucide-react'
-import { Navigation } from "./Navigation"
-import { MobileMenu } from "./MobileMenu"
+import { Navigation } from "./navigation"
+import { MobileMenu } from "./mobile-menu"
 import { NavItem } from "./types"
 
 interface NavButton {
