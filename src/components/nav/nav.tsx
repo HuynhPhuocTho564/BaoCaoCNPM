@@ -1,8 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { Header } from "@/components/21st/navbar"
-import { Login } from "./login"
+import { Header } from "./navbar"
+import { Login } from "../login/login"
 
 // Sample menu items
 const menuItems = [
