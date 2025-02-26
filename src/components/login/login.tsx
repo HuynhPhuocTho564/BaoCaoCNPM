@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { useId, useState } from "react";
 import { Register } from "./register";
 import { ForgotPassword } from "./forgot-password";
-import { NavButton } from "@/components/21st/navbar";
+import { NavButton } from "@/components/nav/navbar";
 
 function Login() {
   const id = useId();
