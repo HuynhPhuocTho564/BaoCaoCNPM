@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,7 +9,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useId } from "react";
+import { useId, useState } from "react";
+import { AuthClient } from '@/services/auth.client';
 
 interface RegisterProps {
   open: boolean;
@@ -18,6 +20,33 @@ interface RegisterProps {
 
 function Register({ open, onOpenChange, onSwitchToLogin }: RegisterProps) {
   const id = useId();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      username: formData.get('name') as string,
+      email: formData.get('email') as string,
+      password: formData.get('password') as string,
+    } as const;
+
+    try {
+      await AuthClient.register(data);
+      // Registration successful
+      onOpenChange(false);
+      // You might want to show a success message or automatically log the user in
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -28,28 +57,38 @@ function Register({ open, onOpenChange, onSwitchToLogin }: RegisterProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <form className="space-y-5">
+        <form className="space-y-5" onSubmit={handleSubmit}>
+          {error && (
+            <p className="text-sm text-red-500 text-center">{error}</p>
+          )}
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor={`${id}-name`}>Họ và tên</Label>
-              <Input id={`${id}-name`} placeholder="Nguyễn Văn A" type="text" required />
+              <Input
+                id={`${id}-name`}
+                name="name"
+                placeholder="Nguyễn Văn A"
+                type="text"
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor={`${id}-email`}>Email</Label>
-              <Input id={`${id}-email`} placeholder="email@example.com" type="email" required />
+              <Input id={`${id}-email`} name="email" placeholder="email@example.com" type="email" required />
             </div>
             <div className="space-y-2">
               <Label htmlFor={`${id}-password`}>Mật khẩu</Label>
               <Input
                 id={`${id}-password`}
+                name="password"
                 placeholder="Nhập mật khẩu của bạn"
                 type="password"
                 required
               />
             </div>
           </div>
-          <Button type="button" className="w-full">
-            Đăng ký
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? 'Đang xử lý...' : 'Đăng ký'}
           </Button>
         </form>
 
