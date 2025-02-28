@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import pool from '@/lib/db';
 import bcrypt from 'bcryptjs';
@@ -41,6 +42,38 @@ export class AuthService {
         throw error;
       }
       throw new Error('Đã xảy ra lỗi khi đăng ký');
+    }
+  }
+
+  static async login(email: string, password: string) {
+    try {
+      // Get user by email
+      const [users] = await pool.execute(
+        'SELECT user_id, username, email, user_password FROM users WHERE email = ?',
+        [email]
+      );
+
+      const user = (users as any[])[0];
+
+      if (!user) {
+        throw new Error('Email hoặc mật khẩu không đúng');
+      }
+
+      // Compare password
+      const isValidPassword = await bcrypt.compare(password, user.user_password);
+
+      if (!isValidPassword) {
+        throw new Error('Email hoặc mật khẩu không đúng');
+      }
+
+      // Return user data (excluding password)
+      const { user_password, ...userData } = user;
+      return {
+        message: 'Đăng nhập thành công',
+        user: userData
+      };
+    } catch (error: any) {
+      throw error;
     }
   }
 } 

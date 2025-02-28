@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -16,12 +17,16 @@ import { useId, useState } from "react";
 import { Register } from "./register";
 import { ForgotPassword } from "./forgot-password";
 import { NavButton } from "@/components/nav/navbar";
+import { signIn } from "next-auth/react";
 
 function Login() {
   const id = useId();
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleSwitchToRegister = () => {
     setShowLogin(false);
@@ -40,13 +45,43 @@ function Login() {
     setShowForgotPassword(true);
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      email: String(formData.get('email')),
+      password: String(formData.get('password')),
+    };
+
+    try {
+      const result = await signIn('credentials', {
+        email: data.email,
+        password: data.password,
+        remember: rememberMe.toString(),
+        redirect: false,
+      });
+
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+
+      setShowLogin(false);
+      window.location.reload();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <>
       <Dialog open={showLogin} onOpenChange={setShowLogin}>
         <DialogTrigger asChild>
-          <NavButton variant="outline">
-            Đăng nhập
-          </NavButton>
+          <NavButton variant="outline">Đăng nhập</NavButton>
         </DialogTrigger>
         <DialogContent>
           <div className="flex flex-col items-center gap-2">
@@ -58,16 +93,26 @@ function Login() {
             </DialogHeader>
           </div>
 
-          <form className="space-y-5">
+          <form className="space-y-5" onSubmit={handleSubmit}>
+            {error && (
+              <p className="text-sm text-red-500 text-center">{error}</p>
+            )}
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor={`${id}-email`}>Email</Label>
-                <Input id={`${id}-email`} placeholder="email@example.com" type="email" required />
+                <Input 
+                  id={`${id}-email`} 
+                  name="email"
+                  placeholder="email@example.com" 
+                  type="email" 
+                  required 
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor={`${id}-password`}>Mật khẩu</Label>
                 <Input
                   id={`${id}-password`}
+                  name="password"
                   placeholder="Nhập mật khẩu của bạn"
                   type="password"
                   required
@@ -76,7 +121,11 @@ function Login() {
             </div>
             <div className="flex justify-between gap-2">
               <div className="flex items-center gap-2">
-                <Checkbox id={`${id}-remember`} />
+                <Checkbox 
+                  id={`${id}-remember`}
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                />
                 <Label htmlFor={`${id}-remember`} className="font-normal text-muted-foreground">
                   Ghi nhớ đăng nhập
                 </Label>
@@ -90,8 +139,8 @@ function Login() {
                 Quên mật khẩu?
               </Button>
             </div>
-            <Button type="button" className="w-full">
-              Đăng nhập
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Đang xử lý...' : 'Đăng nhập'}
             </Button>
           </form>
 
