@@ -18,6 +18,7 @@ import { Register } from "./register";
 import { ForgotPassword } from "./forgot-password";
 import { NavButton } from "@/components/nav/navbar";
 import { signIn } from "next-auth/react";
+import { toast } from "sonner";
 
 function Login() {
   const id = useId();
@@ -68,6 +69,7 @@ function Login() {
         throw new Error(result.error);
       }
 
+      toast.success('Đăng nhập thành công!');
       setShowLogin(false);
       window.location.reload();
     } catch (err: any) {
@@ -148,7 +150,9 @@ function Login() {
             <span className="text-xs text-muted-foreground">Hoặc</span>
           </div>
 
-          <Button variant="outline">Đăng nhập với Google</Button>
+          <Button variant="outline" disabled={isLoading}>
+            {isLoading ? 'Đang xử lý...' : 'Đăng nhập với Google'}
+          </Button>
           
           <div className="text-center text-sm text-muted-foreground">
             Chưa có tài khoản?{" "}

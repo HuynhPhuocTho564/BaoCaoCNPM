@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useId, useState } from "react";
 import { AuthClient } from '@/services/auth.client';
+import { toast } from "sonner";
 
 interface RegisterProps {
   open: boolean;
@@ -37,9 +38,12 @@ function Register({ open, onOpenChange, onSwitchToLogin }: RegisterProps) {
 
     try {
       await AuthClient.register(data);
-      // Registration successful
+      toast.success('Đăng ký thành công!');
       onOpenChange(false);
-      // You might want to show a success message or automatically log the user in
+      // Switch to login form after successful registration
+      setTimeout(() => {
+        onSwitchToLogin();
+      }, 100);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -96,7 +100,9 @@ function Register({ open, onOpenChange, onSwitchToLogin }: RegisterProps) {
           <span className="text-xs text-muted-foreground">Hoặc</span>
         </div>
 
-        <Button variant="outline">Đăng ký với Google</Button>
+        <Button variant="outline" disabled={isLoading}>
+          {isLoading ? 'Đang xử lý...' : 'Đăng ký với Google'}
+        </Button>
 
         <div className="text-center text-sm text-muted-foreground">
           Đã có tài khoản?{" "}

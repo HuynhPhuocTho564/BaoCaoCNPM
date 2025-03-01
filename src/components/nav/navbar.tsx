@@ -108,7 +108,6 @@ export const Header: React.FC<HeaderProps> = ({
             <MobileMenu
               items={menuItems}
               isDarkTheme={isDarkTheme}
-              rightContent={rightContent}
               onThemeChange={onThemeChange}
               logo={logo}
             />
