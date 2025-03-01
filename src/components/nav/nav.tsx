@@ -2,7 +2,9 @@
 
 import * as React from "react"
 import { Header } from "./navbar"
+import { useSession } from "next-auth/react"
 import { Login } from "../login/login"
+import { UserMenu } from "./user-menu"
 
 // Sample menu items
 const menuItems = [
@@ -48,6 +50,7 @@ const menuItems = [
 
 // Theme switcher demo
 const Nav = () => {
+  const { data: session } = useSession()
   const [theme, setTheme] = React.useState<'light' | 'dark'>('light')
   
   React.useEffect(() => {
@@ -71,9 +74,15 @@ const Nav = () => {
         logo={<span className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-black'}`}>ChatStoryAI</span>}
         menuItems={menuItems}
         onThemeChange={toggleTheme}
-        rightContent={<Login />}
         isSticky={true}
         withBorder={true}
+        rightContent={
+          session ? (
+            <UserMenu isDarkTheme={theme === 'dark'} />
+          ) : (
+            <Login />
+          )
+        }
       />
     </div>
   )

@@ -1,8 +1,12 @@
+"use client"
+
 import * as React from "react"
 import clsx from 'clsx'
 import { Sun, Moon, ChevronRight } from 'lucide-react'
 import { NavItem } from "./types"
-import { NavButton } from "./navbar"
+import { useSession } from "next-auth/react"
+import { Login } from "../login/login"
+import { UserMenu } from "./user-menu"
 import {
   Sheet,
   SheetContent,
@@ -10,6 +14,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+
+interface MobileMenuProps {
+  items?: NavItem[];
+  isDarkTheme?: boolean;
+  onThemeChange?: () => void;
+  logo?: React.ReactNode;
+}
 
 const MobileMenuItem: React.FC<{
   item: NavItem;
@@ -92,88 +103,89 @@ const MobileMenuItem: React.FC<{
     )
 }
 
-export const MobileMenu: React.FC<{ 
-  items: NavItem[];
-  isDarkTheme?: boolean;
-  rightContent?: React.ReactNode;
-  onThemeChange?: () => void;
-  logo?: React.ReactNode;
-}> = ({ items, isDarkTheme, rightContent, onThemeChange, logo }) => {
-    const [open, setOpen] = React.useState(false)
+export const MobileMenu: React.FC<MobileMenuProps> = ({
+  items = [],
+  isDarkTheme,
+  onThemeChange,
+  logo,
+}) => {
+  const { data: session } = useSession()
+  const [open, setOpen] = React.useState(false)
 
-    return (
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          <NavButton
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
-          >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-            <span className="sr-only">Toggle menu</span>
-          </NavButton>
-        </SheetTrigger>
-        <SheetContent 
-          side="right" 
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <button
           className={clsx(
-            "w-full max-w-sm p-0 flex flex-col",
-            isDarkTheme ? 'bg-[#0B0C0F]' : 'bg-white'
+            "lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md",
+            isDarkTheme ? 'text-white' : 'text-gray-900'
           )}
         >
-          <SheetHeader className="p-6 border-b border-gray-200 dark:border-gray-800">
-            <SheetTitle className="text-xl font-bold tracking-tight">
-              {logo}
-            </SheetTitle>
-          </SheetHeader>
-          
-          <div className="flex-1 overflow-y-auto">
-            <div className="py-2">
-              {items.map((item, index) => (
-                <MobileMenuItem 
-                  key={index} 
-                  item={item} 
-                  isDarkTheme={isDarkTheme}
-                  onClose={() => setOpen(false)}
-                />
-              ))}
-            </div>
+          <span className="sr-only">Open menu</span>
+          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </SheetTrigger>
+      <SheetContent 
+        side="right" 
+        className={clsx(
+          "w-full max-w-sm p-0 flex flex-col",
+          isDarkTheme ? 'bg-[#0B0C0F]' : 'bg-white'
+        )}
+      >
+        <SheetHeader className="p-6 border-b border-gray-200 dark:border-gray-800">
+          <SheetTitle className="text-xl font-bold tracking-tight">
+            {logo}
+          </SheetTitle>
+        </SheetHeader>
+        
+        <div className="flex-1 overflow-y-auto">
+          <div className="py-2">
+            {items.map((item: NavItem, index: number) => (
+              <MobileMenuItem 
+                key={index} 
+                item={item} 
+                isDarkTheme={isDarkTheme}
+                onClose={() => setOpen(false)}
+              />
+            ))}
           </div>
-  
-          <div className="border-t border-gray-200 dark:border-gray-800 p-6 space-y-4">
-            {rightContent && (
-              <div className="mb-4">
-                {rightContent}
+        </div>
+
+        <div className="border-t border-gray-200 dark:border-gray-800 p-6 space-y-4">
+          {session ? (
+            <UserMenu isDarkTheme={isDarkTheme} isMobile={true} />
+          ) : (
+            <Login />
+          )}
+          {onThemeChange && (
+            <button
+              className={clsx(
+                "flex w-full items-center justify-between px-4 py-3 rounded-lg",
+                "text-base font-semibold tracking-tight",
+                "hover:bg-gray-100 dark:hover:bg-[#1C1D21]",
+                isDarkTheme ? 'text-white' : 'text-gray-900'
+              )}
+              onClick={onThemeChange}
+            >
+              <span>
+                {isDarkTheme ? 'Chế độ sáng' : 'Chế độ tối'}
+              </span>
+              <div className="relative w-5 h-5">
+                <Sun className={clsx(
+                  "h-5 w-5 absolute transition-transform duration-100",
+                  isDarkTheme ? 'opacity-100 rotate-0' : 'opacity-0 rotate-90'
+                )} />
+                <Moon className={clsx(
+                  "h-5 w-5 absolute transition-transform duration-100",
+                  isDarkTheme ? 'opacity-0 -rotate-90' : 'opacity-100 rotate-0'
+                )} />
               </div>
-            )}
-            {onThemeChange && (
-              <button
-                className={clsx(
-                  "flex w-full items-center justify-between px-4 py-3 rounded-lg",
-                  "text-base font-semibold tracking-tight",
-                  "hover:bg-gray-100 dark:hover:bg-[#1C1D21]",
-                  isDarkTheme ? 'text-white' : 'text-gray-900'
-                )}
-                onClick={onThemeChange}
-              >
-                <span>
-                  {isDarkTheme ? 'Chế độ sáng' : 'Chế độ tối'}
-                </span>
-                <div className="relative w-5 h-5">
-                  <Sun className={clsx(
-                    "h-5 w-5 absolute transition-transform duration-100",
-                    isDarkTheme ? 'opacity-100 rotate-0' : 'opacity-0 rotate-90'
-                  )} />
-                  <Moon className={clsx(
-                    "h-5 w-5 absolute transition-transform duration-100",
-                    isDarkTheme ? 'opacity-0 -rotate-90' : 'opacity-100 rotate-0'
-                  )} />
-                </div>
-              </button>
-            )}
-          </div>
-        </SheetContent>
-      </Sheet>
-    )
+            </button>
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
+  )
 } 

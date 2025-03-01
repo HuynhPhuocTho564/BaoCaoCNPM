@@ -50,13 +50,13 @@ function Features() {
   ];
 
   return (
-    <section className="w-full py-12 bg-muted/50 dark:bg-background">
+    <section className="w-full py-12">
       <div className="container px-4 mx-auto">
-        <div className="text-center space-y-4 mb-12">
-          <h2 className="text-3xl font-semibold tracking-tighter text-foreground">
+        <div className="text-center space-y-4 mb-16">
+          <h2 className="text-4xl md:text-5xl font-semibold tracking-tighter text-foreground">
             Tính Năng Nổi Bật
           </h2>
-          <p className="text-muted-foreground/80 max-w-[600px] mx-auto">
+          <p className="text-lg text-muted-foreground/80 max-w-[600px] mx-auto">
             Khám phá những tính năng độc đáo giúp bạn tạo ra và thưởng thức những câu chuyện tuyệt vời
           </p>
         </div>
