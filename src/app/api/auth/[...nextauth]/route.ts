@@ -27,7 +27,10 @@ const handler = NextAuth({
             id: result.user.user_id.toString(),
             email: result.user.email,
             name: result.user.username,
+<<<<<<< HEAD
             avatar: result.user.avatar,
+=======
+>>>>>>> 5ac3dd75388b9dd53e3ba9e4706df808b9ba1ca5
             remember: credentials.remember === "true"
           };
         } catch (error: any) {
@@ -46,7 +49,10 @@ const handler = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+<<<<<<< HEAD
         token.avatar = user.avatar;
+=======
+>>>>>>> 5ac3dd75388b9dd53e3ba9e4706df808b9ba1ca5
         if (!user.remember) {
           token.maxAge = 0; // Session expires when browser closes
         } else {
@@ -58,7 +64,10 @@ const handler = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         (session.user as any).id = token.id;
+<<<<<<< HEAD
         (session.user as any).avatar = token.avatar;
+=======
+>>>>>>> 5ac3dd75388b9dd53e3ba9e4706df808b9ba1ca5
       }
       return session;
     },

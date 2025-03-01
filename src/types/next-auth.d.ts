@@ -5,6 +5,7 @@ declare module "next-auth" {
     id: string
     email: string
     name: string
+<<<<<<< HEAD
     avatar: string
     remember?: boolean
   }
@@ -16,4 +17,8 @@ declare module "next-auth" {
       image?: string | null
     }
   }
+=======
+    remember?: boolean
+  }
+>>>>>>> 5ac3dd75388b9dd53e3ba9e4706df808b9ba1ca5
 } 
