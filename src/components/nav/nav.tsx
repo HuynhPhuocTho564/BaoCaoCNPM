@@ -5,6 +5,7 @@ import { Header } from "./navbar"
 import { useSession } from "next-auth/react"
 import { Login } from "../login/login"
 import { UserMenu } from "./user-menu"
+import { useRouter } from "next/navigation"
 
 // Sample menu items
 const menuItems = [
@@ -51,6 +52,7 @@ const menuItems = [
 // Theme switcher demo
 const Nav = () => {
   const { data: session } = useSession()
+  const router = useRouter()
   const [theme, setTheme] = React.useState<'light' | 'dark'>('light')
   
   React.useEffect(() => {
@@ -66,12 +68,23 @@ const Nav = () => {
     localStorage.setItem('theme', newTheme)
     document.documentElement.classList.toggle('dark')
   }
+
+  const handleLogoClick = () => {
+    router.push('/')
+  }
   
   return (
     <div className={`w-full ${theme === 'dark' ? 'dark bg-[#0B0C0F]' : 'bg-white'}`}>
       <Header
         theme={theme}
-        logo={<span className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-black'}`}>ChatStoryAI</span>}
+        logo={
+          <button 
+            onClick={handleLogoClick}
+            className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-black'}`}
+          >
+            ChatStoryAI
+          </button>
+        }
         menuItems={menuItems}
         onThemeChange={toggleTheme}
         isSticky={true}

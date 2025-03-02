@@ -1,22 +1,16 @@
-<<<<<<< HEAD
 /* eslint-disable @next/next/no-img-element */
-=======
->>>>>>> 5ac3dd75388b9dd53e3ba9e4706df808b9ba1ca5
 "use client"
 
 import * as React from "react"
 import { useSession, signOut } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-<<<<<<< HEAD
 import { ChevronDown, LogOut, User, BookOpen, Settings } from 'lucide-react'
-=======
-import { ChevronDown, LogOut } from 'lucide-react'
->>>>>>> 5ac3dd75388b9dd53e3ba9e4706df808b9ba1ca5
 import clsx from 'clsx'
 
 interface UserMenuProps {
@@ -25,6 +19,7 @@ interface UserMenuProps {
 }
 
 export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => {
+  const router = useRouter()
   const { data: session } = useSession()
   const [isOpen, setIsOpen] = React.useState(false)
 
@@ -42,7 +37,6 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
             isDarkTheme ? 'text-white' : 'text-gray-900'
           )}
         >
-<<<<<<< HEAD
           <div className="flex items-center gap-2">
             <img 
               src={session.user?.avatar || '/default-user.webp'} 
@@ -51,9 +45,6 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
             />
             <span>{session.user?.name}</span>
           </div>
-=======
-          <span>{session.user?.name}</span>
->>>>>>> 5ac3dd75388b9dd53e3ba9e4706df808b9ba1ca5
           <ChevronDown className={clsx(
             "h-4 w-4 transition-transform duration-200",
             isOpen && "rotate-180"
@@ -62,8 +53,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
         {isOpen && (
           <div className="mt-1 bg-gray-50 dark:bg-[#1C1D21] rounded-lg">
             <button
-<<<<<<< HEAD
-              onClick={() => window.location.href = '/account'}
+              onClick={() => router.push('/account')}
               className="flex w-full items-center px-6 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
             >
               <User className="mr-2 h-4 w-4" />
@@ -71,7 +61,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
             </button>
 
             <button
-              onClick={() => window.location.href = '/stories'}
+              onClick={() => router.push('/stories')}
               className="flex w-full items-center px-6 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
             >
               <BookOpen className="mr-2 h-4 w-4" />
@@ -79,7 +69,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
             </button>
 
             <button
-              onClick={() => window.location.href = '/settings'}
+              onClick={() => router.push('/settings')}
               className="flex w-full items-center px-6 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
             >
               <Settings className="mr-2 h-4 w-4" />
@@ -89,8 +79,6 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
             <div className="my-1 h-px bg-gray-200 dark:bg-gray-700" />
 
             <button
-=======
->>>>>>> 5ac3dd75388b9dd53e3ba9e4706df808b9ba1ca5
               onClick={() => signOut()}
               className="flex w-full items-center px-6 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg"
             >
@@ -106,7 +94,6 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger className={clsx(
-<<<<<<< HEAD
         "flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800",
         isDarkTheme ? 'text-white' : 'text-gray-900'
       )}>
@@ -115,11 +102,6 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
           alt="Avatar"
           className="w-8 h-8 rounded-full object-cover"
         />
-=======
-        "flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800",
-        isDarkTheme ? 'text-white' : 'text-gray-900'
-      )}>
->>>>>>> 5ac3dd75388b9dd53e3ba9e4706df808b9ba1ca5
         <span className="font-medium">{session.user?.name}</span>
         <ChevronDown className={clsx(
           "h-4 w-4 transition-transform duration-200",
@@ -128,11 +110,10 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="end" 
-<<<<<<< HEAD
         className="w-56 p-1 border border-gray-200 dark:border-gray-700"
       >
         <DropdownMenuItem
-          onClick={() => window.location.href = '/account'}
+          onClick={() => router.push('/account')}
           className="flex items-center px-3 py-2 cursor-pointer rounded hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           <User className="mr-2 h-4 w-4" />
@@ -140,7 +121,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
         </DropdownMenuItem>
         
         <DropdownMenuItem
-          onClick={() => window.location.href = '/stories'}
+          onClick={() => router.push('/stories')}
           className="flex items-center px-3 py-2 cursor-pointer rounded hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           <BookOpen className="mr-2 h-4 w-4" />
@@ -148,7 +129,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
         </DropdownMenuItem>
 
         <DropdownMenuItem
-          onClick={() => window.location.href = '/settings'}
+          onClick={() => router.push('/settings')}
           className="flex items-center px-3 py-2 cursor-pointer rounded hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           <Settings className="mr-2 h-4 w-4" />
@@ -158,11 +139,6 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
         <div className="my-1 h-px bg-gray-200 dark:bg-gray-700" />
 
         <DropdownMenuItem
-=======
-        className="w-48 p-1 border border-gray-200 dark:border-gray-700"
-      >
-        <DropdownMenuItem
->>>>>>> 5ac3dd75388b9dd53e3ba9e4706df808b9ba1ca5
           onClick={() => signOut()}
           className="flex items-center px-3 py-2 text-red-600 dark:text-red-400 cursor-pointer rounded hover:bg-red-50 dark:hover:bg-red-900/10"
         >
