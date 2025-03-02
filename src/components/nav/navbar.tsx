@@ -6,7 +6,6 @@ import { Sun, Moon } from 'lucide-react'
 import { Navigation } from "./pc-navigation"
 import { MobileMenu } from "./mobile-menu"
 import { NavItem } from "./types"
-import { useRouter } from 'next/navigation'
 
 interface NavButton {
   className?: string
@@ -15,28 +14,17 @@ interface NavButton {
   onClick?: () => void
   asChild?: boolean
   size?: 'default' | 'sm' | 'lg' | 'icon'
-  href?: string
 }
 
 const NavButton: React.FC<NavButton> = ({ 
   className, 
   children, 
   variant = 'default',
-  onClick,
-  href
+  onClick
 }) => {
-  const router = useRouter()
-
-  const handleClick = () => {
-    if (href) {
-      router.push(href)
-    }
-    onClick?.()
-  }
-
   return (
     <button
-      onClick={handleClick}
+      onClick={onClick}
       className={clsx(
         'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
