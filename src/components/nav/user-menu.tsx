@@ -79,7 +79,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
             <div className="my-1 h-px bg-gray-200 dark:bg-gray-700" />
 
             <button
-              onClick={() => signOut()}
+              onClick={() => signOut({ callbackUrl: '/' })}
               className="flex w-full items-center px-6 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg"
             >
               <LogOut className="mr-2 h-4 w-4" />
@@ -139,7 +139,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
         <div className="my-1 h-px bg-gray-200 dark:bg-gray-700" />
 
         <DropdownMenuItem
-          onClick={() => signOut()}
+          onClick={() => signOut({ callbackUrl: '/' })}
           className="flex items-center px-3 py-2 text-red-600 dark:text-red-400 cursor-pointer rounded hover:bg-red-50 dark:hover:bg-red-900/10"
         >
           <LogOut className="mr-2 h-4 w-4" />
