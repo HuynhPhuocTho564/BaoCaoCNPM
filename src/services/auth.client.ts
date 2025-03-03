@@ -45,4 +45,58 @@ export class AuthClient {
 
     return result;
   }
+
+  static async updateUsername(newUsername: string) {
+    const response = await fetch('/api/user/profile', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username: newUsername }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error);
+    }
+
+    return result;
+  }
+
+  static async updatePassword(currentPassword: string, newPassword: string) {
+    const response = await fetch('/api/user/password', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error);
+    }
+
+    return result;
+  }
+
+  static async deleteAccount(password: string) {
+    const response = await fetch('/api/user/account', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ password }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error);
+    }
+
+    return result;
+  }
 } 

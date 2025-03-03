@@ -76,4 +76,89 @@ export class AuthService {
       throw error;
     }
   }
+
+  static async updateUsername(userId: number, newUsername: string) {
+    try {
+      await pool.execute(
+        'UPDATE users SET username = ? WHERE user_id = ?',
+        [newUsername, userId]
+      );
+
+      return {
+        message: 'Cập nhật tên thành công',
+        username: newUsername
+      };
+    } catch (error: any) {
+      throw new Error('Đã xảy ra lỗi khi cập nhật tên');
+    }
+  }
+
+  static async updatePassword(userId: number, currentPassword: string, newPassword: string) {
+    try {
+      // Get user's current password
+      const [users] = await pool.execute(
+        'SELECT user_password FROM users WHERE user_id = ?',
+        [userId]
+      );
+
+      const user = (users as any[])[0];
+      if (!user) {
+        throw new Error('Người dùng không tồn tại');
+      }
+
+      // Verify current password
+      const isValidPassword = await bcrypt.compare(currentPassword, user.user_password);
+      if (!isValidPassword) {
+        throw new Error('Mật khẩu hiện tại không đúng');
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update password
+      await pool.execute(
+        'UPDATE users SET user_password = ? WHERE user_id = ?',
+        [hashedPassword, userId]
+      );
+
+      return {
+        message: 'Cập nhật mật khẩu thành công'
+      };
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  static async deleteAccount(userId: number, password: string) {
+    try {
+      // Get user's current password
+      const [users] = await pool.execute(
+        'SELECT user_password FROM users WHERE user_id = ?',
+        [userId]
+      );
+
+      const user = (users as any[])[0];
+      if (!user) {
+        throw new Error('Người dùng không tồn tại');
+      }
+
+      // Verify password
+      const isValidPassword = await bcrypt.compare(password, user.user_password);
+      if (!isValidPassword) {
+        throw new Error('Mật khẩu không đúng');
+      }
+
+      // Delete user
+      await pool.execute(
+        'DELETE FROM users WHERE user_id = ?',
+        [userId]
+      );
+
+      return {
+        message: 'Xóa tài khoản thành công'
+      };
+    } catch (error: any) {
+      throw error;
+    }
+  }
 } 

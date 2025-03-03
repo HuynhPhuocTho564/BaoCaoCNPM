@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import NextAuth from "next-auth";
+import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { AuthService } from "@/services/auth.service";
 
-const handler = NextAuth({
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -43,26 +43,36 @@ const handler = NextAuth({
     strategy: "jwt",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.avatar = user.avatar;
+        token.name = user.name;
         if (!user.remember) {
-          token.maxAge = 0; // Session expires when browser closes
+          token.maxAge = 0;
         } else {
-          token.maxAge = 30 * 24 * 60 * 60; // 30 days if remember
+          token.maxAge = 30 * 24 * 60 * 60;
         }
       }
+
+      // Xử lý khi có update session
+      if (trigger === "update" && session?.name) {
+        token.name = session.name;
+      }
+
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).avatar = token.avatar;
+        session.user.id = token.id as string;
+        session.user.avatar = token.avatar as string;
+        session.user.name = token.name as string;
       }
       return session;
     },
   }
-});
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST }; 
