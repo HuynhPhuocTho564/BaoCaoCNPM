@@ -51,7 +51,16 @@ export async function POST(request: Request) {
     // Cập nhật URL mới trong database
     const result = await AuthService.updateAvatar(userId, uploadResult.directLink, uploadResult.fileId);
 
-    return NextResponse.json(result);
+    // Update session data
+    session.user.avatar = uploadResult.directLink;
+
+    return NextResponse.json({
+      ...result,
+      user: {
+        ...session.user,
+        avatar: uploadResult.directLink
+      }
+    });
   } catch (error: any) {
     console.error('Error in avatar upload:', error);
     return NextResponse.json(

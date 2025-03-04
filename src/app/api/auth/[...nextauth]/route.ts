@@ -56,8 +56,13 @@ export const authOptions: AuthOptions = {
       }
 
       // Xử lý khi có update session
-      if (trigger === "update" && session?.name) {
-        token.name = session.name;
+      if (trigger === "update") {
+        if (session?.name) {
+          token.name = session.name;
+        }
+        if (session?.avatar) {
+          token.avatar = session.avatar;
+        }
       }
 
       return token;

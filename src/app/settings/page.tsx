@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useSession, signOut } from "next-auth/react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { AuthClient } from "@/services/auth.client"
 import {
@@ -25,7 +25,13 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [deletePassword, setDeletePassword] = useState('')
-  const [avatar, setAvatar] = useState(session?.user?.avatar || '/default-user.webp')
+  const [avatar, setAvatar] = useState<string>('/default-user.webp')
+
+  useEffect(() => {
+    if (session?.user?.avatar) {
+      setAvatar(session.user.avatar)
+    }
+  }, [session?.user?.avatar])
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -47,8 +53,12 @@ export default function SettingsPage() {
     try {
       setIsLoading(true)
       const result = await AuthClient.updateAvatar(file)
-      setAvatar(result.avatar)
-      await update({ avatar: result.avatar })
+      
+      // Cập nhật cả session và state local
+      const newAvatar = result.user.avatar
+      await update({ avatar: newAvatar })
+      setAvatar(newAvatar)
+      
       toast.success('Cập nhật ảnh đại diện thành công!')
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
