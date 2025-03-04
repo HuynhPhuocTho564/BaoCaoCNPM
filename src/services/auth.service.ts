@@ -161,4 +161,33 @@ export class AuthService {
       throw error;
     }
   }
+
+  static async updateAvatar(userId: number, avatarUrl: string, driveFileId: string) {
+    try {
+      await pool.execute(
+        'UPDATE users SET avatar = ?, drive_file_id = ? WHERE user_id = ?',
+        [avatarUrl, driveFileId, userId]
+      );
+
+      return {
+        message: 'Cập nhật ảnh đại diện thành công',
+        avatar: avatarUrl
+      };
+    } catch (error: any) {
+      throw new Error('Đã xảy ra lỗi khi cập nhật ảnh đại diện');
+    }
+  }
+
+  static async getUser(userId: number) {
+    try {
+      const [users] = await pool.execute(
+        'SELECT user_id, username, email, avatar, drive_file_id FROM users WHERE user_id = ?',
+        [userId]
+      );
+
+      return (users as any[])[0];
+    } catch (error: any) {
+      throw new Error('Đã xảy ra lỗi khi lấy thông tin người dùng');
+    }
+  }
 } 

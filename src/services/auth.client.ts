@@ -99,4 +99,22 @@ export class AuthClient {
 
     return result;
   }
+
+  static async updateAvatar(file: File) {
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    const response = await fetch('/api/user/avatar', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error);
+    }
+
+    return result;
+  }
 } 

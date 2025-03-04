@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import Image from 'next/image'
 
 export default function SettingsPage() {
   const { data: session, update } = useSession()
@@ -30,24 +31,27 @@ export default function SettingsPage() {
     const file = e.target.files?.[0]
     if (!file) return
 
+    // Kiểm tra kích thước file (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('File không được vượt quá 2MB')
+      return
+    }
+
+    // Kiểm tra định dạng file
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif']
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Chỉ chấp nhận file ảnh định dạng JPG, PNG hoặc GIF')
+      return
+    }
+
     try {
       setIsLoading(true)
-      const formData = new FormData()
-      formData.append('avatar', file)
-
-      const response = await fetch('/api/user/avatar', {
-        method: 'POST',
-        body: formData
-      })
-
-      if (!response.ok) throw new Error('Lỗi khi tải lên ảnh')
-
-      const data = await response.json()
-      setAvatar(data.avatar)
-      await update({ avatar: data.avatar })
+      const result = await AuthClient.updateAvatar(file)
+      setAvatar(result.avatar)
+      await update({ avatar: result.avatar })
       toast.success('Cập nhật ảnh đại diện thành công!')
-    } catch (error) {
-      toast.error('Đã có lỗi xảy ra')
+    } catch (error: any) {
+      toast.error(error.message || 'Đã có lỗi xảy ra')
     } finally {
       setIsLoading(false)
     }
@@ -145,11 +149,16 @@ export default function SettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex items-center gap-6">
-              <img 
-                src={avatar} 
-                alt="Avatar" 
-                className="w-24 h-24 rounded-full object-cover"
-              />
+              <div className="relative w-24 h-24">
+                <Image 
+                  src={avatar}
+                  alt="Avatar"
+                  fill
+                  sizes="96px"
+                  className="rounded-full object-cover"
+                  priority
+                />
+              </div>
               <div>
                 <Input
                   type="file"
