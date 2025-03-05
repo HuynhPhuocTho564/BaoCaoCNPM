@@ -7,14 +7,13 @@ interface RegisterData {
   username: string;
   email: string;
   password: string;
+  isGoogleUser?: boolean;
+  avatar?: string;
 }
 
 export class AuthService {
   static async register(data: RegisterData) {
-    const { username, email, password } = data;
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const { username, email, password, isGoogleUser, avatar } = data;
 
     try {
       // Check if email exists
@@ -27,10 +26,13 @@ export class AuthService {
         throw new Error('Email đã được sử dụng');
       }
 
+      // Hash password only if not Google user
+      const hashedPassword = isGoogleUser ? null : await bcrypt.hash(password, 10);
+
       // Insert new user
       const [result] = await pool.execute(
-        'INSERT INTO users (username, email, user_password) VALUES (?, ?, ?)',
-        [username, email, hashedPassword]
+        'INSERT INTO users (username, email, user_password, avatar) VALUES (?, ?, ?, ?)',
+        [username, email, hashedPassword, avatar || null]
       );
 
       return {
@@ -38,10 +40,7 @@ export class AuthService {
         userId: (result as any).insertId
       };
     } catch (error: any) {
-      if (error.message === 'Email đã được sử dụng') {
-        throw error;
-      }
-      throw new Error('Đã xảy ra lỗi khi đăng ký');
+      throw error;
     }
   }
 
@@ -194,12 +193,18 @@ export class AuthService {
   static async generateResetCode(email: string) {
     try {
       const [rows] = await pool.execute(
-        'SELECT user_id FROM users WHERE email = ?',
+        'SELECT user_id, user_password FROM users WHERE email = ?',
         [email]
       );
 
       if (!Array.isArray(rows) || rows.length === 0) {
         throw new Error('Email không tồn tại trong hệ thống');
+      }
+
+      // Kiểm tra nếu là tài khoản Google (user_password là null)
+      const user = (rows as any[])[0];
+      if (user.user_password === null) {
+        throw new Error('Tài khoản Google không thể đặt lại mật khẩu. Vui lòng đăng nhập bằng Google');
       }
 
       // Tạo mã xác thực ngẫu nhiên 6 chữ số

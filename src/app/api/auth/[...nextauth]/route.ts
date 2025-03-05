@@ -1,10 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import GoogleProvider from "next-auth/providers/google";
 import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { AuthService } from "@/services/auth.service";
 
 export const authOptions: AuthOptions = {
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -46,7 +51,7 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
-        token.avatar = user.avatar;
+        token.avatar = user.avatar || user.image;
         token.name = user.name;
         if (!user.remember) {
           token.maxAge = 0;
@@ -55,14 +60,9 @@ export const authOptions: AuthOptions = {
         }
       }
 
-      // Xử lý khi có update session
       if (trigger === "update") {
-        if (session?.name) {
-          token.name = session.name;
-        }
-        if (session?.avatar) {
-          token.avatar = session.avatar;
-        }
+        if (session?.name) token.name = session.name;
+        if (session?.avatar) token.avatar = session.avatar;
       }
 
       return token;
@@ -74,6 +74,27 @@ export const authOptions: AuthOptions = {
         session.user.name = token.name as string;
       }
       return session;
+    },
+    async signIn({ user, account }) {
+      if (account?.provider === "google") {
+        try {
+          await AuthService.register({
+            username: user.name || '',
+            email: user.email || '',
+            password: '', // Google login không cần password
+            isGoogleUser: true,
+            avatar: user.image || ''
+          });
+          return true;
+        } catch (error: any) {
+          if (error.message === 'Email đã được sử dụng') {
+            return true; // Cho phép đăng nhập nếu email đã tồn tại
+          }
+          console.error('Error during Google sign in:', error);
+          return false;
+        }
+      }
+      return true;
     },
   }
 };
