@@ -190,4 +190,67 @@ export class AuthService {
       throw new Error('Đã xảy ra lỗi khi lấy thông tin người dùng');
     }
   }
+
+  static async generateResetCode(email: string) {
+    try {
+      const [rows] = await pool.execute(
+        'SELECT user_id FROM users WHERE email = ?',
+        [email]
+      );
+
+      if (!Array.isArray(rows) || rows.length === 0) {
+        throw new Error('Email không tồn tại trong hệ thống');
+      }
+
+      // Tạo mã xác thực ngẫu nhiên 6 chữ số
+      const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 phút
+
+      // Lưu mã xác thực vào database
+      await pool.execute(
+        'INSERT INTO reset_codes (email, code, expires_at) VALUES (?, ?, ?)',
+        [email, resetCode, expiresAt]
+      );
+
+      return resetCode;
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  static async verifyResetCode(email: string, code: string) {
+    try {
+      const [rows] = await pool.execute(
+        'SELECT * FROM reset_codes WHERE email = ? AND code = ? AND expires_at > NOW() AND used = 0',
+        [email, code]
+      );
+
+      if (!Array.isArray(rows) || rows.length === 0) {
+        throw new Error('Mã xác thực không hợp lệ hoặc đã hết hạn');
+      }
+
+      // Đánh dấu mã đã sử dụng
+      await pool.execute(
+        'UPDATE reset_codes SET used = 1 WHERE email = ? AND code = ?',
+        [email, code]
+      );
+
+      return true;
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  }
+
+  static async resetPassword(email: string, newPassword: string) {
+    try {
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await pool.execute(
+        'UPDATE users SET user_password = ? WHERE email = ?',
+        [hashedPassword, email]
+      );
+      return true;
+    } catch (error: any) {
+      throw new Error('Không thể cập nhật mật khẩu');
+    }
+  }
 } 
