@@ -43,8 +43,8 @@ export async function POST(request: Request) {
       throw new Error("Upload failed: Missing file ID or direct link");
     }
 
-    // Xóa file cũ trên Google Drive nếu có
-    if (user.drive_file_id) {
+    // Check if user exists and has drive_file_id before deleting old file
+    if (user && user.drive_file_id) {
       await GoogleDriveService.deleteFile(user.drive_file_id);
     }
 
