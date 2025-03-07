@@ -212,9 +212,11 @@ export default function SettingsPage() {
                     Email không thể thay đổi.
                   </p>
                 </div>
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
-                </Button>
+                <div className="mt-4">
+                  <Button type="submit" disabled={isLoading}>
+                    {isLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
+                  </Button>
+                </div>
               </form>
             </CardContent>
           </Card>
