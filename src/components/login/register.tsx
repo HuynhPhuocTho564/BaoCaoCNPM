@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +13,8 @@ import { Label } from "@/components/ui/label";
 import { useId, useState } from "react";
 import { AuthClient } from '@/services/auth.client';
 import { toast } from "sonner";
+import { signIn } from "next-auth/react";
+import { FcGoogle } from "react-icons/fc";
 
 interface RegisterProps {
   open: boolean;
@@ -46,6 +49,17 @@ function Register({ open, onOpenChange, onSwitchToLogin }: RegisterProps) {
       }, 100);
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      await signIn('google', { callbackUrl: window.location.origin });
+    } catch (error) {
+      toast.error('Đã có lỗi xảy ra khi đăng ký với Google');
     } finally {
       setIsLoading(false);
     }
@@ -100,7 +114,13 @@ function Register({ open, onOpenChange, onSwitchToLogin }: RegisterProps) {
           <span className="text-xs text-muted-foreground">Hoặc</span>
         </div>
 
-        <Button variant="outline" disabled={isLoading}>
+        <Button 
+          variant="outline" 
+          onClick={handleGoogleSignIn} 
+          disabled={isLoading}
+          className="w-full flex items-center justify-center gap-2"
+        >
+          <FcGoogle className="w-5 h-5" />
           {isLoading ? 'Đang xử lý...' : 'Đăng ký với Google'}
         </Button>
 

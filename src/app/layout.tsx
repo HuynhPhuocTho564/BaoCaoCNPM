@@ -4,6 +4,8 @@ import "./globals.css";
 import AuthProvider from "@/components/providers/session-provider"
 import { Toaster } from 'sonner';
 import { ScrollToTop } from "@/components/scroll-to-top"
+import { Nav } from "@/components/nav/nav";
+import { Footer } from "@/components/footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +33,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
+          <Nav />
           {children}
+          <Footer />
           <Toaster richColors position="top-center" />
           <ScrollToTop />
         </AuthProvider>

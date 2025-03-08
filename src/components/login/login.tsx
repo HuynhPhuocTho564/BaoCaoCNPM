@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -19,6 +20,7 @@ import { ForgotPassword } from "./forgot-password";
 import { NavButton } from "@/components/nav/navbar";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
+import { FcGoogle } from "react-icons/fc";
 
 function Login() {
   const id = useId();
@@ -74,6 +76,17 @@ function Login() {
       window.location.reload();
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      await signIn('google', { callbackUrl: window.location.origin });
+    } catch (error) {
+      toast.error('Đã có lỗi xảy ra khi đăng nhập với Google');
     } finally {
       setIsLoading(false);
     }
@@ -150,7 +163,13 @@ function Login() {
             <span className="text-xs text-muted-foreground">Hoặc</span>
           </div>
 
-          <Button variant="outline" disabled={isLoading}>
+          <Button 
+            variant="outline" 
+            onClick={handleGoogleSignIn} 
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-2"
+          >
+            <FcGoogle className="w-5 h-5" />
             {isLoading ? 'Đang xử lý...' : 'Đăng nhập với Google'}
           </Button>
           

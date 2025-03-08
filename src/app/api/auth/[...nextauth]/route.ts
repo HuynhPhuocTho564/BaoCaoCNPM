@@ -1,10 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import NextAuth from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { AuthService } from "@/services/auth.service";
 
-const handler = NextAuth({
+export const authOptions: AuthOptions = {
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -43,26 +48,78 @@ const handler = NextAuth({
     strategy: "jwt",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
-        token.id = user.id;
-        token.avatar = user.avatar;
-        if (!user.remember) {
-          token.maxAge = 0; // Session expires when browser closes
+        // Nếu là đăng nhập Google, lấy thông tin từ database
+        if (user.email) {
+          const dbUser = await AuthService.getUserByEmail(user.email);
+          if (dbUser) {
+            token.id = dbUser.user_id.toString();
+            token.name = dbUser.username;
+            token.avatar = dbUser.avatar || user.image;
+          }
         } else {
-          token.maxAge = 30 * 24 * 60 * 60; // 30 days if remember
+          // Nếu không phải Google login, sử dụng thông tin từ user
+          token.id = user.id;
+          token.avatar = user.avatar;
+          token.name = user.name;
+        }
+
+        if (!user.remember) {
+          token.maxAge = 0;
+        } else {
+          token.maxAge = 30 * 24 * 60 * 60;
         }
       }
+
+      if (trigger === "update") {
+        if (session?.name) token.name = session.name;
+        if (session?.avatar) token.avatar = session.avatar;
+      }
+
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).avatar = token.avatar;
+        session.user.id = token.id as string;
+        session.user.avatar = token.avatar as string;
+        session.user.name = token.name as string;
       }
       return session;
     },
+    async signIn({ user, account }) {
+      if (account?.provider === "google") {
+        try {
+          // Đăng ký hoặc lấy thông tin user từ database
+          const result = await AuthService.register({
+            username: user.name || '',
+            email: user.email || '',
+            password: '', // Google login không cần password
+            isGoogleUser: true,
+            avatar: user.image || ''
+          });
+          
+          // Gán lại id từ database
+          user.id = result.userId.toString();
+          return true;
+        } catch (error: any) {
+          if (error.message === 'Email đã được sử dụng') {
+            // Nếu email đã tồn tại, lấy thông tin user từ database
+            const dbUser = await AuthService.getUserByEmail(user.email || '');
+            if (dbUser) {
+              user.id = dbUser.user_id.toString();
+              return true;
+            }
+          }
+          console.error('Error during Google sign in:', error);
+          return false;
+        }
+      }
+      return true;
+    },
   }
-});
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST }; 

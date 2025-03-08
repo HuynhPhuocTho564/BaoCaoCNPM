@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ChevronDown, LogOut, User, BookOpen, Settings } from 'lucide-react'
 import clsx from 'clsx'
+import Image from 'next/image'
 
 interface UserMenuProps {
   isDarkTheme?: boolean;
@@ -38,11 +39,16 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
           )}
         >
           <div className="flex items-center gap-2">
-            <img 
-              src={session.user?.avatar || '/default-user.webp'} 
-              alt="Avatar"
-              className="w-8 h-8 rounded-full object-cover"
-            />
+            <div className="relative w-8 h-8">
+              <Image 
+                src={session.user?.avatar || '/default-user.webp'} 
+                alt="Avatar"
+                fill
+                sizes="32px"
+                className="rounded-full object-cover"
+                priority
+              />
+            </div>
             <span>{session.user?.name}</span>
           </div>
           <ChevronDown className={clsx(
@@ -79,7 +85,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
             <div className="my-1 h-px bg-gray-200 dark:bg-gray-700" />
 
             <button
-              onClick={() => signOut()}
+              onClick={() => signOut({ callbackUrl: '/' })}
               className="flex w-full items-center px-6 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg"
             >
               <LogOut className="mr-2 h-4 w-4" />
@@ -97,11 +103,16 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
         "flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800",
         isDarkTheme ? 'text-white' : 'text-gray-900'
       )}>
-        <img 
-          src={session.user?.avatar || '/default-user.webp'} 
-          alt="Avatar"
-          className="w-8 h-8 rounded-full object-cover"
-        />
+        <div className="relative w-8 h-8">
+          <Image 
+            src={session.user?.avatar || '/default-user.webp'} 
+            alt="Avatar"
+            fill
+            sizes="32px"
+            className="rounded-full object-cover"
+            priority
+          />
+        </div>
         <span className="font-medium">{session.user?.name}</span>
         <ChevronDown className={clsx(
           "h-4 w-4 transition-transform duration-200",
@@ -139,7 +150,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
         <div className="my-1 h-px bg-gray-200 dark:bg-gray-700" />
 
         <DropdownMenuItem
-          onClick={() => signOut()}
+          onClick={() => signOut({ callbackUrl: '/' })}
           className="flex items-center px-3 py-2 text-red-600 dark:text-red-400 cursor-pointer rounded hover:bg-red-50 dark:hover:bg-red-900/10"
         >
           <LogOut className="mr-2 h-4 w-4" />
