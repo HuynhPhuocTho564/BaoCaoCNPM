@@ -330,11 +330,8 @@ export default function SettingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-<<<<<<< HEAD
     </div>
     </main>
-=======
->>>>>>> fb1a2565762e7998f7571050435222a82eb31fd9
     </div>
   )
 }

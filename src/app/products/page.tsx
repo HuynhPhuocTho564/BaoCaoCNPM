@@ -1,6 +1,10 @@
+'use client';
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Check } from "lucide-react";
+import { handleVNPayPayment } from "@/lib/vnpay";
 
 export default function ProductsPage() {
   const products = [
@@ -41,6 +45,28 @@ export default function ProductsPage() {
     }
   ]
 
+  const handlePayment = async (product: any) => {
+    if (product.price === "Miễn phí") {
+      return;
+    }
+    
+    if (product.price === "Liên hệ") {
+      return;
+    }
+
+    try {
+      const amount = 199000;
+      const orderInfo = `Thanh toán ${product.name}`;
+      
+      await handleVNPayPayment({
+        amount,
+        orderInfo
+      });
+    } catch (error) {
+      console.error("Payment error:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 bg-background">
@@ -77,7 +103,12 @@ export default function ProductsPage() {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full">Chọn Gói</Button>
+                  <Button 
+                    className="w-full" 
+                    onClick={() => handlePayment(product)}
+                  >
+                    Chọn Gói
+                  </Button>
                 </CardFooter>
               </Card>
             ))}
