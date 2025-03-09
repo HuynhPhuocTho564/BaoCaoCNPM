@@ -39,24 +39,12 @@ export default function ProductsPage() {
   ]
 
   const handlePayment = async (product: any) => {
-<<<<<<< HEAD
     if (product.price === "0đ") {
-=======
-    if (product.price === "Miễn phí") {
-      return;
-    }
-    
-    if (product.price === "Liên hệ") {
->>>>>>> ed17430c5dfdf34ce52573e193ab89b3d6883be3
       return;
     }
 
     try {
-<<<<<<< HEAD
       const amount = 22000;
-=======
-      const amount = 199000;
->>>>>>> ed17430c5dfdf34ce52573e193ab89b3d6883be3
       const orderInfo = `Thanh toán ${product.name}`;
       
       await handleVNPayPayment({
@@ -113,18 +101,11 @@ export default function ProductsPage() {
                 </CardContent>
                 <CardFooter>
                   <Button 
-<<<<<<< HEAD
                     className="w-full text-lg py-6" 
                     onClick={() => handlePayment(product)}
                     variant={product.isPopular ? "default" : "outline"}
                   >
                     {product.price === "0đ" ? "Bắt đầu ngay" : "Ủng hộ ngay"}
-=======
-                    className="w-full" 
-                    onClick={() => handlePayment(product)}
-                  >
-                    Chọn Gói
->>>>>>> ed17430c5dfdf34ce52573e193ab89b3d6883be3
                   </Button>
                 </CardFooter>
               </Card>
