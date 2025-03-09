@@ -1,8 +1,10 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Mail, Phone, MapPin } from "lucide-react"
+import TextareaAutosize from 'react-textarea-autosize'
 
 export default function ContactPage() {
   return (
@@ -23,7 +25,7 @@ export default function ContactPage() {
                   <Mail className="w-6 h-6 text-primary" />
                   <div>
                     <h3 className="font-semibold">Email</h3>
-                    <p className="text-muted-foreground">support@chatstoryai.com</p>
+                    <p className="text-muted-foreground">chatstoryai@gmail.com</p>
                   </div>
                 </div>
 
@@ -31,7 +33,7 @@ export default function ContactPage() {
                   <Phone className="w-6 h-6 text-primary" />
                   <div>
                     <h3 className="font-semibold">Điện thoại</h3>
-                    <p className="text-muted-foreground">1900 xxx xxx</p>
+                    <p className="text-muted-foreground">0762605309</p>
                   </div>
                 </div>
 
@@ -40,7 +42,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-semibold">Địa chỉ</h3>
                     <p className="text-muted-foreground">
-                      Tầng 1, Tòa nhà ABC, Quận 1, TP.HCM
+                      Trường Đại Học Trà Vinh - DA22TTC - Nhóm Báo Cáo Công Nghệ Phần Mềm
                     </p>
                   </div>
                 </div>
@@ -59,10 +61,11 @@ export default function ContactPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="message">Nội dung</Label>
-                  <Textarea 
-                    id="message" 
-                    placeholder="Nhập nội dung tin nhắn" 
-                    rows={5} 
+                  <TextareaAutosize
+                    id="message"
+                    placeholder="Nhập nội dung tin nhắn"
+                    minRows={5}
+                    className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
 
