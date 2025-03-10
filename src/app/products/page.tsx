@@ -5,8 +5,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Check } from "lucide-react";
 import { handleVNPayPayment } from "@/lib/vnpay";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 export default function ProductsPage() {
+  const { data: session } = useSession();
+
   const products = [
     {
       name: "Gói Miễn Phí",
@@ -40,6 +44,11 @@ export default function ProductsPage() {
 
   const handlePayment = async (product: any) => {
     if (product.price === "0đ") {
+      return;
+    }
+
+    if (!session) {
+      toast.error("Vui lòng đăng nhập để ủng hộ dự án");
       return;
     }
 

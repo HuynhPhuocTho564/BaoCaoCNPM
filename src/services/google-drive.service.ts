@@ -21,12 +21,22 @@ export class GoogleDriveService {
     return stream;
   }
 
-  static async uploadFile(file: Buffer, mimeType: string, userId: number) {
+  static async uploadFile(
+    file: Buffer, 
+    mimeType: string, 
+    userId: number, 
+    type: 'avatar' | 'cover', 
+    storyId: number
+  ) {
     try {
       const extension = mimeType === 'image/jpeg' ? '.jpg' : 
                        mimeType === 'image/png' ? '.png' : '.gif';
-      const fileName = `avatar_${userId}${extension}`;
-
+      
+      // Tạo tên file dựa trên loại
+      const fileName = type === 'avatar' 
+        ? `avatar_${userId}${extension}`
+        : `cover_story_${storyId}${extension}`;
+        
       // Kiểm tra file tồn tại
       const existingFiles = await this.driveClient.files.list({
         q: `name = '${fileName}' and '${process.env.GOOGLE_DRIVE_FOLDER_ID}' in parents and trashed = false`,
