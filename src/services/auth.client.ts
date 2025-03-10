@@ -47,7 +47,7 @@ export class AuthClient {
   }
 
   static async updateUsername(newUsername: string) {
-    const response = await fetch('/api/user/profile', {
+    const response = await fetch('/api/user/update-username', {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ export class AuthClient {
   }
 
   static async updatePassword(currentPassword: string, newPassword: string) {
-    const response = await fetch('/api/user/password', {
+    const response = await fetch('/api/user/update-password', {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ export class AuthClient {
   }
 
   static async deleteAccount(password: string) {
-    const response = await fetch('/api/user/account', {
+    const response = await fetch('/api/user/delete-account', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -104,7 +104,7 @@ export class AuthClient {
     const formData = new FormData();
     formData.append('avatar', file);
 
-    const response = await fetch('/api/user/avatar', {
+    const response = await fetch('/api/user/update-avatar', {
       method: 'POST',
       body: formData,
     });
@@ -161,6 +161,23 @@ export class AuthClient {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ email, code, newPassword }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error);
+    }
+
+    return result;
+  }
+
+  static async updateBadge() {
+    const response = await fetch('/api/user/update-badge', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
     });
 
     const result = await response.json();

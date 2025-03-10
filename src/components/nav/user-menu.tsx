@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client"
 
 import * as React from "react"
@@ -12,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ChevronDown, LogOut, User, BookOpen, Settings } from 'lucide-react'
 import clsx from 'clsx'
-import Image from 'next/image'
+import { UserAvatar } from "@/components/user/user-avatar"
 
 interface UserMenuProps {
   isDarkTheme?: boolean;
@@ -38,19 +37,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
             isDarkTheme ? 'text-white' : 'text-gray-900'
           )}
         >
-          <div className="flex items-center gap-2">
-            <div className="relative w-8 h-8">
-              <Image 
-                src={session.user?.avatar || '/default-user.webp'} 
-                alt="Avatar"
-                fill
-                sizes="32px"
-                className="rounded-full object-cover"
-                priority
-              />
-            </div>
-            <span>{session.user?.name}</span>
-          </div>
+          <UserAvatar />
           <ChevronDown className={clsx(
             "h-4 w-4 transition-transform duration-200",
             isOpen && "rotate-180"
@@ -103,17 +90,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
         "flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800",
         isDarkTheme ? 'text-white' : 'text-gray-900'
       )}>
-        <div className="relative w-8 h-8">
-          <Image 
-            src={session.user?.avatar || '/default-user.webp'} 
-            alt="Avatar"
-            fill
-            sizes="32px"
-            className="rounded-full object-cover"
-            priority
-          />
-        </div>
-        <span className="font-medium">{session.user?.name}</span>
+        <UserAvatar />
         <ChevronDown className={clsx(
           "h-4 w-4 transition-transform duration-200",
           isOpen && "rotate-180"

@@ -35,9 +35,18 @@ export class AuthService {
         [username, email, hashedPassword, avatar || null]
       );
 
+      const userId = (result as any).insertId;
+
+      // Fetch user data after insert
+      const [users] = await pool.execute(
+        'SELECT user_id, username, email, avatar, has_badge FROM users WHERE user_id = ?',
+        [userId]
+      );
+
       return {
         message: 'Đăng ký thành công',
-        userId: (result as any).insertId
+        userId: userId,
+        user: (users as any[])[0]
       };
     } catch (error: any) {
       throw error;
@@ -262,16 +271,37 @@ export class AuthService {
   static async getUserByEmail(email: string) {
     try {
       const [users] = await pool.execute(
-        'SELECT user_id, username, email, avatar FROM users WHERE email = ?',
+        'SELECT user_id, username, email, avatar, has_badge FROM users WHERE email = ?',
         [email]
       );
 
       if (Array.isArray(users) && users.length > 0) {
-        return (users as any[])[0];
+        const user = (users as any[])[0];
+        // Chuyển đổi has_badge từ 0/1 thành boolean
+        return {
+          ...user,
+          has_badge: Boolean(user.has_badge)
+        };
       }
       return null;
     } catch (error: any) {
       throw new Error('Lỗi khi lấy thông tin người dùng');
+    }
+  }
+
+  static async updateBadgeStatus(userId: number) {
+    try {
+      await pool.execute(
+        'UPDATE users SET has_badge = ? WHERE user_id = ?',
+        [true, userId] // MySQL sẽ tự động chuyển true thành 1
+      );
+
+      return {
+        message: 'Cập nhật huy hiệu thành công',
+        hasBadge: true
+      };
+    } catch (error: any) {
+      throw new Error('Đã xảy ra lỗi khi cập nhật huy hiệu');
     }
   }
 } 

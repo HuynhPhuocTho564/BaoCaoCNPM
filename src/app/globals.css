@@ -132,3 +132,16 @@
     backdrop-filter: blur(12px);
   }
 }
+
+@keyframes gradient-xy {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-gradient-xy {
+  animation: gradient-xy 3s ease infinite;
+}

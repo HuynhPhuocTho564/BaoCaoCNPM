@@ -7,6 +7,7 @@ declare module "next-auth" {
     name: string
     avatar: string
     remember?: boolean
+    hasBadge?: boolean
   }
   
   interface Session {

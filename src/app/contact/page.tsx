@@ -1,12 +1,49 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Mail, Phone, MapPin } from "lucide-react"
 import TextareaAutosize from 'react-textarea-autosize'
+import emailjs from '@emailjs/browser'
+import { toast } from "sonner"
 
 export default function ContactPage() {
+  const [isLoading, setIsLoading] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  })
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+
+    try {
+      await emailjs.send(
+        'service_migewp5', // Thay thế bằng Service ID của bạn
+        'template_ibjlr5j', // Thay thế bằng Template ID của bạn
+        {
+          from_name: formData.name,
+          from_email: formData.email,
+          message: formData.message,
+          to_email: 'chatstoryai@gmail.com'
+        },
+        'sezXfvR3C4eXA3-Qb' // Thay thế bằng Public Key của bạn
+      )
+
+      toast.success('Tin nhắn của bạn đã được gửi thành công.')
+      setFormData({ name: '', email: '', message: '' })
+    } catch (error) {
+      toast.error('Có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại sau.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 bg-background">
@@ -48,15 +85,28 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              <form className="space-y-4">
+              <form className="space-y-4" onSubmit={handleSubmit}>
                 <div className="space-y-2">
                   <Label htmlFor="name">Họ và tên</Label>
-                  <Input id="name" placeholder="Nhập họ và tên của bạn" />
+                  <Input 
+                    id="name" 
+                    placeholder="Nhập họ và tên của bạn"
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({...prev, name: e.target.value}))}
+                    required
+                  />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="email@example.com" />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="email@example.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({...prev, email: e.target.value}))}
+                    required
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -65,11 +115,16 @@ export default function ContactPage() {
                     id="message"
                     placeholder="Nhập nội dung tin nhắn"
                     minRows={5}
+                    value={formData.message}
+                    onChange={(e) => setFormData(prev => ({...prev, message: e.target.value}))}
                     className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    required
                   />
                 </div>
 
-                <Button type="submit" className="w-full">Gửi tin nhắn</Button>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Đang gửi..." : "Gửi tin nhắn"}
+                </Button>
               </form>
             </div>
           </div>

@@ -1,19 +1,27 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { XCircle, Loader2, Coffee } from "lucide-react";
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { useSession } from 'next-auth/react';
+import { AuthClient } from '@/services/auth.client';
 
 export default function PaymentCallback() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { update } = useSession();
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'failed'>('loading');
   const [message, setMessage] = useState('Đang xử lý thanh toán...');
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
     const verifyPayment = async () => {
+      if (hasProcessed.current) return;
+      hasProcessed.current = true;
+
       try {
         const response = await fetch(`/api/vnpay/callback?${searchParams.toString()}`);
         const data = await response.json();
@@ -21,27 +29,37 @@ export default function PaymentCallback() {
         if (!data.isVerified) {
           setStatus('error');
           setMessage('Xác thực tính toàn vẹn dữ liệu không thành công');
+          toast.error('Xác thực thanh toán thất bại');
           return;
         }
 
         if (!data.isSuccess) {
           setStatus('failed');
           setMessage('Đơn hàng thanh toán không thành công');
+          toast.error('Thanh toán không thành công');
           return;
         }
 
+        // Cập nhật huy hiệu sử dụng AuthClient
+        await AuthClient.updateBadge();
+        
+        // Cập nhật session với thông tin huy hiệu mới
+        await update({ hasBadge: true });
+
         setStatus('success');
-        setMessage('Thanh toán thành công!');
+        setMessage('Cảm ơn bạn đã ủng hộ dự án!');
+        toast.success('Thanh toán thành công!');
         
       } catch (error) {
         console.error('Lỗi xác thực thanh toán:', error);
         setStatus('error');
         setMessage('Dữ liệu không hợp lệ');
+        toast.error('Có lỗi xảy ra khi xác thực thanh toán');
       }
     };
 
     verifyPayment();
-  }, [searchParams]);
+  }, [searchParams, update]);
 
   const statusConfig = {
     loading: {
@@ -50,8 +68,8 @@ export default function PaymentCallback() {
       color: 'text-primary'
     },
     success: {
-      icon: <CheckCircle2 className="h-12 w-12 text-green-500" />,
-      title: 'Thành công',
+      icon: <Coffee className="h-12 w-12 text-green-500" />,
+      title: 'Cảm ơn bạn!',
       color: 'text-green-500'
     },
     error: {
@@ -79,13 +97,25 @@ export default function PaymentCallback() {
         </CardHeader>
         <CardContent className="text-center space-y-4">
           <p className="text-muted-foreground">{message}</p>
-          <Button 
-            className="w-full" 
-            onClick={() => router.push('/')}
-            variant={status === 'success' ? 'default' : 'secondary'}
-          >
-            Về trang chủ
-          </Button>
+          {status === 'success' && (
+            <div className="space-y-2 py-2">
+              <p className="text-sm text-muted-foreground">Gói Hỗ Trợ - 22.000đ</p>
+              <div className="text-sm space-y-1 text-muted-foreground">
+                <p>✓ Huy hiệu người ủng hộ</p>
+                <p>✓ Được ghi nhận trong trang cảm ơn</p>
+                <p>✓ Góp phần duy trì máy chủ</p>
+              </div>
+            </div>
+          )}
+          <div className="flex flex-col gap-2">
+            <Button 
+              className="w-full" 
+              onClick={() => router.push('/')}
+              variant={status === 'success' ? 'default' : 'secondary'}
+            >
+              Về trang chủ
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

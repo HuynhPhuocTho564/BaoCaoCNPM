@@ -57,12 +57,14 @@ export const authOptions: AuthOptions = {
             token.id = dbUser.user_id.toString();
             token.name = dbUser.username;
             token.avatar = dbUser.avatar || user.image;
+            token.hasBadge = dbUser.has_badge || false;
           }
         } else {
           // Nếu không phải Google login, sử dụng thông tin từ user
           token.id = user.id;
           token.avatar = user.avatar;
           token.name = user.name;
+          token.hasBadge = user.hasBadge || false;
         }
 
         if (!user.remember) {
@@ -75,6 +77,7 @@ export const authOptions: AuthOptions = {
       if (trigger === "update") {
         if (session?.name) token.name = session.name;
         if (session?.avatar) token.avatar = session.avatar;
+        if (session?.hasBadge !== undefined) token.hasBadge = session.hasBadge;
       }
 
       return token;
@@ -84,6 +87,7 @@ export const authOptions: AuthOptions = {
         session.user.id = token.id as string;
         session.user.avatar = token.avatar as string;
         session.user.name = token.name as string;
+        session.user.hasBadge = token.hasBadge as boolean;
       }
       return session;
     },
@@ -101,6 +105,7 @@ export const authOptions: AuthOptions = {
           
           // Gán lại id từ database
           user.id = result.userId.toString();
+          user.hasBadge = result.user.has_badge || false;
           return true;
         } catch (error: any) {
           if (error.message === 'Email đã được sử dụng') {
@@ -108,6 +113,7 @@ export const authOptions: AuthOptions = {
             const dbUser = await AuthService.getUserByEmail(user.email || '');
             if (dbUser) {
               user.id = dbUser.user_id.toString();
+              user.hasBadge = dbUser.has_badge || false;
               return true;
             }
           }
