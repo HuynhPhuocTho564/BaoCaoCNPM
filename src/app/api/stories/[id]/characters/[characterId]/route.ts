@@ -24,7 +24,7 @@ export async function PUT(
     const formData = await request.formData()
     const name = formData.get('name') as string
     const description = formData.get('description') as string
-    const avatarImage = formData.get('avatarImage') as File
+    const avatarImage = formData.get('avatarImage') as File | null
     const role = formData.get('role') as 'main' | 'supporting'
 
     // Kiểm tra nếu đổi thành nhân vật chính
@@ -59,7 +59,7 @@ export async function PUT(
     let avatarUrl = null
     let fileId = characters[0].avatar_file_id
 
-    if (avatarImage && avatarImage.size > 0) {
+    if (avatarImage instanceof File && avatarImage.size > 0) {
       // Upload ảnh mới
       const buffer = Buffer.from(await avatarImage.arrayBuffer())
       const { directLink, fileId: newFileId } = await GoogleDriveService.uploadFile(
@@ -67,15 +67,19 @@ export async function PUT(
         avatarImage.type,
         parseInt(storyId),
         'character-avatar',
-        parseInt(storyId),
         parseInt(characterId)
       )
       avatarUrl = directLink
       fileId = newFileId
 
-      // Xóa ảnh cũ
+      // Xóa ảnh cũ nếu tồn tại
       if (characters[0].avatar_file_id) {
-        await GoogleDriveService.deleteFile(characters[0].avatar_file_id)
+        try {
+          await GoogleDriveService.deleteFile(characters[0].avatar_file_id)
+        } catch (error) {
+          console.error("Lỗi khi xóa ảnh cũ:", error)
+          // Tiếp tục xử lý ngay cả khi không xóa được ảnh cũ
+        }
       }
     }
 
