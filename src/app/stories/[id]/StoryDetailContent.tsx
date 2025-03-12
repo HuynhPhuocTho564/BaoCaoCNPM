@@ -152,13 +152,20 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardFooter>
+                  <CardFooter className="flex gap-2">
                     <Button 
                       variant="outline" 
                       className="w-full"
                       onClick={() => router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}/edit`)}
                     >
                       Chỉnh sửa
+                    </Button>
+                    <Button
+                      variant="default"
+                      className="w-full" 
+                      onClick={() => router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}/write`)}
+                    >
+                      Viết truyện
                     </Button>
                   </CardFooter>
                 </Card>
