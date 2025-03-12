@@ -4,11 +4,12 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "../../../auth/[...nextauth]/route"
 import pool from "@/lib/db"
 
+// GET - Lấy danh sách chương
 export async function GET(
   request: Request,
   context: { params: { id: string } }
 ) {
-  const id = context.params.id
+  const { id } = context.params
   
   try {
     const session = await getServerSession(authOptions)
@@ -34,6 +35,45 @@ export async function GET(
     return NextResponse.json({ chapters })
   } catch (error) {
     console.error("Lỗi khi lấy danh sách chương:", error)
+    return NextResponse.json(
+      { error: "Đã có lỗi xảy ra" },
+      { status: 500 }
+    )
+  }
+}
+
+// POST - Tạo chương mới
+export async function POST(
+  request: Request,
+  context: { params: { id: string } }
+) {
+  const { id: storyId } = context.params
+  
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: "Không có quyền truy cập" },
+        { status: 401 }
+      )
+    }
+
+    const data = await request.json()
+    const { title, status = 'draft' } = data
+
+    // Tạo chương mới không cần order_number
+    const [result] = await pool.execute(
+      `INSERT INTO story_chapters (story_id, title, status) 
+       VALUES (?, ?, ?)`,
+      [storyId, title, status]
+    ) as any[]
+
+    return NextResponse.json({ 
+      message: "Tạo chương thành công",
+      chapterId: result.insertId
+    })
+  } catch (error) {
+    console.error("Lỗi khi tạo chương:", error)
     return NextResponse.json(
       { error: "Đã có lỗi xảy ra" },
       { status: 500 }

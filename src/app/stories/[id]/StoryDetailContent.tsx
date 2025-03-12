@@ -138,7 +138,7 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-xl">
-                        Chương {chapter.order_number}: {chapter.title}
+                        {chapter.title}
                       </CardTitle>
                       <div className="flex items-center gap-2">
                         {chapter.status === 'draft' ? (
@@ -156,9 +156,9 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
                     <Button 
                       variant="outline" 
                       className="w-full"
-                      onClick={() => router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}`)}
+                      onClick={() => router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}/edit`)}
                     >
-                      Xem & Chỉnh sửa
+                      Chỉnh sửa
                     </Button>
                   </CardFooter>
                 </Card>
