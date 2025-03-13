@@ -11,6 +11,7 @@ import TextareaAutosize from 'react-textarea-autosize'
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 
+<<<<<<< HEAD
 interface MainCategory {
   id: number
   name: string
@@ -21,15 +22,25 @@ interface Tag {
   id: number
   name: string
   description?: string
+=======
+interface Category {
+  id: number
+  name: string
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
 }
 
 export default function CreateStoryPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+<<<<<<< HEAD
   const [mainCategories, setMainCategories] = useState<MainCategory[]>([])
   const [tags, setTags] = useState<Tag[]>([])
   const [selectedMainCategory, setSelectedMainCategory] = useState<number | null>(null)
   const [selectedTags, setSelectedTags] = useState<number[]>([])
+=======
+  const [categories, setCategories] = useState<Category[]>([])
+  const [selectedCategories, setSelectedCategories] = useState<number[]>([])
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
   const [previewImage, setPreviewImage] = useState<string>("")
 
   useEffect(() => {
@@ -38,8 +49,12 @@ export default function CreateStoryPage() {
         const response = await fetch('/api/categories')
         const data = await response.json()
         if (response.ok) {
+<<<<<<< HEAD
           setMainCategories(data.mainCategories)
           setTags(data.tags)
+=======
+          setCategories(data.categories)
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
         }
       } catch (error) {
         toast.error('Không thể tải danh sách thể loại')
@@ -60,26 +75,43 @@ export default function CreateStoryPage() {
     }
   }
 
+<<<<<<< HEAD
   const toggleTag = (tagId: number) => {
     setSelectedTags(prev => 
       prev.includes(tagId)
         ? prev.filter(id => id !== tagId)
         : [...prev, tagId]
+=======
+  const toggleCategory = (categoryId: number) => {
+    setSelectedCategories(prev => 
+      prev.includes(categoryId)
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
     )
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+<<<<<<< HEAD
     if (!selectedMainCategory) {
       toast.error('Vui lòng chọn thể loại chính')
+=======
+    if (selectedCategories.length === 0) {
+      toast.error('Vui lòng chọn ít nhất một thể loại')
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
       return
     }
     setIsLoading(true)
 
     try {
       const formData = new FormData(e.currentTarget)
+<<<<<<< HEAD
       formData.set('mainCategoryId', selectedMainCategory.toString())
       formData.set('tagIds', JSON.stringify(selectedTags))
+=======
+      formData.set('categoryIds', JSON.stringify(selectedCategories))
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
       
       const response = await fetch('/api/stories/create', {
         method: 'POST',
@@ -165,6 +197,7 @@ export default function CreateStoryPage() {
             </div>
           </div>
 
+<<<<<<< HEAD
           <div className="space-y-6">
             <div className="space-y-2">
               <Label>Thể loại chính</Label>
@@ -203,6 +236,27 @@ export default function CreateStoryPage() {
                 Đã chọn {selectedTags.length} thẻ
               </p>
             </div>
+=======
+          <div className="space-y-3">
+            <Label>Thể loại</Label>
+            <div className="flex flex-wrap gap-3">
+              {categories.map((category) => (
+                <Badge
+                  key={category.id}
+                  variant={selectedCategories.includes(category.id) ? "default" : "outline"}
+                  className="cursor-pointer text-sm px-4 py-1 hover:bg-primary/10 hover:text-primary transition-colors"
+                  onClick={() => toggleCategory(category.id)}
+                >
+                  {category.name}
+                </Badge>
+              ))}
+            </div>
+            {categories.length > 0 && (
+              <p className="text-sm text-muted-foreground">
+                Đã chọn {selectedCategories.length} thể loại
+              </p>
+            )}
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
           </div>
 
           <div className="flex gap-4 pt-4">
@@ -217,7 +271,11 @@ export default function CreateStoryPage() {
             <Button 
               type="submit" 
               className="w-full"
+<<<<<<< HEAD
               disabled={isLoading || !selectedMainCategory}
+=======
+              disabled={isLoading || selectedCategories.length === 0}
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
             >
               {isLoading ? 'Đang tạo...' : 'Tạo truyện'}
             </Button>

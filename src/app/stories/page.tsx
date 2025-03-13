@@ -14,8 +14,14 @@ import Image from "next/image"
 interface Story {
   story_id: number
   title: string
+<<<<<<< HEAD
   cover_image: string | null
   main_category: string
+=======
+  description: string
+  cover_image: string | null
+  category_names: string[]
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
   status: 'draft' | 'published' | 'archived'
   view_count: number
   updated_at: string
@@ -106,13 +112,20 @@ export default function StoriesPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {stories.map((story) => (
+<<<<<<< HEAD
                 <Card key={story.story_id} className="flex flex-row h-[200px] overflow-hidden">
                   {story.cover_image && (
                     <div className="relative w-[150px] h-full flex-shrink-0">
+=======
+                <Card key={story.story_id} className="flex flex-col">
+                  {story.cover_image && (
+                    <div className="relative w-full h-48">
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
                       <Image
                         src={story.cover_image}
                         alt={story.title}
                         fill
+<<<<<<< HEAD
                         className="object-cover"
                       />
                     </div>
@@ -154,6 +167,55 @@ export default function StoriesPage() {
                       </Button>
                     </CardFooter>
                   </div>
+=======
+                        className="object-cover rounded-t-lg"
+                      />
+                    </div>
+                  )}
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-xl">{story.title}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(story.status)}
+                        <span className="text-sm text-muted-foreground">
+                          {getStatusText(story.status)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      {story.category_names.map((category, index) => (
+                        <span 
+                          key={index} 
+                          className="text-sm bg-primary/10 text-primary px-2 py-1 rounded"
+                        >
+                          {category}
+                        </span>
+                      ))}
+                      <span className="text-sm text-muted-foreground">
+                        {story.view_count} lượt xem
+                      </span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                    <p className="text-muted-foreground">{story.description}</p>
+                  </CardContent>
+                  <CardFooter className="flex justify-between gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => router.push(`/stories/${story.story_id}/edit`)}
+                    >
+                      Chỉnh sửa
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => router.push(`/stories/${story.story_id}`)}
+                    >
+                      Xem truyện
+                    </Button>
+                  </CardFooter>
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
                 </Card>
               ))}
             </div>

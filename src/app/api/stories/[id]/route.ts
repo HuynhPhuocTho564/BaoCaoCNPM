@@ -7,7 +7,11 @@ import { GoogleDriveService } from "@/services/google-drive.service";
 
 export async function GET(
   request: Request,
+<<<<<<< HEAD
   context: { params: { id: string } }
+=======
+  context: { params: Promise<{ id: string }> }
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
 ) {
   const { id } = await context.params;
   
@@ -20,6 +24,7 @@ export async function GET(
       );
     }
 
+<<<<<<< HEAD
     // Lấy thông tin truyện
     const [stories] = await pool.execute(`
       SELECT 
@@ -29,6 +34,15 @@ export async function GET(
       FROM stories s
       LEFT JOIN main_categories mc ON s.main_category_id = mc.category_id
       LEFT JOIN story_tag_relations str ON s.story_id = str.story_id
+=======
+    // Lấy thông tin truyện và categories
+    const [stories] = await pool.execute(`
+      SELECT 
+        s.*,
+        GROUP_CONCAT(scr.category_id) as category_ids
+      FROM stories s
+      LEFT JOIN story_category_relations scr ON s.story_id = scr.story_id
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
       WHERE s.story_id = ?
       GROUP BY s.story_id
     `, [id]) as any[];
@@ -40,10 +54,16 @@ export async function GET(
       );
     }
 
+<<<<<<< HEAD
     // Format dữ liệu
     const story = stories[0];
     story.tag_ids = story.tag_ids 
       ? story.tag_ids.split(',').map(Number)
+=======
+    const story = stories[0];
+    story.category_ids = story.category_ids 
+      ? story.category_ids.split(',').map(Number)
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
       : [];
 
     return NextResponse.json({ story });
@@ -58,7 +78,11 @@ export async function GET(
 
 export async function PUT(
   request: Request,
+<<<<<<< HEAD
   context: { params: { id: string } }
+=======
+  context: { params: Promise<{ id: string }> }
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
 ) {
   const { id } = await context.params;
   
@@ -74,14 +98,64 @@ export async function PUT(
     const formData = await request.formData();
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
+<<<<<<< HEAD
     const mainCategoryId = formData.get('mainCategoryId') as string;
     const tagIds = JSON.parse(formData.get('tagIds') as string);
     const coverImage = formData.get('coverImage') as File;
 
+=======
+    const categoryIds = JSON.parse(formData.get('categoryIds') as string);
+    const coverImage = formData.get('coverImage') as File | null;
+
+    // Lấy thông tin truyện cũ
+    const [stories] = await pool.execute(
+      'SELECT user_id, cover_file_id FROM stories WHERE story_id = ?',
+      [id]
+    ) as any[];
+
+    if (!stories.length) {
+      return NextResponse.json(
+        { error: "Không tìm thấy truyện" },
+        { status: 404 }
+      );
+    }
+
+    const story = stories[0];
+    let coverImageUrl = null;
+    let newFileId = null;
+
+    // Upload ảnh mới nếu có
+    if (coverImage && coverImage.size > 0) {
+      const buffer = Buffer.from(await coverImage.arrayBuffer());
+      const storyId = Number(id);
+      
+      if (isNaN(storyId)) {
+        throw new Error('Invalid story ID');
+      }
+
+      const { directLink, fileId } = await GoogleDriveService.uploadFile(
+        buffer,
+        coverImage.type,
+        story.user_id,
+        'cover',
+        storyId
+      );
+      coverImageUrl = directLink;
+      newFileId = fileId;
+
+      // Xóa ảnh cũ nếu có
+      if (story.cover_file_id) {
+        await GoogleDriveService.deleteFile(story.cover_file_id);
+      }
+    }
+
+    // Bắt đầu transaction
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
     const connection = await pool.getConnection();
     try {
       await connection.beginTransaction();
 
+<<<<<<< HEAD
       let coverImageUrl = null;
       let newFileId = null;
 
@@ -114,16 +188,22 @@ export async function PUT(
         }
       }
 
+=======
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
       // Cập nhật thông tin truyện
       await connection.execute(
         `UPDATE stories SET 
           title = ?,
           description = ?,
+<<<<<<< HEAD
           main_category_id = ?,
+=======
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
           ${coverImageUrl ? 'cover_image = ?, cover_file_id = ?,' : ''} 
           updated_at = CURRENT_TIMESTAMP
         WHERE story_id = ?`,
         coverImageUrl 
+<<<<<<< HEAD
           ? [title, description, mainCategoryId, coverImageUrl, newFileId, id]
           : [title, description, mainCategoryId, id]
       );
@@ -138,6 +218,22 @@ export async function PUT(
         await connection.execute(
           'INSERT INTO story_tag_relations (story_id, tag_id) VALUES (?, ?)',
           [id, tagId]
+=======
+          ? [title, description, coverImageUrl, newFileId, id]
+          : [title, description, id]
+      );
+
+      // Cập nhật categories
+      await connection.execute(
+        'DELETE FROM story_category_relations WHERE story_id = ?',
+        [id]
+      );
+
+      for (const categoryId of categoryIds) {
+        await connection.execute(
+          'INSERT INTO story_category_relations (story_id, category_id) VALUES (?, ?)',
+          [id, categoryId]
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
         );
       }
 
@@ -204,7 +300,11 @@ export async function DELETE(
 
       // Xóa các liên kết category
       await connection.execute(
+<<<<<<< HEAD
         'DELETE FROM story_tag_relations WHERE story_id = ?',
+=======
+        'DELETE FROM story_category_relations WHERE story_id = ?',
+>>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
         [id]
       );
 
