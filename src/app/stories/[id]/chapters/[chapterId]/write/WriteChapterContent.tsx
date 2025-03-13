@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { User, Pencil, Trash2 } from "lucide-react"
+import { User, Pencil, Trash2, ChevronLeft, Users } from "lucide-react"
 import { toast } from "sonner"
 import {
   Tabs,
@@ -169,6 +169,25 @@ export default function WriteChapterContent({
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="flex items-center gap-4 mb-6">
+        <Button
+          variant="outline"
+          onClick={() => router.push(`/stories/${storyId}?tab=chapters`)}
+          className="flex items-center gap-2"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Quản lý chương
+        </Button>
+        <Button
+          variant="outline" 
+          onClick={() => router.push(`/stories/${storyId}?tab=characters`)}
+          className="flex items-center gap-2"
+        >
+          <Users className="w-4 h-4" />
+          Quản lý nhân vật
+        </Button>
+      </div>
+
       <div className="flex flex-col h-[calc(100vh-200px)]">
         {/* Chat history */}
         <div className="flex-1 overflow-y-auto mb-4 space-y-4">

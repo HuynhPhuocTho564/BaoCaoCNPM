@@ -6,10 +6,11 @@ import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
-import { Plus, BookOpen, Clock, User } from "lucide-react"
+import { Plus, BookOpen, Clock, User, ChevronLeft } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
+import { Badge } from "@/components/ui/badge"
 
 interface Character {
   character_id: number
@@ -25,6 +26,7 @@ interface Chapter {
   order_number: number
   status: 'draft' | 'published'
   created_at: string
+  publish_order?: number
 }
 
 interface Story {
@@ -32,6 +34,8 @@ interface Story {
   title: string
   description: string
   status: 'draft' | 'published' | 'archived'
+  cover_image?: string
+  categories?: string[]
 }
 
 export default function StoryDetailContent({ storyId }: { storyId: string }) {
@@ -49,12 +53,27 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
   useEffect(() => {
     const fetchStoryData = async () => {
       try {
-        // Fetch story details
+        // Fetch story details và categories
         const storyResponse = await fetch(`/api/stories/${storyId}`)
         const storyData = await storyResponse.json()
         
         if (storyResponse.ok) {
-          setStory(storyData.story)
+          // Lấy categories từ API
+          const categoriesResponse = await fetch('/api/categories')
+          const categoriesData = await categoriesResponse.json()
+          
+          // Map category IDs với names
+          const categoryNames = storyData.story.category_ids
+            ?.map((id: number) => {
+              const category = categoriesData.categories.find((c: { id: number }) => c.id === id)
+              return category?.name
+            })
+            .filter(Boolean) || []
+
+          setStory({
+            ...storyData.story,
+            categories: categoryNames
+          })
         } else {
           toast.error('Không thể tải thông tin truyện')
         }
@@ -99,17 +118,60 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">{story.title}</h1>
-        <div className="flex gap-2">
-          <Button onClick={() => router.push(`/stories/${storyId}/edit`)}>
-            Chỉnh sửa truyện
-          </Button>
+      <div className="flex items-center gap-4 mb-8">
+        <Button
+          variant="outline"
+          onClick={() => router.push('/stories')}
+          className="flex items-center gap-2"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Danh sách truyện
+        </Button>
+      </div>
+
+      <div className="flex items-start gap-8 mb-8">
+        <div className="relative w-[200px] h-[280px] rounded-lg overflow-hidden bg-muted flex-shrink-0">
+          {story.cover_image ? (
+            <Image
+              src={story.cover_image}
+              alt={story.title}
+              fill
+              className="object-cover"
+              sizes="200px"
+              priority
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <BookOpen className="w-12 h-12 text-muted-foreground/30" />
+            </div>
+          )}
+        </div>
+        
+        <div className="flex-1">
+          <div className="flex justify-between items-start">
+            <h1 className="text-3xl font-bold">{story.title}</h1>
+            <Button onClick={() => router.push(`/stories/${storyId}/edit`)}>
+              Chỉnh sửa truyện
+            </Button>
+          </div>
+          {story.categories && story.categories.length > 0 && (
+            <div className="flex gap-2 mt-4 flex-wrap">
+              {story.categories.map((category, index) => (
+                <Badge 
+                  key={index} 
+                  variant="secondary"
+                  className="text-sm"
+                >
+                  {category}
+                </Badge>
+              ))}
+            </div>
+          )}
+          <p className="mt-4 text-muted-foreground">{story.description}</p>
         </div>
       </div>
 
       <Tabs defaultValue={currentTab} className="w-full" onValueChange={(value) => {
-        // Cập nhật URL khi chuyển tab mà không reload trang
         router.push(`/stories/${storyId}?tab=${value}`, { scroll: false })
       }}>
         <TabsList className="mb-8">
@@ -118,60 +180,116 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
         </TabsList>
 
         <TabsContent value="chapters">
-          <div className="mb-4 flex justify-between items-center">
-            <h2 className="text-2xl font-semibold">Các chương truyện</h2>
-            <Button onClick={() => router.push(`/stories/${storyId}/chapters/create`)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Thêm chương mới
-            </Button>
-          </div>
+          <Tabs defaultValue="published" className="w-full">
+            <div className="mb-4 flex justify-between items-center">
+              <h2 className="text-2xl font-semibold">Các chương truyện</h2>
+              <Button onClick={() => router.push(`/stories/${storyId}/chapters/create`)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Thêm chương mới
+              </Button>
+            </div>
 
-          <div className="grid gap-4">
-            {chapters.length === 0 ? (
-              <div className="text-center py-12">
-                <BookOpen className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
-                <p className="text-muted-foreground">Chưa có chương nào</p>
+            <TabsList className="mb-4">
+              <TabsTrigger value="published">Đã xuất bản</TabsTrigger>
+              <TabsTrigger value="draft">Bản nháp</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="published">
+              <div className="grid gap-4">
+                {chapters.filter(c => c.status === 'published').length === 0 ? (
+                  <div className="text-center py-12">
+                    <BookOpen className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
+                    <p className="text-muted-foreground">Chưa có chương nào được xuất bản</p>
+                  </div>
+                ) : (
+                  chapters
+                    .filter(c => c.status === 'published')
+                    .sort((a, b) => (a.publish_order || 0) - (b.publish_order || 0))
+                    .map((chapter) => (
+                      <Card key={chapter.chapter_id}>
+                        <CardHeader>
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-xl">
+                              {chapter.title}
+                            </CardTitle>
+                            <div className="flex items-center gap-2">
+                              <BookOpen className="w-4 h-4 text-green-500" />
+                              <span className="text-sm text-muted-foreground">
+                                Đã xuất bản
+                              </span>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardFooter className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            className="w-full"
+                            onClick={() => router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}/edit`)}
+                          >
+                            Chỉnh sửa
+                          </Button>
+                          <Button
+                            variant="default"
+                            className="w-full" 
+                            onClick={() => router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}/write`)}
+                          >
+                            Viết truyện
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    ))
+                )}
               </div>
-            ) : (
-              chapters.map((chapter) => (
-                <Card key={chapter.chapter_id}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-xl">
-                        {chapter.title}
-                      </CardTitle>
-                      <div className="flex items-center gap-2">
-                        {chapter.status === 'draft' ? (
-                          <Clock className="w-4 h-4 text-yellow-500" />
-                        ) : (
-                          <BookOpen className="w-4 h-4 text-green-500" />
-                        )}
-                        <span className="text-sm text-muted-foreground">
-                          {chapter.status === 'draft' ? 'Bản nháp' : 'Đã xuất bản'}
-                        </span>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardFooter className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}/edit`)}
-                    >
-                      Chỉnh sửa
-                    </Button>
-                    <Button
-                      variant="default"
-                      className="w-full" 
-                      onClick={() => router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}/write`)}
-                    >
-                      Viết truyện
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))
-            )}
-          </div>
+            </TabsContent>
+
+            <TabsContent value="draft">
+              <div className="grid gap-4">
+                {chapters.filter(c => c.status === 'draft').length === 0 ? (
+                  <div className="text-center py-12">
+                    <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
+                    <p className="text-muted-foreground">Chưa có bản nháp nào</p>
+                  </div>
+                ) : (
+                  chapters
+                    .filter(c => c.status === 'draft')
+                    .sort((a, b) => a.order_number - b.order_number)
+                    .map((chapter) => (
+                      <Card key={chapter.chapter_id}>
+                        <CardHeader>
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-xl">
+                              {chapter.title}
+                            </CardTitle>
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-yellow-500" />
+                              <span className="text-sm text-muted-foreground">
+                                Bản nháp
+                              </span>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardFooter className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            className="w-full"
+                            onClick={() => router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}/edit`)}
+                          >
+                            Chỉnh sửa
+                          </Button>
+                          <Button
+                            variant="default"
+                            className="w-full" 
+                            onClick={() => router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}/write`)}
+                          >
+                            Viết truyện
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    ))
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent value="characters">

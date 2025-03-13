@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "../../../../auth/[...nextauth]/route"
@@ -47,7 +48,7 @@ export async function PUT(
   request: Request,
   context: { params: { id: string, chapterId: string } }
 ) {
-  const { chapterId } = context.params
+  const { id: storyId, chapterId } = context.params
   
   try {
     const session = await getServerSession(authOptions)
@@ -58,15 +59,57 @@ export async function PUT(
       )
     }
 
-    const data = await request.json()
-    const { title, status } = data
+    const body = await request.json()
+    const { title, status } = body
 
-    await pool.execute(
-      `UPDATE story_chapters 
-       SET title = ?, status = ?, updated_at = CURRENT_TIMESTAMP
-       WHERE chapter_id = ?`,
-      [title, status, chapterId]
-    )
+    // Lấy thông tin chương hiện tại
+    const [currentChapter] = await pool.execute(
+      `SELECT status, publish_order FROM story_chapters WHERE chapter_id = ?`,
+      [chapterId]
+    ) as any[]
+
+    if (!currentChapter.length) {
+      return NextResponse.json(
+        { error: "Không tìm thấy chương" },
+        { status: 404 }
+      )
+    }
+
+    if (status === 'published') {
+      let publishOrder = currentChapter[0].publish_order
+
+      // Nếu chưa có publish_order hoặc đã bị reset về null
+      if (!publishOrder) {
+        // Lấy publish_order lớn nhất hiện tại
+        const [result] = await pool.execute(
+          `SELECT MAX(publish_order) as max_order 
+           FROM story_chapters 
+           WHERE story_id = ? AND status = 'published'`,
+          [storyId]
+        ) as any[]
+
+        publishOrder = (result[0].max_order || 0) + 1
+      }
+
+      // Cập nhật chapter với publish_order
+      await pool.execute(
+        `UPDATE story_chapters 
+         SET title = ?, 
+             status = ?,
+             publish_order = ?
+         WHERE chapter_id = ?`,
+        [title, status, publishOrder, chapterId]
+      )
+    } else {
+      // Khi chuyển sang draft, vẫn giữ publish_order
+      await pool.execute(
+        `UPDATE story_chapters 
+         SET title = ?, 
+             status = ?
+         WHERE chapter_id = ?`,
+        [title, status, chapterId]
+      )
+    }
 
     return NextResponse.json({ message: "Cập nhật chương thành công" })
   } catch (error) {

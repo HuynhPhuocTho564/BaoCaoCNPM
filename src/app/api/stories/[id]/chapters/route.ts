@@ -26,10 +26,16 @@ export async function GET(
         title,
         order_number,
         status,
+        publish_order,
         created_at
       FROM story_chapters
       WHERE story_id = ?
-      ORDER BY order_number ASC
+      ORDER BY 
+        CASE 
+          WHEN status = 'published' THEN publish_order
+          ELSE order_number
+        END ASC,
+        order_number ASC
     `, [id]) as any[]
 
     return NextResponse.json({ chapters })
@@ -61,11 +67,21 @@ export async function POST(
     const data = await request.json()
     const { title, status = 'draft' } = data
 
-    // Tạo chương mới không cần order_number
+    // Lấy order_number lớn nhất hiện tại
+    const [maxOrder] = await pool.execute(
+      `SELECT MAX(order_number) as max_order 
+       FROM story_chapters 
+       WHERE story_id = ?`,
+      [storyId]
+    ) as any[]
+
+    const nextOrder = (maxOrder[0].max_order || 0) + 1
+
+    // Tạo chương mới với order_number tự động tăng
     const [result] = await pool.execute(
-      `INSERT INTO story_chapters (story_id, title, status) 
-       VALUES (?, ?, ?)`,
-      [storyId, title, status]
+      `INSERT INTO story_chapters (story_id, title, status, order_number) 
+       VALUES (?, ?, ?, ?)`,
+      [storyId, title, status, nextOrder]
     ) as any[]
 
     return NextResponse.json({ 

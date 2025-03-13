@@ -144,6 +144,43 @@ function EditStoryContent({ storyId }: { storyId: string }) {
     }
   }
 
+  const checkPublishConditions = async (storyId: string) => {
+    try {
+      const response = await fetch(`/api/stories/${storyId}/chapters`)
+      const data = await response.json()
+      
+      if (response.ok) {
+        return data.chapters.some((chapter: any) => chapter.status === 'published')
+      }
+      return false
+    } catch (error) {
+      return false
+    }
+  }
+
+  const handlePublish = async () => {
+    try {
+      const canPublish = await checkPublishConditions(storyId)
+      if (!canPublish) {
+        toast.error('Cần có ít nhất một chương đã xuất bản để xuất bản truyện')
+        return
+      }
+
+      const response = await fetch(`/api/stories/${storyId}/publish`, {
+        method: 'PUT'
+      })
+
+      if (!response.ok) {
+        throw new Error('Lỗi khi xuất bản truyện')
+      }
+
+      toast.success('Xuất bản truyện thành công!')
+      router.refresh()
+    } catch (error: any) {
+      toast.error(error.message || 'Đã có lỗi xảy ra')
+    }
+  }
+
   if (!story) {
     return (
       <div className="container mx-auto px-4 py-12">
@@ -160,28 +197,51 @@ function EditStoryContent({ storyId }: { storyId: string }) {
       <div className="max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Chỉnh sửa truyện</h1>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive">Xóa truyện</Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Xác nhận xóa truyện</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Bạn có chắc chắn muốn xóa truyện này? Hành động này không thể hoàn tác.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Hủy</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDelete}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  Xóa
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <div className="flex gap-2">
+            {story.status === 'draft' && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="default">Xuất bản truyện</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Xác nhận xuất bản truyện</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Bạn có chắc chắn muốn xuất bản truyện này? Truyện sẽ được hiển thị công khai sau khi xuất bản.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Hủy</AlertDialogCancel>
+                    <AlertDialogAction onClick={handlePublish}>
+                      Xuất bản
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">Xóa truyện</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Xác nhận xóa truyện</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Bạn có chắc chắn muốn xóa truyện này? Hành động này không thể hoàn tác.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Hủy</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Xóa
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
         
         <form onSubmit={handleSubmit} className="space-y-6">
