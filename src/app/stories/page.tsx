@@ -14,14 +14,8 @@ import Image from "next/image"
 interface Story {
   story_id: number
   title: string
-<<<<<<< HEAD
   cover_image: string | null
   main_category: string
-=======
-  description: string
-  cover_image: string | null
-  category_names: string[]
->>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
   status: 'draft' | 'published' | 'archived'
   view_count: number
   updated_at: string
@@ -85,137 +79,93 @@ export default function StoriesPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 bg-background">
-        <div className="container mx-auto px-4 py-12">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold">Truyện của tôi</h1>
-            <Button onClick={() => router.push('/stories/create')}>
-              <Plus className="w-4 h-4 mr-2" />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-8 sm:mb-12">
+            <h1 className="text-2xl sm:text-3xl font-bold">Truyện của tôi</h1>
+            <Button onClick={() => router.push('/stories/create')} className="px-6">
+              <Plus className="w-4 h-4 mr-3" />
               Tạo truyện mới
             </Button>
           </div>
 
           {isLoadingStories ? (
-            <div className="text-center py-12">
+            <div className="text-center py-8 sm:py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
               <p className="mt-4 text-muted-foreground">Đang tải danh sách truyện...</p>
             </div>
           ) : stories.length === 0 ? (
-            <div className="text-center py-12">
-              <BookOpenText className="w-24 h-24 mx-auto mb-8 text-muted-foreground/30" />
-              <h2 className="text-2xl font-semibold mb-2">
+            <div className="text-center py-8 sm:py-12">
+              <BookOpenText className="w-16 h-16 sm:w-24 sm:h-24 mx-auto mb-6 sm:mb-8 text-muted-foreground/30" />
+              <h2 className="text-xl sm:text-2xl font-semibold mb-2">
                 Bạn chưa có truyện nào
               </h2>
-              <p className="text-muted-foreground">
+              <p className="text-sm sm:text-base text-muted-foreground px-4">
                 Hãy bắt đầu hành trình sáng tạo bằng việc tạo truyện đầu tiên của bạn
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {stories.map((story) => (
-<<<<<<< HEAD
-                <Card key={story.story_id} className="flex flex-row h-[200px] overflow-hidden">
-                  {story.cover_image && (
-                    <div className="relative w-[150px] h-full flex-shrink-0">
-=======
-                <Card key={story.story_id} className="flex flex-col">
-                  {story.cover_image && (
-                    <div className="relative w-full h-48">
->>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
+                <Card key={story.story_id} className="flex flex-row h-[140px] sm:h-[160px] overflow-hidden">
+                  <div className="relative w-[105px] sm:w-[120px] h-full flex-shrink-0">
+                    {story.cover_image ? (
                       <Image
                         src={story.cover_image}
                         alt={story.title}
                         fill
-<<<<<<< HEAD
+                        sizes="(max-width: 640px) 105px, 120px"
                         className="object-cover"
+                        style={{ aspectRatio: '3/4' }}
                       />
-                    </div>
-                  )}
-                  <div className="flex flex-col flex-1">
-                    <CardHeader className="pb-2">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg line-clamp-1 max-w-[60%]">{story.title}</CardTitle>
-                        <div className="flex items-center gap-1 shrink-0">
+                    ) : (
+                      <div className="w-full h-full bg-muted flex items-center justify-center" style={{ aspectRatio: '3/4' }}>
+                        <BookOpenText className="w-5 sm:w-6 h-5 sm:h-6 text-muted-foreground/30" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col flex-1 min-w-0 p-2 sm:p-4">
+                    <CardHeader className="p-0 space-y-1.5 sm:space-y-3">
+                      <div className="flex items-start gap-1.5 sm:gap-2">
+                        <div className="min-w-0 flex-1">
+                          <CardTitle className="text-xs sm:text-base truncate">
+                            {story.title}
+                          </CardTitle>
+                        </div>
+                        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 mt-0.5">
                           {getStatusIcon(story.status)}
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">
                             {getStatusText(story.status)}
                           </span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-sm bg-primary/20 text-primary px-2 py-1 rounded font-medium">
+                      <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+                        <span className="text-[10px] sm:text-xs bg-primary/20 text-primary px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-medium truncate max-w-[100px] sm:max-w-[130px]">
                           {story.main_category}
                         </span>
-                        <span className="text-sm text-muted-foreground shrink-0 ml-auto">
+                        <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0 ml-auto">
                           {story.view_count} lượt xem
                         </span>
                       </div>
                     </CardHeader>
-                    <CardFooter className="flex justify-between gap-2 pt-0 mt-auto">
+                    <CardFooter className="flex flex-row justify-between gap-1.5 sm:gap-2 p-0 mt-auto pt-1.5 sm:pt-3">
                       <Button 
                         variant="outline" 
-                        className="w-full"
+                        size="sm"
+                        className="flex-1 text-[10px] sm:text-xs h-6 sm:h-8 px-1.5 sm:px-3"
                         onClick={() => router.push(`/stories/${story.story_id}/edit`)}
                       >
                         Chỉnh sửa
                       </Button>
                       <Button 
-                        variant="outline" 
-                        className="w-full"
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-[10px] sm:text-xs h-6 sm:h-8 px-1.5 sm:px-3"
                         onClick={() => router.push(`/stories/${story.story_id}`)}
                       >
                         Xem truyện
                       </Button>
                     </CardFooter>
                   </div>
-=======
-                        className="object-cover rounded-t-lg"
-                      />
-                    </div>
-                  )}
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-xl">{story.title}</CardTitle>
-                      <div className="flex items-center gap-2">
-                        {getStatusIcon(story.status)}
-                        <span className="text-sm text-muted-foreground">
-                          {getStatusText(story.status)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 mt-2 flex-wrap">
-                      {story.category_names.map((category, index) => (
-                        <span 
-                          key={index} 
-                          className="text-sm bg-primary/10 text-primary px-2 py-1 rounded"
-                        >
-                          {category}
-                        </span>
-                      ))}
-                      <span className="text-sm text-muted-foreground">
-                        {story.view_count} lượt xem
-                      </span>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex-grow">
-                    <p className="text-muted-foreground">{story.description}</p>
-                  </CardContent>
-                  <CardFooter className="flex justify-between gap-2">
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => router.push(`/stories/${story.story_id}/edit`)}
-                    >
-                      Chỉnh sửa
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => router.push(`/stories/${story.story_id}`)}
-                    >
-                      Xem truyện
-                    </Button>
-                  </CardFooter>
->>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
                 </Card>
               ))}
             </div>

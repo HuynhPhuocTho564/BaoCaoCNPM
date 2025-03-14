@@ -33,9 +33,10 @@ interface Story {
   story_id: number
   title: string
   description: string
+  cover_image: string | null
+  main_category: string
+  tags: string[]
   status: 'draft' | 'published' | 'archived'
-  cover_image?: string
-  categories?: string[]
 }
 
 export default function StoryDetailContent({ storyId }: { storyId: string }) {
@@ -53,27 +54,12 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
   useEffect(() => {
     const fetchStoryData = async () => {
       try {
-        // Fetch story details và categories
+        // Fetch story details
         const storyResponse = await fetch(`/api/stories/${storyId}`)
         const storyData = await storyResponse.json()
         
         if (storyResponse.ok) {
-          // Lấy categories từ API
-          const categoriesResponse = await fetch('/api/categories')
-          const categoriesData = await categoriesResponse.json()
-          
-          // Map category IDs với names
-          const categoryNames = storyData.story.category_ids
-            ?.map((id: number) => {
-              const category = categoriesData.categories.find((c: { id: number }) => c.id === id)
-              return category?.name
-            })
-            .filter(Boolean) || []
-
-          setStory({
-            ...storyData.story,
-            categories: categoryNames
-          })
+          setStory(storyData.story)
         } else {
           toast.error('Không thể tải thông tin truyện')
         }
@@ -117,7 +103,7 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="flex items-center gap-4 mb-8">
         <Button
           variant="outline"
@@ -129,45 +115,52 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
         </Button>
       </div>
 
-      <div className="flex items-start gap-8 mb-8">
-        <div className="relative w-[200px] h-[280px] rounded-lg overflow-hidden bg-muted flex-shrink-0">
-          {story.cover_image ? (
-            <Image
-              src={story.cover_image}
-              alt={story.title}
-              fill
-              className="object-cover"
-              sizes="200px"
-              priority
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <BookOpen className="w-12 h-12 text-muted-foreground/30" />
-            </div>
-          )}
+      <div className="grid md:grid-cols-[300px_1fr] gap-8 mb-8">
+        <div className="space-y-4">
+          <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden bg-muted">
+            {story.cover_image ? (
+              <Image
+                src={story.cover_image}
+                alt={story.title}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 300px"
+                priority
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <BookOpen className="w-12 h-12 text-muted-foreground/30" />
+              </div>
+            )}
+          </div>
+          <Button 
+            onClick={() => router.push(`/stories/${storyId}/edit`)}
+            className="w-full"
+          >
+            Chỉnh sửa truyện
+          </Button>
         </div>
         
         <div className="flex-1">
-          <div className="flex justify-between items-start">
-            <h1 className="text-3xl font-bold">{story.title}</h1>
-            <Button onClick={() => router.push(`/stories/${storyId}/edit`)}>
-              Chỉnh sửa truyện
-            </Button>
+          <h1 className="text-3xl font-bold mb-4">{story.title}</h1>
+
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Badge variant="default" className="text-sm">
+              {story.main_category}
+            </Badge>
+
+            {story.tags && story.tags.map((tag, index) => (
+              <Badge 
+                key={index} 
+                variant="outline"
+                className="text-sm"
+              >
+                {tag}
+              </Badge>
+            ))}
           </div>
-          {story.categories && story.categories.length > 0 && (
-            <div className="flex gap-2 mt-4 flex-wrap">
-              {story.categories.map((category, index) => (
-                <Badge 
-                  key={index} 
-                  variant="secondary"
-                  className="text-sm"
-                >
-                  {category}
-                </Badge>
-              ))}
-            </div>
-          )}
-          <p className="mt-4 text-muted-foreground">{story.description}</p>
+
+          <p className="text-muted-foreground prose max-w-none">{story.description}</p>
         </div>
       </div>
 

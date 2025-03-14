@@ -24,8 +24,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Suspense } from "react"
+import { ChevronLeft } from "lucide-react"
 
-<<<<<<< HEAD
 interface MainCategory {
   id: number
   name: string
@@ -36,11 +36,6 @@ interface Tag {
   id: number
   name: string
   description?: string
-=======
-interface Category {
-  id: number
-  name: string
->>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
 }
 
 interface Story {
@@ -48,12 +43,8 @@ interface Story {
   title: string
   description: string
   cover_image: string | null
-<<<<<<< HEAD
   main_category_id: number
   tag_ids: number[]
-=======
-  category_ids: number[]
->>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
   status: 'draft' | 'published' | 'archived'
 }
 
@@ -61,22 +52,16 @@ function EditStoryContent({ storyId }: { storyId: string }) {
   const router = useRouter()
   const { data: session } = useSession()
   const [isLoading, setIsLoading] = useState(false)
-<<<<<<< HEAD
   const [mainCategories, setMainCategories] = useState<MainCategory[]>([])
   const [tags, setTags] = useState<Tag[]>([])
   const [selectedMainCategory, setSelectedMainCategory] = useState<number | null>(null)
   const [selectedTags, setSelectedTags] = useState<number[]>([])
-=======
-  const [categories, setCategories] = useState<Category[]>([])
-  const [selectedCategories, setSelectedCategories] = useState<number[]>([])
->>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
   const [story, setStory] = useState<Story | null>(null)
   const [previewImage, setPreviewImage] = useState<string>("")
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-<<<<<<< HEAD
         // Fetch categories và tags
         const categoriesResponse = await fetch('/api/categories')
         const categoriesData = await categoriesResponse.json()
@@ -96,21 +81,6 @@ function EditStoryContent({ storyId }: { storyId: string }) {
             : story.tag_ids?.split(',').map(Number) || []
           setSelectedTags(tagIds)
           setPreviewImage(story.cover_image || "")
-=======
-        // Fetch categories
-        const categoriesResponse = await fetch('/api/categories')
-        const categoriesData = await categoriesResponse.json()
-        setCategories(categoriesData.categories)
-
-        // Fetch story details
-        const storyResponse = await fetch(`/api/stories/${storyId}`)
-        const storyData = await storyResponse.json()
-        
-        if (storyResponse.ok) {
-          setStory(storyData.story)
-          setSelectedCategories(storyData.story.category_ids)
-          setPreviewImage(storyData.story.cover_image || "")
->>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
         } else {
           toast.error('Không thể tải thông tin truyện')
         }
@@ -124,19 +94,11 @@ function EditStoryContent({ storyId }: { storyId: string }) {
     }
   }, [session, storyId])
 
-<<<<<<< HEAD
   const toggleTag = (tagId: number) => {
     setSelectedTags(prev => 
       prev.includes(tagId)
         ? prev.filter(id => id !== tagId)
         : [...prev, tagId]
-=======
-  const toggleCategory = (categoryId: number) => {
-    setSelectedCategories(prev => 
-      prev.includes(categoryId)
-        ? prev.filter(id => id !== categoryId)
-        : [...prev, categoryId]
->>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
     )
   }
 
@@ -153,25 +115,16 @@ function EditStoryContent({ storyId }: { storyId: string }) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-<<<<<<< HEAD
     if (!selectedMainCategory) {
       toast.error('Vui lòng chọn thể loại chính')
-=======
-    if (selectedCategories.length === 0) {
-      toast.error('Vui lòng chọn ít nhất một thể loại')
->>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
       return
     }
     setIsLoading(true)
 
     try {
       const formData = new FormData(e.currentTarget)
-<<<<<<< HEAD
       formData.set('mainCategoryId', selectedMainCategory.toString())
       formData.set('tagIds', JSON.stringify(selectedTags))
-=======
-      formData.set('categoryIds', JSON.stringify(selectedCategories))
->>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
       
       const response = await fetch(`/api/stories/${storyId}`, {
         method: 'PUT',
@@ -184,10 +137,6 @@ function EditStoryContent({ storyId }: { storyId: string }) {
 
       toast.success('Cập nhật truyện thành công!')
       router.push('/stories')
-<<<<<<< HEAD
-=======
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
->>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
     } finally {
@@ -261,7 +210,16 @@ function EditStoryContent({ storyId }: { storyId: string }) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto px-4 py-8">
+      <Button
+        variant="outline"
+        onClick={() => router.back()}
+        className="flex items-center gap-2 mb-8"
+      >
+        <ChevronLeft className="w-4 h-4" />
+        Quay lại
+      </Button>
+
       <div className="max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Chỉnh sửa truyện</h1>
@@ -275,11 +233,7 @@ function EditStoryContent({ storyId }: { storyId: string }) {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Xác nhận xuất bản truyện</AlertDialogTitle>
                     <AlertDialogDescription>
-<<<<<<< HEAD
                       Bạn có chắc chắn muốn xuất bản truyện này?
-=======
-                      Bạn có chắc chắn muốn xuất bản truyện này? Truyện sẽ được hiển thị công khai sau khi xuất bản.
->>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -299,23 +253,12 @@ function EditStoryContent({ storyId }: { storyId: string }) {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Xác nhận xóa truyện</AlertDialogTitle>
                   <AlertDialogDescription>
-<<<<<<< HEAD
                     Hành động này không thể hoàn tác.
-=======
-                    Bạn có chắc chắn muốn xóa truyện này? Hành động này không thể hoàn tác.
->>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Hủy</AlertDialogCancel>
-<<<<<<< HEAD
                   <AlertDialogAction onClick={handleDelete}>
-=======
-                  <AlertDialogAction
-                    onClick={handleDelete}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
->>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
                     Xóa
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -354,10 +297,6 @@ function EditStoryContent({ storyId }: { storyId: string }) {
               id="title"
               name="title"
               defaultValue={story.title}
-<<<<<<< HEAD
-=======
-              placeholder="Nhập tiêu đề truyện"
->>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
               required
             />
           </div>
@@ -368,10 +307,6 @@ function EditStoryContent({ storyId }: { storyId: string }) {
               id="description"
               name="description"
               defaultValue={story.description}
-<<<<<<< HEAD
-=======
-              placeholder="Nhập mô tả ngắn về truyện"
->>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
               required
               minRows={3}
               className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -379,7 +314,6 @@ function EditStoryContent({ storyId }: { storyId: string }) {
           </div>
 
           <div className="space-y-2">
-<<<<<<< HEAD
             <Label>Thể loại chính</Label>
             <div className="flex flex-wrap gap-3">
               {mainCategories.map((category) => (
@@ -388,22 +322,11 @@ function EditStoryContent({ storyId }: { storyId: string }) {
                   variant={selectedMainCategory === category.id ? "default" : "outline"}
                   className="cursor-pointer text-sm px-4 py-1 hover:bg-primary/10 hover:text-primary transition-colors"
                   onClick={() => setSelectedMainCategory(category.id)}
-=======
-            <Label>Thể loại</Label>
-            <div className="flex flex-wrap gap-3">
-              {categories.map((category) => (
-                <Badge
-                  key={category.id}
-                  variant={selectedCategories.includes(category.id) ? "default" : "outline"}
-                  className="cursor-pointer text-sm px-4 py-1 hover:bg-primary/10 hover:text-primary transition-colors"
-                  onClick={() => toggleCategory(category.id)}
->>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
                 >
                   {category.name}
                 </Badge>
               ))}
             </div>
-<<<<<<< HEAD
             {!selectedMainCategory && (
               <p className="text-sm text-destructive">Vui lòng chọn một thể loại chính</p>
             )}
@@ -438,30 +361,6 @@ function EditStoryContent({ storyId }: { storyId: string }) {
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading ? "Đang cập nhật..." : "Cập nhật truyện"}
-=======
-            {categories.length > 0 && (
-              <p className="text-sm text-muted-foreground">
-                Đã chọn {selectedCategories.length} thể loại
-              </p>
-            )}
-          </div>
-
-          <div className="flex gap-4 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.back()}
-              className="w-full"
-            >
-              Hủy
-            </Button>
-            <Button 
-              type="submit" 
-              className="w-full"
-              disabled={isLoading || selectedCategories.length === 0}
-            >
-              {isLoading ? 'Đang cập nhật...' : 'Cập nhật truyện'}
->>>>>>> f175590d4ceac2a12d2829e33363f1c2e6143dbf
             </Button>
           </div>
         </form>
