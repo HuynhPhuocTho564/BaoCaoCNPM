@@ -141,11 +141,22 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
           </Button>
         </div>
         
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold mb-4">{story.title}</h1>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start gap-4 mb-4 min-w-0">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl sm:text-3xl font-bold truncate leading-normal py-0.5">
+                {story.title}
+              </h1>
+            </div>
+            <div className="shrink-0">
+              <Badge variant="outline" className="whitespace-nowrap">
+                {story.status === 'published' ? 'Đã xuất bản' : 'Bản nháp'}
+              </Badge>
+            </div>
+          </div>
 
           <div className="flex flex-wrap gap-2 mb-4">
-            <Badge variant="default" className="text-sm">
+            <Badge variant="default" className="text-sm truncate max-w-[200px] leading-relaxed">
               {story.main_category}
             </Badge>
 
@@ -153,14 +164,16 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
               <Badge 
                 key={index} 
                 variant="outline"
-                className="text-sm"
+                className="text-sm truncate max-w-[150px] leading-relaxed"
               >
                 {tag}
               </Badge>
             ))}
           </div>
 
-          <p className="text-muted-foreground prose max-w-none">{story.description}</p>
+          <p className="text-muted-foreground prose max-w-none line-clamp-3 leading-relaxed">
+            {story.description}
+          </p>
         </div>
       </div>
 
@@ -174,8 +187,8 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
 
         <TabsContent value="chapters">
           <Tabs defaultValue="published" className="w-full">
-            <div className="mb-4 flex justify-between items-center">
-              <h2 className="text-2xl font-semibold">Các chương truyện</h2>
+            <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
+              <h2 className="text-xl sm:text-2xl font-semibold">Các chương truyện</h2>
               <Button onClick={() => router.push(`/stories/${storyId}/chapters/create`)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Thêm chương mới
@@ -190,9 +203,9 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
             <TabsContent value="published">
               <div className="grid gap-4">
                 {chapters.filter(c => c.status === 'published').length === 0 ? (
-                  <div className="text-center py-12">
-                    <BookOpen className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
-                    <p className="text-muted-foreground">Chưa có chương nào được xuất bản</p>
+                  <div className="text-center py-8 sm:py-12">
+                    <BookOpen className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-3 sm:mb-4 text-muted-foreground/30" />
+                    <p className="text-sm sm:text-base text-muted-foreground">Chưa có chương nào được xuất bản</p>
                   </div>
                 ) : (
                   chapters
@@ -200,30 +213,30 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
                     .sort((a, b) => (a.publish_order || 0) - (b.publish_order || 0))
                     .map((chapter) => (
                       <Card key={chapter.chapter_id}>
-                        <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-xl">
+                        <CardHeader className="p-3 sm:p-6">
+                          <div className="flex items-center justify-between gap-2">
+                            <CardTitle className="text-base sm:text-xl truncate">
                               {chapter.title}
                             </CardTitle>
-                            <div className="flex items-center gap-2">
-                              <BookOpen className="w-4 h-4 text-green-500" />
-                              <span className="text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                              <BookOpen className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-green-500" />
+                              <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
                                 Đã xuất bản
                               </span>
                             </div>
                           </div>
                         </CardHeader>
-                        <CardFooter className="flex gap-2">
+                        <CardFooter className="flex gap-2 p-3 sm:p-6 pt-0 sm:pt-0">
                           <Button 
                             variant="outline" 
-                            className="w-full"
+                            className="flex-1 text-xs sm:text-sm h-8 sm:h-9"
                             onClick={() => router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}/edit`)}
                           >
                             Chỉnh sửa
                           </Button>
                           <Button
                             variant="default"
-                            className="w-full" 
+                            className="flex-1 text-xs sm:text-sm h-8 sm:h-9"
                             onClick={() => router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}/write`)}
                           >
                             Viết truyện
@@ -286,97 +299,95 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
         </TabsContent>
 
         <TabsContent value="characters">
-          <div className="mb-8">
-            <div className="mb-4 flex justify-between items-center">
-              <h2 className="text-2xl font-semibold">Nhân vật chính</h2>
-              {!characters.some(c => c.role === 'main') && (
-                <Button onClick={() => router.push(`/stories/${storyId}/characters/create?role=main`)}>
+          <div className="space-y-6 sm:space-y-8">
+            <div>
+              <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
+                <h2 className="text-xl sm:text-2xl font-semibold">Nhân vật chính</h2>
+                {!characters.some(c => c.role === 'main') && (
+                  <Button onClick={() => router.push(`/stories/${storyId}/characters/create?role=main`)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Thêm nhân vật chính
+                  </Button>
+                )}
+              </div>
+
+              <div className="grid gap-4 sm:gap-6">
+                {characters.filter(c => c.role === 'main').map((character) => (
+                  <Card key={character.character_id} className="flex flex-col sm:flex-row items-center sm:items-start p-3 sm:p-6">
+                    <div className="relative w-16 sm:w-20 h-16 sm:h-20 rounded-full overflow-hidden bg-muted flex-shrink-0">
+                      {character.avatar_image ? (
+                        <Image 
+                          src={character.avatar_image}
+                          alt={character.name}
+                          fill
+                          sizes="(max-width: 640px) 64px, 80px"
+                          className="object-cover"
+                          priority
+                        />
+                      ) : (
+                        <User className="w-8 sm:w-10 h-8 sm:h-10 m-4 sm:m-5 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex-grow min-w-0 mt-3 sm:mt-0 sm:ml-6 text-center sm:text-left w-full sm:w-auto">
+                      <CardTitle className="text-xl sm:text-2xl truncate px-4 sm:px-0">{character.name}</CardTitle>
+                      <p className="text-sm sm:text-base text-muted-foreground mt-1 line-clamp-2 px-4 sm:px-0">{character.description}</p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      className="w-full sm:w-auto mt-3 sm:mt-0 sm:ml-4 text-xs sm:text-sm h-8 sm:h-9"
+                      onClick={() => router.push(`/stories/${storyId}/characters/${character.character_id}/edit`)}
+                    >
+                      Chỉnh sửa
+                    </Button>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
+                <h2 className="text-xl sm:text-2xl font-semibold">Nhân vật phụ</h2>
+                <Button onClick={() => router.push(`/stories/${storyId}/characters/create?role=supporting`)}>
                   <Plus className="w-4 h-4 mr-2" />
-                  Thêm nhân vật chính
+                  Thêm nhân vật phụ
                 </Button>
-              )}
-            </div>
+              </div>
 
-            <div className="grid gap-6">
-              {characters.filter(c => c.role === 'main').map((character) => (
-                <Card key={character.character_id} className="flex flex-col">
-                  <CardHeader className="flex-row gap-4 items-center space-y-0">
-                    <div className="relative w-20 h-20 rounded-full overflow-hidden bg-muted flex-shrink-0">
-                      {character.avatar_image ? (
-                        <Image 
-                          src={character.avatar_image}
-                          alt={character.name}
-                          fill
-                          sizes="80px"
-                          className="object-cover"
-                          priority
-                        />
-                      ) : (
-                        <User className="w-10 h-10 m-5 text-muted-foreground" />
-                      )}
-                    </div>
-                    <div className="flex-grow">
-                      <CardTitle className="text-2xl">{character.name}</CardTitle>
-                      <p className="text-muted-foreground mt-1">{character.description}</p>
-                    </div>
-                  </CardHeader>
-                  <CardFooter className="mt-auto pt-6">
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => router.push(`/stories/${storyId}/characters/${character.character_id}/edit`)}
-                    >
-                      Chỉnh sửa
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div className="mb-4 flex justify-between items-center">
-              <h2 className="text-2xl font-semibold">Nhân vật phụ</h2>
-              <Button onClick={() => router.push(`/stories/${storyId}/characters/create?role=supporting`)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Thêm nhân vật phụ
-              </Button>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {characters.filter(c => c.role === 'supporting').map((character) => (
-                <Card key={character.character_id} className="flex flex-col">
-                  <CardHeader className="flex-row gap-4 items-center space-y-0">
-                    <div className="relative w-16 h-16 rounded-full overflow-hidden bg-muted flex-shrink-0">
-                      {character.avatar_image ? (
-                        <Image 
-                          src={character.avatar_image}
-                          alt={character.name}
-                          fill
-                          sizes="64px"
-                          className="object-cover"
-                          priority
-                        />
-                      ) : (
-                        <User className="w-8 h-8 m-4 text-muted-foreground" />
-                      )}
-                    </div>
-                    <CardTitle className="text-xl flex-grow">{character.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground line-clamp-3">{character.description}</p>
-                  </CardContent>
-                  <CardFooter className="mt-auto pt-6">
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => router.push(`/stories/${storyId}/characters/${character.character_id}/edit`)}
-                    >
-                      Chỉnh sửa
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {characters.filter(c => c.role === 'supporting').map((character) => (
+                  <Card key={character.character_id} className="flex flex-col p-3 sm:p-4">
+                    <CardHeader className="flex flex-row items-center space-y-0 p-0 mb-3">
+                      <div className="relative w-12 sm:w-16 h-12 sm:h-16 rounded-full overflow-hidden bg-muted flex-shrink-0">
+                        {character.avatar_image ? (
+                          <Image 
+                            src={character.avatar_image}
+                            alt={character.name}
+                            fill
+                            sizes="(max-width: 640px) 48px, 64px"
+                            className="object-cover"
+                            priority
+                          />
+                        ) : (
+                          <User className="w-6 sm:w-8 h-6 sm:h-8 m-3 sm:m-4 text-muted-foreground" />
+                        )}
+                      </div>
+                      <CardTitle className="text-lg sm:text-xl ml-3 truncate flex-1">{character.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-3">{character.description}</p>
+                    </CardContent>
+                    <CardFooter className="p-0 mt-3">
+                      <Button 
+                        variant="outline" 
+                        className="w-full text-xs sm:text-sm h-8 sm:h-9"
+                        onClick={() => router.push(`/stories/${storyId}/characters/${character.character_id}/edit`)}
+                      >
+                        Chỉnh sửa
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
             </div>
           </div>
         </TabsContent>
