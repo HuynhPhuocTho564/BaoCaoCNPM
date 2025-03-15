@@ -312,35 +312,42 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
               </div>
 
               <div className="grid gap-4 sm:gap-6">
-                {characters.filter(c => c.role === 'main').map((character) => (
-                  <Card key={character.character_id} className="flex flex-col sm:flex-row items-center sm:items-start p-3 sm:p-6">
-                    <div className="relative w-16 sm:w-20 h-16 sm:h-20 rounded-full overflow-hidden bg-muted flex-shrink-0">
-                      {character.avatar_image ? (
-                        <Image 
-                          src={character.avatar_image}
-                          alt={character.name}
-                          fill
-                          sizes="(max-width: 640px) 64px, 80px"
-                          className="object-cover"
-                          priority
-                        />
-                      ) : (
-                        <User className="w-8 sm:w-10 h-8 sm:h-10 m-4 sm:m-5 text-muted-foreground" />
-                      )}
-                    </div>
-                    <div className="flex-grow min-w-0 mt-3 sm:mt-0 sm:ml-6 text-center sm:text-left w-full sm:w-auto">
-                      <CardTitle className="text-xl sm:text-2xl truncate px-4 sm:px-0">{character.name}</CardTitle>
-                      <p className="text-sm sm:text-base text-muted-foreground mt-1 line-clamp-2 px-4 sm:px-0">{character.description}</p>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      className="w-full sm:w-auto mt-3 sm:mt-0 sm:ml-4 text-xs sm:text-sm h-8 sm:h-9"
-                      onClick={() => router.push(`/stories/${storyId}/characters/${character.character_id}/edit`)}
-                    >
-                      Chỉnh sửa
-                    </Button>
-                  </Card>
-                ))}
+                {characters.filter(c => c.role === 'main').length === 0 ? (
+                  <div className="text-center py-8 sm:py-12">
+                    <User className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-3 sm:mb-4 text-muted-foreground/30" />
+                    <p className="text-sm sm:text-base text-muted-foreground">Chưa có nhân vật chính nào</p>
+                  </div>
+                ) : (
+                  characters.filter(c => c.role === 'main').map((character) => (
+                    <Card key={character.character_id} className="flex flex-col sm:flex-row items-center sm:items-start p-3 sm:p-6">
+                      <div className="relative w-16 sm:w-20 h-16 sm:h-20 rounded-full overflow-hidden bg-muted flex-shrink-0">
+                        {character.avatar_image ? (
+                          <Image 
+                            src={character.avatar_image}
+                            alt={character.name}
+                            fill
+                            sizes="(max-width: 640px) 64px, 80px"
+                            className="object-cover"
+                            priority
+                          />
+                        ) : (
+                          <User className="w-8 sm:w-10 h-8 sm:h-10 m-4 sm:m-5 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div className="flex-grow min-w-0 mt-3 sm:mt-0 sm:ml-6 text-center sm:text-left w-full sm:w-auto">
+                        <CardTitle className="text-xl sm:text-2xl truncate px-4 sm:px-0">{character.name}</CardTitle>
+                        <p className="text-sm sm:text-base text-muted-foreground mt-1 line-clamp-2 px-4 sm:px-0">{character.description}</p>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        className="w-full sm:w-auto mt-3 sm:mt-0 sm:ml-4 text-xs sm:text-sm h-8 sm:h-9"
+                        onClick={() => router.push(`/stories/${storyId}/characters/${character.character_id}/edit`)}
+                      >
+                        Chỉnh sửa
+                      </Button>
+                    </Card>
+                  ))
+                )}
               </div>
             </div>
 
@@ -354,39 +361,46 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {characters.filter(c => c.role === 'supporting').map((character) => (
-                  <Card key={character.character_id} className="flex flex-col p-3 sm:p-4">
-                    <CardHeader className="flex flex-row items-center space-y-0 p-0 mb-3">
-                      <div className="relative w-12 sm:w-16 h-12 sm:h-16 rounded-full overflow-hidden bg-muted flex-shrink-0">
-                        {character.avatar_image ? (
-                          <Image 
-                            src={character.avatar_image}
-                            alt={character.name}
-                            fill
-                            sizes="(max-width: 640px) 48px, 64px"
-                            className="object-cover"
-                            priority
-                          />
-                        ) : (
-                          <User className="w-6 sm:w-8 h-6 sm:h-8 m-3 sm:m-4 text-muted-foreground" />
-                        )}
-                      </div>
-                      <CardTitle className="text-lg sm:text-xl ml-3 truncate flex-1">{character.name}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-3">{character.description}</p>
-                    </CardContent>
-                    <CardFooter className="p-0 mt-3">
-                      <Button 
-                        variant="outline" 
-                        className="w-full text-xs sm:text-sm h-8 sm:h-9"
-                        onClick={() => router.push(`/stories/${storyId}/characters/${character.character_id}/edit`)}
-                      >
-                        Chỉnh sửa
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
+                {characters.filter(c => c.role === 'supporting').length === 0 ? (
+                  <div className="text-center py-8 sm:py-12 col-span-full">
+                    <User className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-3 sm:mb-4 text-muted-foreground/30" />
+                    <p className="text-sm sm:text-base text-muted-foreground">Chưa có nhân vật phụ nào</p>
+                  </div>
+                ) : (
+                  characters.filter(c => c.role === 'supporting').map((character) => (
+                    <Card key={character.character_id} className="flex flex-col p-3 sm:p-4">
+                      <CardHeader className="flex flex-row items-center space-y-0 p-0 mb-3">
+                        <div className="relative w-12 sm:w-16 h-12 sm:h-16 rounded-full overflow-hidden bg-muted flex-shrink-0">
+                          {character.avatar_image ? (
+                            <Image 
+                              src={character.avatar_image}
+                              alt={character.name}
+                              fill
+                              sizes="(max-width: 640px) 48px, 64px"
+                              className="object-cover"
+                              priority
+                            />
+                          ) : (
+                            <User className="w-6 sm:w-8 h-6 sm:h-8 m-3 sm:m-4 text-muted-foreground" />
+                          )}
+                        </div>
+                        <CardTitle className="text-lg sm:text-xl ml-3 truncate flex-1">{character.name}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-3">{character.description}</p>
+                      </CardContent>
+                      <CardFooter className="p-0 mt-3">
+                        <Button 
+                          variant="outline" 
+                          className="w-full text-xs sm:text-sm h-8 sm:h-9"
+                          onClick={() => router.push(`/stories/${storyId}/characters/${character.character_id}/edit`)}
+                        >
+                          Chỉnh sửa
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))
+                )}
               </div>
             </div>
           </div>

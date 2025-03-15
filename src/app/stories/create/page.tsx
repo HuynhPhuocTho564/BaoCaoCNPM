@@ -100,123 +100,129 @@ export default function CreateStoryPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Tạo truyện mới</h1>
+    <div className="container mx-auto px-4 py-8 md:py-12">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8">Tạo truyện mới</h1>
         
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="space-y-4">
-            <Label htmlFor="coverImage">Ảnh bìa</Label>
-            <Input
-              id="coverImage"
-              name="coverImage"
-              type="file"
-              accept="image/*"
-              required
-              onChange={handleImageChange}
-              className="hidden"
-            />
-            <div 
-              className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary/50 transition-colors"
-              onClick={() => document.getElementById('coverImage')?.click()}
-            >
-              {previewImage ? (
-                <div className="relative aspect-[3/4] w-full max-w-sm mx-auto">
-                  <img
-                    src={previewImage}
-                    alt="Preview"
-                    className="rounded-lg object-cover w-full h-full"
+        <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
+          <div className="grid md:grid-cols-[300px,1fr] gap-6 md:gap-8">
+            {/* Cột trái - Ảnh bìa */}
+            <div className="space-y-4">
+              <Label htmlFor="coverImage">Ảnh bìa</Label>
+              <Input
+                id="coverImage"
+                name="coverImage"
+                type="file"
+                accept="image/*"
+                required
+                onChange={handleImageChange}
+                className="hidden"
+              />
+              <div 
+                className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                onClick={() => document.getElementById('coverImage')?.click()}
+              >
+                {previewImage ? (
+                  <div className="relative aspect-[3/4] w-full">
+                    <img
+                      src={previewImage}
+                      alt="Preview"
+                      className="rounded-lg object-cover w-full h-full"
+                    />
+                  </div>
+                ) : (
+                  <div className="py-12">
+                    <p className="text-muted-foreground">
+                      Nhấn để chọn ảnh bìa
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Định dạng: JPG, PNG (Tỷ lệ 3:4)
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Cột phải - Form thông tin */}
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="title">Tiêu đề</Label>
+                <Input
+                  id="title"
+                  name="title"
+                  placeholder="Nhập tiêu đề truyện"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Mô tả</Label>
+                <div className="relative">
+                  <TextareaAutosize
+                    id="description"
+                    name="description"
+                    placeholder="Nhập mô tả ngắn về truyện"
+                    required
+                    minRows={3}
+                    className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
-              ) : (
-                <div className="py-12">
-                  <p className="text-muted-foreground">
-                    Nhấn để chọn ảnh bìa
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Định dạng: JPG, PNG (Tỷ lệ 3:4)
+              </div>
+
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Label>Thể loại chính</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {mainCategories.map((category) => (
+                      <Badge
+                        key={category.id}
+                        variant={selectedMainCategory === category.id ? "default" : "outline"}
+                        className="cursor-pointer text-sm px-3 py-1 hover:bg-primary/10 hover:text-primary transition-colors"
+                        onClick={() => setSelectedMainCategory(category.id)}
+                      >
+                        {category.name}
+                      </Badge>
+                    ))}
+                  </div>
+                  {!selectedMainCategory && (
+                    <p className="text-sm text-destructive">Vui lòng chọn một thể loại chính</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Thẻ phụ</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {tags.map((tag) => (
+                      <Badge
+                        key={tag.id}
+                        variant={selectedTags.includes(tag.id) ? "default" : "outline"}
+                        className="cursor-pointer text-sm px-3 py-1 hover:bg-primary/10 hover:text-primary transition-colors"
+                        onClick={() => toggleTag(tag.id)}
+                      >
+                        {tag.name}
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Đã chọn {selectedTags.length} thẻ
                   </p>
                 </div>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="title">Tiêu đề</Label>
-            <Input
-              id="title"
-              name="title"
-              placeholder="Nhập tiêu đề truyện"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Mô tả</Label>
-            <div className="relative">
-              <TextareaAutosize
-                id="description"
-                name="description"
-                placeholder="Nhập mô tả ngắn về truyện"
-                required
-                minRows={3}
-                className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label>Thể loại chính</Label>
-              <div className="flex flex-wrap gap-3">
-                {mainCategories.map((category) => (
-                  <Badge
-                    key={category.id}
-                    variant={selectedMainCategory === category.id ? "default" : "outline"}
-                    className="cursor-pointer text-sm px-4 py-1 hover:bg-primary/10 hover:text-primary transition-colors"
-                    onClick={() => setSelectedMainCategory(category.id)}
-                  >
-                    {category.name}
-                  </Badge>
-                ))}
               </div>
-              {!selectedMainCategory && (
-                <p className="text-sm text-destructive">Vui lòng chọn một thể loại chính</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Thẻ phụ</Label>
-              <div className="flex flex-wrap gap-3">
-                {tags.map((tag) => (
-                  <Badge
-                    key={tag.id}
-                    variant={selectedTags.includes(tag.id) ? "default" : "outline"}
-                    className="cursor-pointer text-sm px-4 py-1 hover:bg-primary/10 hover:text-primary transition-colors"
-                    onClick={() => toggleTag(tag.id)}
-                  >
-                    {tag.name}
-                  </Badge>
-                ))}
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Đã chọn {selectedTags.length} thẻ
-              </p>
             </div>
           </div>
 
-          <div className="flex gap-4 pt-4">
+          <div className="flex justify-end gap-4 pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => router.back()}
-              className="w-full"
+              className="w-full md:w-auto md:min-w-[150px]"
             >
               Hủy
             </Button>
             <Button 
               type="submit" 
-              className="w-full"
+              className="w-full md:w-auto md:min-w-[150px]"
               disabled={isLoading || !selectedMainCategory}
             >
               {isLoading ? 'Đang tạo...' : 'Tạo truyện'}

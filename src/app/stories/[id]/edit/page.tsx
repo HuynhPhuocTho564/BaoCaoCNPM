@@ -210,7 +210,7 @@ function EditStoryContent({ storyId }: { storyId: string }) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 md:py-12">
       <Button
         variant="outline"
         onClick={() => router.back()}
@@ -220,14 +220,14 @@ function EditStoryContent({ storyId }: { storyId: string }) {
         Quay lại
       </Button>
 
-      <div className="max-w-2xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Chỉnh sửa truyện</h1>
-          <div className="flex gap-2">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold mb-4 sm:mb-0">Chỉnh sửa truyện</h1>
+          <div className="flex gap-2 w-full sm:w-auto">
             {story.status === 'draft' && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="default">Xuất bản truyện</Button>
+                  <Button variant="default" className="w-full sm:w-auto">Xuất bản truyện</Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
@@ -247,7 +247,7 @@ function EditStoryContent({ storyId }: { storyId: string }) {
             )}
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive">Xóa truyện</Button>
+                <Button variant="destructive" className="w-full sm:w-auto">Xóa truyện</Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
@@ -267,99 +267,129 @@ function EditStoryContent({ storyId }: { storyId: string }) {
           </div>
         </div>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="coverImage">Ảnh bìa</Label>
-            <div className="flex items-center gap-4">
-              {previewImage && (
-                <div className="relative w-32 h-32">
-                  <Image
-                    src={previewImage}
-                    alt="Preview"
-                    fill
-                    className="object-cover rounded-lg"
-                  />
-                </div>
-              )}
+        <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
+          <div className="grid md:grid-cols-[300px,1fr] gap-6 md:gap-8">
+            {/* Cột trái - Ảnh bìa */}
+            <div className="space-y-4">
+              <Label htmlFor="coverImage">Ảnh bìa</Label>
               <Input
                 id="coverImage"
                 name="coverImage"
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
+                className="hidden"
               />
+              <div 
+                className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                onClick={() => document.getElementById('coverImage')?.click()}
+              >
+                {previewImage ? (
+                  <div className="relative aspect-[3/4] w-full">
+                    <Image
+                      src={previewImage}
+                      alt="Preview"
+                      fill
+                      className="rounded-lg object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="py-12">
+                    <p className="text-muted-foreground">
+                      Nhấn để chọn ảnh bìa
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Định dạng: JPG, PNG (Tỷ lệ 3:4)
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Cột phải - Form thông tin */}
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="title">Tiêu đề</Label>
+                <Input
+                  id="title"
+                  name="title"
+                  defaultValue={story.title}
+                  placeholder="Nhập tiêu đề truyện"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Mô tả</Label>
+                <div className="relative">
+                  <TextareaAutosize
+                    id="description"
+                    name="description"
+                    defaultValue={story.description}
+                    placeholder="Nhập mô tả ngắn về truyện"
+                    required
+                    minRows={3}
+                    className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Label>Thể loại chính</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {mainCategories.map((category) => (
+                      <Badge
+                        key={category.id}
+                        variant={selectedMainCategory === category.id ? "default" : "outline"}
+                        className="cursor-pointer text-sm px-3 py-1 hover:bg-primary/10 hover:text-primary transition-colors"
+                        onClick={() => setSelectedMainCategory(category.id)}
+                      >
+                        {category.name}
+                      </Badge>
+                    ))}
+                  </div>
+                  {!selectedMainCategory && (
+                    <p className="text-sm text-destructive">Vui lòng chọn một thể loại chính</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Thẻ phụ</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {tags.map((tag) => (
+                      <Badge
+                        key={tag.id}
+                        variant={selectedTags.includes(tag.id) ? "default" : "outline"}
+                        className="cursor-pointer text-sm px-3 py-1 hover:bg-primary/10 hover:text-primary transition-colors"
+                        onClick={() => toggleTag(tag.id)}
+                      >
+                        {tag.name}
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Đã chọn {selectedTags.length} thẻ
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="title">Tiêu đề</Label>
-            <Input
-              id="title"
-              name="title"
-              defaultValue={story.title}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Mô tả</Label>
-            <TextareaAutosize
-              id="description"
-              name="description"
-              defaultValue={story.description}
-              required
-              minRows={3}
-              className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Thể loại chính</Label>
-            <div className="flex flex-wrap gap-3">
-              {mainCategories.map((category) => (
-                <Badge
-                  key={category.id}
-                  variant={selectedMainCategory === category.id ? "default" : "outline"}
-                  className="cursor-pointer text-sm px-4 py-1 hover:bg-primary/10 hover:text-primary transition-colors"
-                  onClick={() => setSelectedMainCategory(category.id)}
-                >
-                  {category.name}
-                </Badge>
-              ))}
-            </div>
-            {!selectedMainCategory && (
-              <p className="text-sm text-destructive">Vui lòng chọn một thể loại chính</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label>Thẻ phụ</Label>
-            <div className="flex flex-wrap gap-3">
-              {tags.map((tag) => (
-                <Badge
-                  key={tag.id}
-                  variant={selectedTags.includes(tag.id) ? "default" : "outline"}
-                  className="cursor-pointer text-sm px-4 py-1 hover:bg-primary/10 hover:text-primary transition-colors"
-                  onClick={() => toggleTag(tag.id)}
-                >
-                  {tag.name}
-                </Badge>
-              ))}
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Đã chọn {selectedTags.length} thẻ
-            </p>
-          </div>
-
-          <div className="flex gap-4 justify-end">
+          <div className="flex justify-end gap-4 pt-4">
             <Button
               type="button"
               variant="outline"
-              onClick={() => router.push('/stories')}
+              onClick={() => router.back()}
+              className="w-full md:w-auto md:min-w-[150px]"
             >
               Hủy
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button 
+              type="submit" 
+              className="w-full md:w-auto md:min-w-[150px]"
+              disabled={isLoading || !selectedMainCategory}
+            >
               {isLoading ? "Đang cập nhật..." : "Cập nhật truyện"}
             </Button>
           </div>
