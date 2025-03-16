@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { User, Pencil, Trash2, ChevronLeft, Users } from "lucide-react"
+import { User, Pencil, Trash2, ChevronLeft, Users, ChevronUp, ChevronDown } from "lucide-react"
 import { toast } from "sonner"
 import {
   Tabs,
@@ -39,6 +39,12 @@ interface Dialogue {
   order_number: number
 }
 
+interface Chapter {
+  chapter_id: number
+  title: string
+  status: 'draft' | 'published'
+}
+
 export default function WriteChapterContent({
   storyId,
   chapterId
@@ -56,6 +62,7 @@ export default function WriteChapterContent({
   const [editingDialogue, setEditingDialogue] = useState<Dialogue | null>(null)
   const [deleteDialogueId, setDeleteDialogueId] = useState<number | null>(null)
   const [editContent, setEditContent] = useState("")
+  const [chapter, setChapter] = useState<Chapter | null>(null)
 
   const mainCharacters = characters.filter(c => c.role === 'main')
   const supportingCharacters = characters.filter(c => c.role === 'supporting')
@@ -63,6 +70,12 @@ export default function WriteChapterContent({
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const chapterRes = await fetch(`/api/stories/${storyId}/chapters/${chapterId}`)
+        const chapterData = await chapterRes.json()
+        if (chapterRes.ok) {
+          setChapter(chapterData.chapter)
+        }
+
         const charactersRes = await fetch(`/api/stories/${storyId}/characters`)
         const charactersData = await charactersRes.json()
         if (charactersRes.ok) {
@@ -167,196 +180,277 @@ export default function WriteChapterContent({
     }
   }
 
+  const handleMoveDialogue = async (dialogueId: number, direction: 'up' | 'down') => {
+    const currentIndex = dialogues.findIndex(d => d.dialogue_id === dialogueId);
+    if (
+      (direction === 'up' && currentIndex === 0) || 
+      (direction === 'down' && currentIndex === dialogues.length - 1)
+    ) {
+      return;
+    }
+
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    const newDialogues = [...dialogues];
+    
+    try {
+      const response = await fetch(
+        `/api/stories/${storyId}/chapters/${chapterId}/dialogues/${dialogueId}/move`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            new_order: newDialogues[newIndex].order_number 
+          })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Lỗi khi di chuyển hội thoại');
+      }
+
+      // Hoán đổi vị trí trong mảng
+      [newDialogues[currentIndex], newDialogues[newIndex]] = 
+      [newDialogues[newIndex], newDialogues[currentIndex]];
+      
+      // Cập nhật order_number
+      const temp = newDialogues[currentIndex].order_number;
+      newDialogues[currentIndex].order_number = newDialogues[newIndex].order_number;
+      newDialogues[newIndex].order_number = temp;
+
+      setDialogues(newDialogues);
+      toast.success('Di chuyển hội thoại thành công');
+    } catch (error) {
+      toast.error('Đã có lỗi xảy ra');
+    }
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="flex items-center gap-4 mb-6">
-        <Button
-          variant="outline"
-          onClick={() => router.push(`/stories/${storyId}?tab=chapters`)}
-          className="flex items-center gap-2"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          Quản lý chương
-        </Button>
-        <Button
-          variant="outline" 
-          onClick={() => router.push(`/stories/${storyId}?tab=characters`)}
-          className="flex items-center gap-2"
-        >
-          <Users className="w-4 h-4" />
-          Quản lý nhân vật
-        </Button>
+    <div className="container mx-auto px-4 py-4 max-w-7xl min-h-screen">
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/stories/${storyId}?tab=chapters`)}
+            className="flex items-center gap-2 w-full sm:w-auto"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Quản lý chương
+          </Button>
+          <Button
+            variant="outline" 
+            onClick={() => router.push(`/stories/${storyId}?tab=characters`)}
+            className="flex items-center gap-2 w-full sm:w-auto"
+          >
+            <Users className="w-4 h-4" />
+            Quản lý nhân vật
+          </Button>
+        </div>
+        
+        <h1 className="text-2xl font-bold">{chapter?.title || 'Đang tải...'}</h1>
+        <div className="mt-1 text-muted-foreground">
+          {chapter?.status === 'published' ? 'Đã xuất bản' : 'Bản nháp'}
+        </div>
       </div>
 
-      <div className="flex flex-col h-[calc(100vh-200px)]">
+      {/* Main content */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Chat history */}
-        <div className="flex-1 overflow-y-auto mb-4 space-y-4">
-          {dialogues.map((dialogue) => {
-            const character = characters.find(c => c.character_id === dialogue.character_id)
-            const isMainCharacter = character?.role === 'main'
+        <div className="lg:col-span-8 flex flex-col h-[50vh] lg:h-[75vh] overflow-hidden">
+          <div className="flex-1 overflow-y-auto space-y-4 bg-background rounded-lg p-4 border">
+            {dialogues.map((dialogue) => {
+              const character = characters.find(c => c.character_id === dialogue.character_id)
+              const isMainCharacter = character?.role === 'main'
 
-            return (
-              <div 
-                key={dialogue.dialogue_id} 
-                className={`flex items-start gap-3 group ${isMainCharacter ? 'flex-row-reverse' : ''}`}
-              >
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-muted flex-shrink-0">
-                  {character?.avatar_image ? (
-                    <Image
-                      src={character.avatar_image}
-                      alt={character.name}
-                      width={40}
-                      height={40}
-                      className="object-cover"
-                    />
-                  ) : (
-                    <User className="w-6 h-6 m-2" />
-                  )}
-                </div>
-                <div className={`flex-1 ${isMainCharacter ? 'text-right' : ''}`}>
-                  <div className="font-semibold">{character?.name}</div>
-                  {editingDialogue?.dialogue_id === dialogue.dialogue_id ? (
-                    <div className="mt-1">
-                      <Textarea
-                        value={editContent}
-                        onChange={(e) => setEditContent(e.target.value)}
-                        className="min-h-[60px]"
+              return (
+                <div 
+                  key={dialogue.dialogue_id} 
+                  className={`flex items-start gap-3 group ${isMainCharacter ? 'flex-row-reverse' : ''}`}
+                >
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-muted flex-shrink-0">
+                    {character?.avatar_image ? (
+                      <Image
+                        src={character.avatar_image}
+                        alt={character.name}
+                        width={40}
+                        height={40}
+                        className="object-cover"
                       />
-                      <div className="flex gap-2 mt-2 justify-end">
-                        <Button
-                          size="sm"
-                          onClick={() => handleEditDialogue(dialogue.dialogue_id)}
-                        >
-                          Lưu
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setEditingDialogue(null)
-                            setEditContent("")
-                          }}
-                        >
-                          Hủy
-                        </Button>
+                    ) : (
+                      <User className="w-6 h-6 m-2" />
+                    )}
+                  </div>
+                  <div className={`flex-1 ${isMainCharacter ? 'text-right' : ''}`}>
+                    <div className="font-semibold">{character?.name}</div>
+                    {editingDialogue?.dialogue_id === dialogue.dialogue_id ? (
+                      <div className="mt-1">
+                        <Textarea
+                          value={editContent}
+                          onChange={(e) => setEditContent(e.target.value)}
+                          className="min-h-[60px]"
+                        />
+                        <div className="flex gap-2 mt-2 justify-end">
+                          <Button
+                            size="sm"
+                            onClick={() => handleEditDialogue(dialogue.dialogue_id)}
+                          >
+                            Lưu
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setEditingDialogue(null)
+                              setEditContent("")
+                            }}
+                          >
+                            Hủy
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className={`flex items-start gap-2 ${isMainCharacter ? 'flex-row-reverse' : ''}`}>
-                      <div className={`mt-1 inline-block p-3 rounded-lg ${
-                        isMainCharacter 
-                          ? 'bg-primary text-primary-foreground' 
-                          : 'bg-muted'
-                      }`}>
-                        {dialogue.content}
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        <div className={`mt-1 flex ${isMainCharacter ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`inline-block p-3 rounded-lg max-w-[80%] break-words whitespace-pre-wrap ${
+                            isMainCharacter 
+                              ? 'bg-primary text-primary-foreground' 
+                              : 'bg-muted'
+                          }`}>
+                            {dialogue.content}
+                          </div>
+                        </div>
+                        <div className={`opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 ${isMainCharacter ? 'justify-end' : 'justify-start'}`}>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            onClick={() => handleMoveDialogue(dialogue.dialogue_id, 'up')}
+                            disabled={dialogues.indexOf(dialogue) === 0}
+                          >
+                            <ChevronUp className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            onClick={() => handleMoveDialogue(dialogue.dialogue_id, 'down')}
+                            disabled={dialogues.indexOf(dialogue) === dialogues.length - 1}
+                          >
+                            <ChevronDown className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            onClick={() => {
+                              setEditingDialogue(dialogue)
+                              setEditContent(dialogue.content)
+                            }}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-destructive"
+                            onClick={() => setDeleteDialogueId(dialogue.dialogue_id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8"
-                          onClick={() => {
-                            setEditingDialogue(dialogue)
-                            setEditContent(dialogue.content)
-                          }}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-destructive"
-                          onClick={() => setDeleteDialogueId(dialogue.dialogue_id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
 
-        {/* Character selection and input */}
-        <div className="border-t pt-4">
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'main' | 'supporting')}>
-            <TabsList className="mb-4">
-              <TabsTrigger value="main">Nhân vật chính</TabsTrigger>
-              <TabsTrigger value="supporting">Nhân vật phụ</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="main">
-              <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-                {mainCharacters.map((character) => (
-                  <Button
-                    key={character.character_id}
-                    variant={selectedCharacter === character.character_id ? "default" : "outline"}
-                    className="flex items-center gap-2"
-                    onClick={() => setSelectedCharacter(character.character_id)}
-                  >
-                    <div className="w-6 h-6 rounded-full overflow-hidden bg-muted flex-shrink-0">
-                      {character.avatar_image ? (
-                        <Image
-                          src={character.avatar_image}
-                          alt={character.name}
-                          width={24}
-                          height={24}
-                          className="object-cover"
-                        />
-                      ) : (
-                        <User className="w-4 h-4 m-1" />
-                      )}
-                    </div>
-                    {character.name}
-                  </Button>
-                ))}
-              </div>
-            </TabsContent>
+        {/* Character selection and input panel */}
+        <div className="lg:col-span-4 flex flex-col h-[50vh] lg:h-[75vh] overflow-hidden">
+          <div className="bg-background rounded-lg p-4 border flex flex-col h-full">
+            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'main' | 'supporting')} className="flex flex-col h-full">
+              <TabsList className="mb-4 w-full flex-shrink-0">
+                <TabsTrigger value="main" className="flex-1">Nhân vật chính</TabsTrigger>
+                <TabsTrigger value="supporting" className="flex-1">Nhân vật phụ</TabsTrigger>
+              </TabsList>
+              
+              <div className="overflow-y-auto flex-1 min-h-0">
+                <TabsContent value="main" className="mt-0 h-full">
+                  <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
+                    {mainCharacters.map((character) => (
+                      <Button
+                        key={character.character_id}
+                        variant={selectedCharacter === character.character_id ? "default" : "outline"}
+                        className="flex items-center gap-2 w-full justify-start"
+                        onClick={() => setSelectedCharacter(character.character_id)}
+                      >
+                        <div className="w-8 h-8 rounded-full overflow-hidden bg-muted flex-shrink-0">
+                          {character.avatar_image ? (
+                            <Image
+                              src={character.avatar_image}
+                              alt={character.name}
+                              width={32}
+                              height={32}
+                              className="object-cover"
+                            />
+                          ) : (
+                            <User className="w-5 h-5 m-1.5" />
+                          )}
+                        </div>
+                        <span className="truncate">{character.name}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </TabsContent>
 
-            <TabsContent value="supporting">
-              <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-                {supportingCharacters.map((character) => (
-                  <Button
-                    key={character.character_id}
-                    variant={selectedCharacter === character.character_id ? "default" : "outline"}
-                    className="flex items-center gap-2"
-                    onClick={() => setSelectedCharacter(character.character_id)}
-                  >
-                    <div className="w-6 h-6 rounded-full overflow-hidden bg-muted flex-shrink-0">
-                      {character.avatar_image ? (
-                        <Image
-                          src={character.avatar_image}
-                          alt={character.name}
-                          width={24}
-                          height={24}
-                          className="object-cover"
-                        />
-                      ) : (
-                        <User className="w-4 h-4 m-1" />
-                      )}
-                    </div>
-                    {character.name}
-                  </Button>
-                ))}
+                <TabsContent value="supporting" className="mt-0 h-full">
+                  <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
+                    {supportingCharacters.map((character) => (
+                      <Button
+                        key={character.character_id}
+                        variant={selectedCharacter === character.character_id ? "default" : "outline"}
+                        className="flex items-center gap-2 w-full justify-start"
+                        onClick={() => setSelectedCharacter(character.character_id)}
+                      >
+                        <div className="w-8 h-8 rounded-full overflow-hidden bg-muted flex-shrink-0">
+                          {character.avatar_image ? (
+                            <Image
+                              src={character.avatar_image}
+                              alt={character.name}
+                              width={32}
+                              height={32}
+                              className="object-cover"
+                            />
+                          ) : (
+                            <User className="w-5 h-5 m-1.5" />
+                          )}
+                        </div>
+                        <span className="truncate">{character.name}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </TabsContent>
               </div>
-            </TabsContent>
-          </Tabs>
 
-          <div className="flex gap-2">
-            <Textarea
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Nhập nội dung hội thoại..."
-              className="flex-1"
-            />
-            <Button 
-              onClick={handleSendMessage}
-              disabled={isLoading || !selectedCharacter || !newMessage.trim()}
-            >
-              Gửi
-            </Button>
+              <div className="flex flex-col gap-2 mt-4 flex-shrink-0">
+                <Textarea
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Nhập nội dung hội thoại..."
+                  className="resize-none min-h-[120px]"
+                />
+                <Button 
+                  onClick={handleSendMessage}
+                  disabled={isLoading || !selectedCharacter || !newMessage.trim()}
+                >
+                  {isLoading ? "Đang gửi..." : "Gửi"}
+                </Button>
+              </div>
+            </Tabs>
           </div>
         </div>
       </div>
