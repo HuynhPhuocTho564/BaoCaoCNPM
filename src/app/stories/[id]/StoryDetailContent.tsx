@@ -48,8 +48,9 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
   const [characters, setCharacters] = useState<Character[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  // Lấy tab từ URL hoặc mặc định là 'chapters'
+  // Lấy cả tab và status từ URL
   const currentTab = searchParams.get('tab') || 'chapters'
+  const currentStatus = searchParams.get('status') || 'published'
 
   useEffect(() => {
     const fetchStoryData = async () => {
@@ -178,7 +179,12 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
       </div>
 
       <Tabs defaultValue={currentTab} className="w-full" onValueChange={(value) => {
-        router.push(`/stories/${storyId}?tab=${value}`, { scroll: false })
+        // Khi chuyển tab, giữ nguyên status nếu đang ở tab chapters
+        if (value === 'chapters') {
+          router.push(`/stories/${storyId}?tab=${value}&status=${currentStatus}`, { scroll: false })
+        } else {
+          router.push(`/stories/${storyId}?tab=${value}`, { scroll: false })
+        }
       }}>
         <TabsList className="mb-8">
           <TabsTrigger value="chapters">Danh sách chương</TabsTrigger>
@@ -186,7 +192,9 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
         </TabsList>
 
         <TabsContent value="chapters">
-          <Tabs defaultValue="published" className="w-full">
+          <Tabs defaultValue={currentStatus} className="w-full" onValueChange={(value) => {
+            router.push(`/stories/${storyId}?tab=chapters&status=${value}`, { scroll: false })
+          }}>
             <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
               <h2 className="text-xl sm:text-2xl font-semibold">Các chương truyện</h2>
               <Button onClick={() => router.push(`/stories/${storyId}/chapters/create`)}>

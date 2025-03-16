@@ -45,8 +45,8 @@ export default function CreateChapterContent({
       }
 
       toast.success('Tạo chương mới thành công!')
-      // Quay về tab chapters
-      router.push(`/stories/${storyId}?tab=chapters`)
+      // Chuyển hướng về đúng tab dựa vào status
+      router.push(`/stories/${storyId}?tab=chapters&status=${status}`)
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
     } finally {
@@ -54,50 +54,73 @@ export default function CreateChapterContent({
     }
   }
 
+  const handleCancel = () => {
+    // Quay về tab chapters với status mặc định là draft
+    router.push(`/stories/${storyId}?tab=chapters&status=draft`)
+  }
+
   return (
-    <div className="max-w-2xl mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-8">Tạo chương mới</h1>
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="title">Tiêu đề chương</Label>
-          <Input
-            id="title"
-            name="title"
-            placeholder="Nhập tiêu đề chương"
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="status">Trạng thái</Label>
-          <Select name="status" defaultValue="draft">
-            <SelectTrigger>
-              <SelectValue placeholder="Chọn trạng thái" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="draft">Bản nháp</SelectItem>
-              <SelectItem value="published">Xuất bản</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex gap-4">
-          <Button
-            type="submit"
-            disabled={isLoading}
-          >
-            {isLoading ? "Đang tạo..." : "Tạo chương"}
-          </Button>
+    <div className="container max-w-2xl mx-auto px-4 py-6 md:py-8">
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl md:text-2xl font-bold">Tạo chương mới</h1>
           <Button
             type="button"
-            variant="outline"
-            onClick={() => router.push(`/stories/${storyId}?tab=chapters`)}
+            variant="ghost"
+            size="sm"
+            onClick={handleCancel}
           >
-            Hủy
+            <span className="sr-only">Quay lại</span>
+            ← Quay lại
           </Button>
         </div>
-      </form>
+        
+        <div className="rounded-lg border bg-card p-4 md:p-6">
+          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="title">Tiêu đề chương</Label>
+              <Input
+                id="title"
+                name="title"
+                placeholder="Nhập tiêu đề chương"
+                required
+                className="w-full"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Trạng thái</Label>
+              <Select name="status" defaultValue="draft">
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Chọn trạng thái" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Bản nháp</SelectItem>
+                  <SelectItem value="published">Xuất bản</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full sm:w-auto"
+                onClick={handleCancel}
+              >
+                Hủy
+              </Button>
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full sm:w-auto"
+              >
+                {isLoading ? "Đang tạo..." : "Tạo chương"}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   )
 } 

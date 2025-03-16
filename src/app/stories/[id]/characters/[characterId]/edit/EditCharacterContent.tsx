@@ -208,18 +208,22 @@ export default function EditCharacterContent({
           <input type="hidden" name="role" value={character.role} />
         </div>
 
-        <div className="flex justify-center gap-4 pt-4">
+        <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
           <Button 
             type="submit" 
             disabled={isLoading}
-            className="min-w-[120px]"
+            className="w-full sm:w-auto sm:min-w-[120px]"
           >
             {isLoading ? 'Đang cập nhật...' : 'Cập nhật'}
           </Button>
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button type="button" variant="destructive" className="min-w-[120px]">
+              <Button 
+                type="button" 
+                variant="destructive" 
+                className="w-full sm:w-auto sm:min-w-[120px]"
+              >
                 Xóa nhân vật
               </Button>
             </AlertDialogTrigger>
@@ -243,7 +247,7 @@ export default function EditCharacterContent({
             type="button" 
             variant="outline"
             onClick={() => router.push(`/stories/${storyId}?tab=characters`)}
-            className="min-w-[120px]"
+            className="w-full sm:w-auto sm:min-w-[120px]"
           >
             Hủy
           </Button>
