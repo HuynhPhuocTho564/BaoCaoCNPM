@@ -53,45 +53,58 @@ export async function POST(
   request: Request,
   context: { params: { id: string } }
 ) {
-  const { id: storyId } = context.params
-  
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Không có quyền truy cập" },
-        { status: 401 }
-      )
+    const { id } = context.params
+    const { title, status } = await request.json()
+
+    // Bắt đầu transaction
+    const connection = await pool.getConnection()
+    await connection.beginTransaction()
+
+    try {
+      // Lấy order_number và publish_order lớn nhất hiện tại
+      const [maxOrders] = await connection.execute(`
+        SELECT 
+          MAX(order_number) as max_order,
+          MAX(CASE WHEN status = 'published' THEN publish_order ELSE 0 END) as max_publish
+        FROM story_chapters
+        WHERE story_id = ?
+      `, [id]) as any[]
+
+      const nextOrder = (maxOrders[0].max_order || 0) + 1
+      const nextPublish = status === 'published' ? (maxOrders[0].max_publish || 0) + 1 : null
+
+      // Tạo chương mới
+      const [result] = await connection.execute(`
+        INSERT INTO story_chapters (
+          story_id, 
+          title, 
+          status,
+          order_number,
+          publish_order,
+          created_at
+        ) VALUES (?, ?, ?, ?, ?, NOW())
+      `, [id, title, status, nextOrder, nextPublish]) as any[]
+
+      await connection.commit()
+
+      return NextResponse.json({
+        chapter_id: result.insertId,
+        title,
+        status,
+        order_number: nextOrder,
+        publish_order: nextPublish
+      })
+    } catch (error) {
+      await connection.rollback()
+      throw error
+    } finally {
+      connection.release()
     }
-
-    const data = await request.json()
-    const { title, status = 'draft' } = data
-
-    // Lấy order_number lớn nhất hiện tại
-    const [maxOrder] = await pool.execute(
-      `SELECT MAX(order_number) as max_order 
-       FROM story_chapters 
-       WHERE story_id = ?`,
-      [storyId]
-    ) as any[]
-
-    const nextOrder = (maxOrder[0].max_order || 0) + 1
-
-    // Tạo chương mới với order_number tự động tăng
-    const [result] = await pool.execute(
-      `INSERT INTO story_chapters (story_id, title, status, order_number) 
-       VALUES (?, ?, ?, ?)`,
-      [storyId, title, status, nextOrder]
-    ) as any[]
-
-    return NextResponse.json({ 
-      message: "Tạo chương thành công",
-      chapterId: result.insertId
-    })
   } catch (error) {
-    console.error("Lỗi khi tạo chương:", error)
+    console.error("Lỗi khi tạo chương mới:", error)
     return NextResponse.json(
-      { error: "Đã có lỗi xảy ra" },
+      { error: "Đã có lỗi xảy ra khi tạo chương mới" },
       { status: 500 }
     )
   }
