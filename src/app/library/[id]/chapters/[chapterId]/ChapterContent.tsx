@@ -108,7 +108,17 @@ export default function ChapterContent({
   }
 
   return (
-    <div className="container max-w-2xl mx-auto px-4 py-8">
+    <div 
+      className="container max-w-2xl mx-auto px-4 py-8 select-none"
+      onCopy={(e) => e.preventDefault()}
+      onCut={(e) => e.preventDefault()}
+      style={{ 
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none',
+        userSelect: 'none'
+      }}
+    >
       <Button
         variant="outline"
         onClick={() => router.push(`/library/${storyId}`)}
@@ -119,20 +129,21 @@ export default function ChapterContent({
       </Button>
 
       <h1 className="text-2xl sm:text-3xl font-bold mb-8 text-center">
-        Chương {chapter.publish_order}: {chapter.title}
+        {chapter.title}
       </h1>
 
       <div 
         ref={scrollableRef}
-        className="min-h-[50vh] max-h-[70vh] overflow-y-auto px-4 cursor-pointer"
+        className="min-h-[50vh] max-h-[70vh] overflow-y-auto px-4 cursor-pointer select-none"
         onClick={showNextDialogue}
+        onContextMenu={(e) => e.preventDefault()}
       >
         <div className="space-y-6">
           {chapter.dialogues.map((dialogue) => (
             visibleDialogues.includes(dialogue.dialogue_id) && (
               <div 
                 key={dialogue.dialogue_id} 
-                className={`flex gap-3 ${
+                className={`flex gap-3 select-none ${
                   dialogue.character.role === 'main' 
                     ? 'flex-row-reverse' 
                     : 'flex-row'
@@ -146,6 +157,7 @@ export default function ChapterContent({
                       width={32}
                       height={32}
                       className="object-cover"
+                      draggable="false"
                     />
                   ) : (
                     <User className="w-5 h-5 m-1.5" />
@@ -155,7 +167,7 @@ export default function ChapterContent({
                   <div className={`font-medium mb-1 ${dialogue.character.role === 'main' ? 'text-primary' : ''}`}>
                     {dialogue.character.name}
                   </div>
-                  <p className={`inline-block px-4 py-2 rounded-lg ${
+                  <p className={`inline-block px-4 py-2 rounded-lg select-none ${
                     dialogue.character.role === 'main'
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-muted'

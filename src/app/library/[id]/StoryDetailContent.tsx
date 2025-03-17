@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { BookOpenText, Clock } from "lucide-react"
+import { BookOpenText, Clock, Eye } from "lucide-react"
 import { Card, CardHeader } from "@/components/ui/card"
 
 interface Story {
@@ -14,6 +14,7 @@ interface Story {
   main_category: string
   view_count: number
   updated_at: string
+  tags: string[]
 }
 
 interface Chapter {
@@ -68,7 +69,7 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid md:grid-cols-[300px_1fr] gap-8">
-        {/* Thông tin truyện */}
+        {/* Thông tin truyện - cột trái */}
         <div className="space-y-4">
           <div className="relative aspect-[3/4] w-full rounded-lg overflow-hidden">
             {story.cover_image ? (
@@ -85,47 +86,68 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Thông tin truyện - cột phải */}
+        <div className="space-y-6">
           <div>
             <h1 className="text-2xl font-bold mb-2">{story.title}</h1>
             <p className="text-muted-foreground">{story.description}</p>
           </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="bg-primary/20 text-primary px-2.5 py-1 rounded-full">
-              {story.main_category}
-            </span>
-            <span className="text-muted-foreground">
-              {story.view_count} lượt xem
-            </span>
-          </div>
-        </div>
+          
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium">
+                {story.main_category}
+              </span>
+              <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                <Eye className="w-4 h-4" />
+                {story.view_count} lượt xem
+              </span>
+            </div>
 
-        {/* Danh sách chương */}
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Danh sách chương</h2>
-          <div className="space-y-3">
-            {chapters.length === 0 ? (
-              <div className="text-center py-12">
-                <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
-                <p className="text-muted-foreground">Chưa có chương nào được xuất bản</p>
+            {story.tags && story.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {story.tags.map((tag, index) => (
+                  <span 
+                    key={index}
+                    className="bg-muted/50 text-muted-foreground hover:bg-muted transition-colors px-3 py-1.5 rounded-full text-sm"
+                  >
+                    #{tag}
+                  </span>
+                ))}
               </div>
-            ) : (
-              chapters.map((chapter) => (
-                <Card 
-                  key={chapter.chapter_id}
-                  className="cursor-pointer hover:border-primary/50 transition-colors"
-                  onClick={() => router.push(`/library/${storyId}/chapters/${chapter.chapter_id}`)}
-                >
-                  <CardHeader className="p-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-medium">
-                        Chương {chapter.publish_order}: {chapter.title}
-                      </h3>
-                    </div>
-                  </CardHeader>
-                </Card>
-              ))
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Danh sách chương */}
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">Danh sách chương</h2>
+        <div className="space-y-3">
+          {chapters.length === 0 ? (
+            <div className="text-center py-12">
+              <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
+              <p className="text-muted-foreground">Chưa có chương nào được xuất bản</p>
+            </div>
+          ) : (
+            chapters.map((chapter) => (
+              <Card 
+                key={chapter.chapter_id}
+                className="cursor-pointer hover:border-primary/50 transition-colors"
+                onClick={() => router.push(`/library/${storyId}/chapters/${chapter.chapter_id}`)}
+              >
+                <CardHeader className="p-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium">
+                      {chapter.title}
+                    </h3>
+                  </div>
+                </CardHeader>
+              </Card>
+            ))
+          )}
         </div>
       </div>
     </div>
