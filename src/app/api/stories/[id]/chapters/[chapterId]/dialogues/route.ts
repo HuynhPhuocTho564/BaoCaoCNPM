@@ -7,9 +7,9 @@ import pool from "@/lib/db"
 // GET - Lấy danh sách dialogue
 export async function GET(
   request: Request,
-  context: { params: { id: string, chapterId: string } }
+  { params }: { params: { id: string; chapterId: string } }
 ) {
-  const { chapterId } = context.params
+  const { chapterId } = params
   
   try {
     const session = await getServerSession(authOptions)
@@ -21,9 +21,10 @@ export async function GET(
     }
 
     const [dialogues] = await pool.execute(`
-      SELECT * FROM chapter_dialogues 
+      SELECT dialogue_id, character_id, content, order_number, type
+      FROM chapter_dialogues
       WHERE chapter_id = ?
-      ORDER BY order_number ASC
+      ORDER BY order_number
     `, [chapterId]) as any[]
 
     return NextResponse.json({ dialogues })
@@ -39,9 +40,9 @@ export async function GET(
 // POST - Thêm dialogue mới
 export async function POST(
   request: Request,
-  context: { params: { id: string, chapterId: string } }
+  { params }: { params: { id: string; chapterId: string } }
 ) {
-  const { chapterId } = context.params
+  const { chapterId } = params
   
   try {
     const session = await getServerSession(authOptions)
@@ -53,12 +54,12 @@ export async function POST(
     }
 
     const data = await request.json()
-    const { character_id, content, order_number } = data
+    const { character_id, content, order_number, type = 'dialogue' } = data
 
     const [result] = await pool.execute(`
-      INSERT INTO chapter_dialogues (chapter_id, character_id, content, order_number)
-      VALUES (?, ?, ?, ?)
-    `, [chapterId, character_id, content, order_number]) as any[]
+      INSERT INTO chapter_dialogues (chapter_id, character_id, content, order_number, type)
+      VALUES (?, ?, ?, ?, ?)
+    `, [chapterId, character_id, content, order_number, type]) as any[]
 
     const [dialogue] = await pool.execute(`
       SELECT * FROM chapter_dialogues WHERE dialogue_id = ?

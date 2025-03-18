@@ -34,9 +34,10 @@ interface Character {
 
 interface Dialogue {
   dialogue_id: number
-  character_id: number
+  character_id: number | null
   content: string
   order_number: number
+  type?: 'dialogue' | 'aside'
 }
 
 interface Chapter {
@@ -63,6 +64,7 @@ export default function WriteChapterContent({
   const [deleteDialogueId, setDeleteDialogueId] = useState<number | null>(null)
   const [editContent, setEditContent] = useState("")
   const [chapter, setChapter] = useState<Chapter | null>(null)
+  const [messageType, setMessageType] = useState<'dialogue' | 'aside'>('dialogue')
 
   const mainCharacters = characters.filter(c => c.role === 'main')
   const supportingCharacters = characters.filter(c => c.role === 'supporting')
@@ -96,8 +98,8 @@ export default function WriteChapterContent({
   }, [storyId, chapterId])
 
   const handleSendMessage = async () => {
-    if (!selectedCharacter || !newMessage.trim()) {
-      toast.error('Vui lòng chọn nhân vật và nhập nội dung')
+    if ((!selectedCharacter && messageType === 'dialogue') || !newMessage.trim()) {
+      toast.error('Vui lòng điền đầy đủ thông tin')
       return
     }
 
@@ -109,9 +111,10 @@ export default function WriteChapterContent({
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          character_id: selectedCharacter,
+          character_id: messageType === 'aside' ? null : selectedCharacter,
           content: newMessage,
-          order_number: dialogues.length + 1
+          order_number: dialogues.length + 1,
+          type: messageType
         })
       })
 
@@ -261,6 +264,83 @@ export default function WriteChapterContent({
         <div className="lg:col-span-8 flex flex-col h-[50vh] lg:h-[75vh] overflow-hidden">
           <div className="flex-1 overflow-y-auto space-y-4 bg-background rounded-lg p-4 border">
             {dialogues.map((dialogue) => {
+              if (dialogue.type === 'aside') {
+                return (
+                  <div key={dialogue.dialogue_id} className="my-4 px-8 text-center text-muted-foreground italic group">
+                    {editingDialogue?.dialogue_id === dialogue.dialogue_id ? (
+                      <div className="mt-1">
+                        <Textarea
+                          value={editContent}
+                          onChange={(e) => setEditContent(e.target.value)}
+                          className="min-h-[60px] text-center italic"
+                        />
+                        <div className="flex gap-2 mt-2 justify-center">
+                          <Button
+                            size="sm"
+                            onClick={() => handleEditDialogue(dialogue.dialogue_id)}
+                          >
+                            Lưu
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setEditingDialogue(null)
+                              setEditContent("")
+                            }}
+                          >
+                            Hủy
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div>{dialogue.content}</div>
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 justify-center mt-2">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            onClick={() => handleMoveDialogue(dialogue.dialogue_id, 'up')}
+                            disabled={dialogues.indexOf(dialogue) === 0}
+                          >
+                            <ChevronUp className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            onClick={() => handleMoveDialogue(dialogue.dialogue_id, 'down')}
+                            disabled={dialogues.indexOf(dialogue) === dialogues.length - 1}
+                          >
+                            <ChevronDown className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            onClick={() => {
+                              setEditingDialogue(dialogue)
+                              setEditContent(dialogue.content)
+                            }}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-destructive"
+                            onClick={() => setDeleteDialogueId(dialogue.dialogue_id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )
+              }
+
               const character = characters.find(c => c.character_id === dialogue.character_id)
               const isMainCharacter = character?.role === 'main'
 
@@ -437,15 +517,31 @@ export default function WriteChapterContent({
               </div>
 
               <div className="flex flex-col gap-2 mt-4 flex-shrink-0">
+                <div className="flex gap-2">
+                  <Button
+                    variant={messageType === 'dialogue' ? "default" : "outline"}
+                    onClick={() => setMessageType('dialogue')}
+                    size="sm"
+                  >
+                    Hội thoại
+                  </Button>
+                  <Button
+                    variant={messageType === 'aside' ? "default" : "outline"}
+                    onClick={() => setMessageType('aside')}
+                    size="sm"
+                  >
+                    Aside
+                  </Button>
+                </div>
                 <Textarea
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Nhập nội dung hội thoại..."
+                  placeholder={messageType === 'aside' ? "Nhập nội dung aside..." : "Nhập nội dung hội thoại..."}
                   className="resize-none min-h-[120px]"
                 />
                 <Button 
                   onClick={handleSendMessage}
-                  disabled={isLoading || !selectedCharacter || !newMessage.trim()}
+                  disabled={isLoading || (!selectedCharacter && messageType === 'dialogue') || !newMessage.trim()}
                 >
                   {isLoading ? "Đang gửi..." : "Gửi"}
                 </Button>

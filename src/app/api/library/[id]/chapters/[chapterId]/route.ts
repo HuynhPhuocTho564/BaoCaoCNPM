@@ -20,11 +20,15 @@ export async function GET(
             'character_id', d.character_id,
             'content', d.content,
             'order_number', d.order_number,
-            'character', JSON_OBJECT(
-              'character_id', c.character_id,
-              'name', c.name,
-              'avatar_image', c.avatar_image,
-              'role', c.role
+            'type', d.type,
+            'character', IF(d.character_id IS NOT NULL, 
+              JSON_OBJECT(
+                'character_id', c.character_id,
+                'name', c.name,
+                'avatar_image', c.avatar_image,
+                'role', c.role
+              ),
+              NULL
             )
           )
         ) as dialogues

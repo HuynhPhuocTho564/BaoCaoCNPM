@@ -15,10 +15,11 @@ interface Character {
 
 interface Dialogue {
   dialogue_id: number
-  character_id: number
+  character_id: number | null
   content: string
   order_number: number
-  character: Character
+  character?: Character
+  type?: 'dialogue' | 'aside'
 }
 
 interface Chapter {
@@ -90,6 +91,9 @@ export default function ChapterContent({
     }
   }
 
+  const isChapterCompleted = chapter?.dialogues && 
+    visibleDialogues.length === chapter.dialogues.length
+
   useEffect(() => {
     if (scrollableRef.current) {
       scrollableRef.current.scrollTop = scrollableRef.current.scrollHeight;
@@ -141,44 +145,58 @@ export default function ChapterContent({
         <div className="space-y-6">
           {chapter.dialogues.map((dialogue) => (
             visibleDialogues.includes(dialogue.dialogue_id) && (
-              <div 
-                key={dialogue.dialogue_id} 
-                className={`flex gap-3 select-none ${
-                  dialogue.character.role === 'main' 
-                    ? 'flex-row-reverse' 
-                    : 'flex-row'
-                }`}
-              >
-                <div className="w-8 h-8 rounded-full overflow-hidden bg-muted flex-shrink-0">
-                  {dialogue.character.avatar_image ? (
-                    <Image
-                      src={dialogue.character.avatar_image}
-                      alt={dialogue.character.name}
-                      width={32}
-                      height={32}
-                      className="object-cover"
-                      draggable="false"
-                    />
-                  ) : (
-                    <User className="w-5 h-5 m-1.5" />
-                  )}
-                </div>
-                <div className={`flex-1 ${dialogue.character.role === 'main' ? 'text-right' : ''}`}>
-                  <div className={`font-medium mb-1 ${dialogue.character.role === 'main' ? 'text-primary' : ''}`}>
-                    {dialogue.character.name}
+              <div key={dialogue.dialogue_id}>
+                {dialogue.type === 'aside' ? (
+                  <div className="my-4 px-8">
+                    <div className="text-center text-muted-foreground italic">
+                      {dialogue.content}
+                    </div>
                   </div>
-                  <p className={`inline-block px-4 py-2 rounded-lg select-none ${
-                    dialogue.character.role === 'main'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
-                  }`}>
-                    {dialogue.content}
-                  </p>
-                </div>
+                ) : (
+                  <div 
+                    className={`flex items-start gap-3 ${
+                      dialogue.character?.role === 'main' 
+                        ? 'flex-row-reverse' 
+                        : 'flex-row'
+                    }`}
+                  >
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-muted flex-shrink-0">
+                      {dialogue.character?.avatar_image ? (
+                        <Image
+                          src={dialogue.character.avatar_image}
+                          alt={dialogue.character.name}
+                          width={40}
+                          height={40}
+                          className="object-cover"
+                          draggable="false"
+                        />
+                      ) : (
+                        <User className="w-6 h-6 m-2" />
+                      )}
+                    </div>
+                    <div className={`flex-1 ${dialogue.character?.role === 'main' ? 'text-right' : ''}`}>
+                      <div className="font-semibold">{dialogue.character?.name}</div>
+                      <div className={`mt-1 flex ${dialogue.character?.role === 'main' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`inline-block p-3 rounded-lg max-w-[80%] break-words whitespace-pre-wrap ${
+                          dialogue.character?.role === 'main' 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'bg-muted'
+                        }`}>
+                          {dialogue.content}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )
           ))}
           <div ref={bottomRef} />
+          {isChapterCompleted && (
+            <div className="text-center py-8 text-muted-foreground">
+              --- Kết thúc chương ---
+            </div>
+          )}
         </div>
       </div>
 
