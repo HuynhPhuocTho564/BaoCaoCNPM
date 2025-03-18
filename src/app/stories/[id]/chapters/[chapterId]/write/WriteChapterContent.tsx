@@ -261,7 +261,7 @@ export default function WriteChapterContent({
       {/* Main content */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Chat history */}
-        <div className="lg:col-span-8 flex flex-col h-[50vh] lg:h-[75vh] overflow-hidden">
+        <div className="lg:col-span-8 flex flex-col h-[70vh] lg:h-[75vh] overflow-hidden">
           <div className="flex-1 overflow-y-auto space-y-4 bg-background rounded-lg p-4 border">
             {dialogues.map((dialogue) => {
               if (dialogue.type === 'aside') {
@@ -450,7 +450,7 @@ export default function WriteChapterContent({
         </div>
 
         {/* Character selection and input panel */}
-        <div className="lg:col-span-4 flex flex-col h-[50vh] lg:h-[75vh] overflow-hidden">
+        <div className="lg:col-span-4 flex flex-col h-[70vh] lg:h-[75vh] overflow-hidden">
           <div className="bg-background rounded-lg p-4 border flex flex-col h-full">
             <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'main' | 'supporting')} className="flex flex-col h-full">
               <TabsList className="mb-4 w-full flex-shrink-0">
