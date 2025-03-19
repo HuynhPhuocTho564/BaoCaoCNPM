@@ -9,8 +9,6 @@ export async function GET(
   request: Request,
   context: { params: { id: string, chapterId: string } }
 ) {
-  const { chapterId } = context.params
-  
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
@@ -20,11 +18,17 @@ export async function GET(
       )
     }
 
-    const [chapters] = await pool.execute(
-      `SELECT * FROM story_chapters WHERE chapter_id = ?`,
-      [chapterId]
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ) as any[]
+    const { chapterId } = context.params
+    
+    const [chapters] = await pool.execute(`
+      SELECT 
+        sc.chapter_id,
+        sc.title,
+        sc.status,
+        (SELECT COUNT(*) FROM chapter_dialogues WHERE chapter_id = sc.chapter_id) as dialogue_count
+      FROM story_chapters sc
+      WHERE sc.chapter_id = ?
+    `, [chapterId]) as any[]
 
     if (!chapters.length) {
       return NextResponse.json(
@@ -62,6 +66,21 @@ export async function PUT(
     const body = await request.json()
     const { title, status } = body
 
+    // Kiểm tra nội dung chương nếu muốn xuất bản
+    if (status === 'published') {
+      const [dialogues] = await pool.execute(
+        `SELECT COUNT(*) as count FROM chapter_dialogues WHERE chapter_id = ?`,
+        [chapterId]
+      ) as any[]
+
+      if (dialogues[0].count === 0) {
+        return NextResponse.json(
+          { error: "Cần có ít nhất một tin nhắn trong chương để xuất bản" },
+          { status: 400 }
+        )
+      }
+    }
+
     // Lấy thông tin chương hiện tại
     const [currentChapter] = await pool.execute(
       `SELECT status, publish_order FROM story_chapters WHERE chapter_id = ?`,
@@ -78,9 +97,7 @@ export async function PUT(
     if (status === 'published') {
       let publishOrder = currentChapter[0].publish_order
 
-      // Nếu chưa có publish_order hoặc đã bị reset về null
       if (!publishOrder) {
-        // Lấy publish_order lớn nhất hiện tại
         const [result] = await pool.execute(
           `SELECT MAX(publish_order) as max_order 
            FROM story_chapters 
@@ -91,7 +108,6 @@ export async function PUT(
         publishOrder = (result[0].max_order || 0) + 1
       }
 
-      // Cập nhật chapter với publish_order
       await pool.execute(
         `UPDATE story_chapters 
          SET title = ?, 
@@ -101,7 +117,6 @@ export async function PUT(
         [title, status, publishOrder, chapterId]
       )
     } else {
-      // Khi chuyển sang draft, vẫn giữ publish_order
       await pool.execute(
         `UPDATE story_chapters 
          SET title = ?, 

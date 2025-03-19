@@ -6,13 +6,6 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { toast } from "sonner"
 
 export default function CreateChapterContent({ 
@@ -30,7 +23,7 @@ export default function CreateChapterContent({
     try {
       const formData = new FormData(e.currentTarget)
       const title = formData.get('title')
-      const status = formData.get('status')
+      const status = 'draft'
 
       const response = await fetch(`/api/stories/${storyId}/chapters`, {
         method: 'POST',
@@ -86,19 +79,6 @@ export default function CreateChapterContent({
                 required
                 className="w-full"
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="status">Trạng thái</Label>
-              <Select name="status" defaultValue="draft">
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Chọn trạng thái" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Bản nháp</SelectItem>
-                  <SelectItem value="published">Xuất bản</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
 
             <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">

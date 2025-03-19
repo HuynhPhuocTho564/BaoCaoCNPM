@@ -30,6 +30,7 @@ interface Chapter {
   chapter_id: number
   title: string
   status: 'draft' | 'published'
+  dialogue_count: number
 }
 
 export default function EditChapterContent({ 
@@ -162,15 +163,29 @@ export default function EditChapterContent({
 
             <div className="space-y-2">
               <Label htmlFor="status">Trạng thái</Label>
-              <Select name="status" defaultValue={chapter.status}>
+              <Select 
+                name="status" 
+                defaultValue={chapter.status}
+                disabled={chapter.dialogue_count === 0}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Chọn trạng thái" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="draft">Bản nháp</SelectItem>
-                  <SelectItem value="published">Xuất bản</SelectItem>
+                  <SelectItem 
+                    value="published"
+                    disabled={chapter.dialogue_count === 0}
+                  >
+                    Xuất bản
+                  </SelectItem>
                 </SelectContent>
               </Select>
+              {chapter.dialogue_count === 0 && (
+                <p className="text-sm text-destructive mt-1">
+                  Cần có ít nhất một tin nhắn trong chương để xuất bản
+                </p>
+              )}
             </div>
 
             <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">

@@ -30,7 +30,7 @@ const menuItems = [
   },
   {
     text: "Tạo truyện",
-    to: "/create"
+    to: "/stories"
   },
   {
     text: "Hướng dẫn",
