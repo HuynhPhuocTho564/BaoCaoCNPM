@@ -169,10 +169,8 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await context.params;
-  
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -182,55 +180,71 @@ export async function DELETE(
       );
     }
 
-    // Lấy thông tin truyện để kiểm tra quyền sở hữu và file ảnh
-    const [stories] = await pool.execute(
-      'SELECT user_id, cover_file_id FROM stories WHERE story_id = ?',
-      [id]
-    ) as any[];
-
-    if (!stories.length) {
-      return NextResponse.json(
-        { error: "Không tìm thấy truyện" },
-        { status: 404 }
-      );
-    }
-
-    const story = stories[0];
-
-    // Xóa file ảnh bìa trên Google Drive nếu có
-    if (story.cover_file_id) {
-      await GoogleDriveService.deleteFile(story.cover_file_id);
-    }
-
-    // Bắt đầu transaction
+    const storyId = params.id;
     const connection = await pool.getConnection();
+
     try {
       await connection.beginTransaction();
 
-      // Xóa các liên kết category
+      // Lấy thông tin file_id của ảnh bìa trước khi xóa
+      const [stories] = await connection.execute(
+        'SELECT cover_file_id FROM stories WHERE story_id = ?',
+        [storyId]
+      ) as any[];
+
+      // Xóa ảnh bìa trong Google Drive nếu có
+      if (stories[0]?.cover_file_id) {
+        await GoogleDriveService.deleteFile(stories[0].cover_file_id);
+      }
+
+      // Tiếp tục xóa các dữ liệu trong database
+      // 1. Xóa lịch sử xem
       await connection.execute(
-        'DELETE FROM story_tag_relations WHERE story_id = ?',
-        [id]
+        'DELETE FROM view_history WHERE story_id = ?',
+        [storyId]
       );
 
-      // Xóa truyện
+      // 2. Xóa các đoạn hội thoại trong chương
+      await connection.execute(`
+        DELETE cd FROM chapter_dialogues cd
+        INNER JOIN story_chapters sc ON cd.chapter_id = sc.chapter_id
+        WHERE sc.story_id = ?
+      `, [storyId]);
+
+      // 3. Xóa các chương
+      await connection.execute(
+        'DELETE FROM story_chapters WHERE story_id = ?',
+        [storyId]
+      );
+
+      // 4. Xóa các nhân vật
+      await connection.execute(
+        'DELETE FROM story_characters WHERE story_id = ?',
+        [storyId]
+      );
+
+      // 5. Xóa quan hệ với tags
+      await connection.execute(
+        'DELETE FROM story_tag_relations WHERE story_id = ?',
+        [storyId]
+      );
+
+      // 6. Cuối cùng xóa truyện
       await connection.execute(
         'DELETE FROM stories WHERE story_id = ?',
-        [id]
+        [storyId]
       );
 
       await connection.commit();
+      return NextResponse.json({ message: "Xóa truyện thành công" });
 
-      return NextResponse.json(
-        { message: "Xóa truyện thành công" },
-        { status: 200 }
-      );
     } catch (error) {
       await connection.rollback();
       throw error;
     } finally {
       connection.release();
     }
+
   } catch (error) {
     console.error("Lỗi khi xóa truyện:", error);
     return NextResponse.json(

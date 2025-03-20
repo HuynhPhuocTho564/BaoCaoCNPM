@@ -146,12 +146,14 @@ function EditStoryContent({ storyId }: { storyId: string }) {
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(`/api/stories/${storyId}`, {
+      // Thêm tham số để yêu cầu xóa tất cả dữ liệu liên quan
+      const response = await fetch(`/api/stories/${storyId}?cascade=true`, {
         method: 'DELETE',
       })
 
       if (!response.ok) {
-        throw new Error('Lỗi khi xóa truyện')
+        const error = await response.json()
+        throw new Error(error.message || 'Lỗi khi xóa truyện')
       }
 
       toast.success('Xóa truyện thành công')
