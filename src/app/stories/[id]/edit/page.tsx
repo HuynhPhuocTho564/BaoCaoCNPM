@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Suspense } from "react"
 import { ChevronLeft } from "lucide-react"
+import { IdeaGenerator } from "@/components/story/IdeaGenerator"
 
 interface MainCategory {
   id: number
@@ -46,6 +47,13 @@ interface Story {
   main_category_id: number
   tag_ids: number[]
   status: 'draft' | 'published' | 'archived'
+}
+
+interface GeneratedIdea {
+  title: string;
+  description: string;
+  mainCategory: string;
+  suggestedTags: string[];
 }
 
 function EditStoryContent({ storyId }: { storyId: string }) {
@@ -200,6 +208,29 @@ function EditStoryContent({ storyId }: { storyId: string }) {
     }
   }
 
+  const handleApplyIdea = (idea: GeneratedIdea) => {
+    const titleInput = document.getElementById('title') as HTMLInputElement;
+    const descriptionInput = document.getElementById('description') as HTMLTextAreaElement;
+    
+    if (titleInput) titleInput.value = idea.title;
+    if (descriptionInput) descriptionInput.value = idea.description;
+    
+    const matchedCategory = mainCategories.find(
+      cat => cat.name.toLowerCase() === idea.mainCategory.toLowerCase()
+    );
+    if (matchedCategory) setSelectedMainCategory(matchedCategory.id);
+    
+    const matchedTags = tags.filter(tag =>
+      idea.suggestedTags.some(suggestedTag => tag.name.toLowerCase() === suggestedTag.toLowerCase())
+    );
+    setSelectedTags(matchedTags.map(tag => tag.id));
+  };
+
+  const mainCategoryName = mainCategories.find(c => c.id === selectedMainCategory)?.name || '';
+  const selectedTagNames = tags
+    .filter(t => selectedTags.includes(t.id))
+    .map(t => t.name);
+
   if (!story) {
     return (
       <div className="container mx-auto px-4 py-12">
@@ -223,9 +254,20 @@ function EditStoryContent({ storyId }: { storyId: string }) {
       </Button>
 
       <div className="max-w-5xl mx-auto">
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold mb-4 sm:mb-0">Chỉnh sửa truyện</h1>
-          <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold">Chỉnh sửa truyện</h1>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <IdeaGenerator 
+              mainCategories={mainCategories}
+              tags={tags}
+              onApplyIdea={handleApplyIdea}
+              existingStory={{
+                title: story.title,
+                description: story.description,
+                mainCategory: mainCategoryName,
+                currentTags: selectedTagNames
+              }}
+            />
             {story.status === 'draft' && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
