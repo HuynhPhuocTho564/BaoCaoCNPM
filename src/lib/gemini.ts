@@ -3,7 +3,7 @@ import {
   HarmCategory,
   HarmBlockThreshold,
 } from "@google/generative-ai";
-import { CHARACTER_IDEA_HISTORY, DIALOGUE_SUGGESTION_HISTORY, createStoryPrompt, createEditStoryPrompt } from './gemini-prompts';
+import { DIALOGUE_SUGGESTION_HISTORY, createStoryPrompt, createEditStoryPrompt, createCharacterPrompt, createEditCharacterPrompt } from './gemini-prompts';
 
 let apiKey: string | null = null;
 
@@ -55,6 +55,13 @@ interface StoryIdea {
 interface CharacterIdea {
   name: string;
   description: string;
+  gender: string;
+  birthday: string;
+  height: string;
+  weight: string;
+  personality: string;
+  appearance: string;
+  background: string;
   role: string;
 }
 
@@ -97,7 +104,28 @@ export async function generateStoryIdea(userPrompt: string, categories: string[]
   }
 }
 
-export async function generateCharacterIdea(prompt: string): Promise<CharacterIdea> {
+export async function generateCharacterIdea(
+  prompt: string, 
+  role: string,
+  storyContext: {
+    title: string;
+    description: string;
+    mainCategory: string;
+    tags: string[];
+  },
+  existingCharacter?: {
+    name: string;
+    description: string;
+    gender: string;
+    birthday: string;
+    height: string;
+    weight: string;
+    personality: string;
+    appearance: string;
+    background: string;
+    role: string;
+  }
+): Promise<CharacterIdea> {
   try {
     const key = await getApiKey();
     const genAI = new GoogleGenerativeAI(key!);
@@ -108,17 +136,27 @@ export async function generateCharacterIdea(prompt: string): Promise<CharacterId
 
     const chat = model.startChat({
       generationConfig,
-      history: CHARACTER_IDEA_HISTORY,
+      history: [
+        existingCharacter 
+          ? createEditCharacterPrompt(role, storyContext, existingCharacter)
+          : createCharacterPrompt(role, storyContext),
+        {
+          role: "model",
+          parts: [{ text: existingCharacter 
+            ? "Tôi sẽ đề xuất cách cải thiện nhân vật phù hợp với bối cảnh truyện." 
+            : "Tôi sẽ tạo nhân vật phù hợp với bối cảnh truyện."
+          }]
+        }
+      ],
     });
 
-    const result = await chat.sendMessage(prompt);
+    const result = await chat.sendMessage([{ text: prompt }]);
     const response = result.response.text();
-
+    
     const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
     const jsonString = jsonMatch ? jsonMatch[1] : response;
     
-    const characterIdea = JSON.parse(jsonString);
-    return characterIdea;
+    return JSON.parse(jsonString);
   } catch (error) {
     console.error("Lỗi khi tạo nhân vật:", error);
     throw error;

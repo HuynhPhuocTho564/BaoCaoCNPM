@@ -25,7 +25,14 @@ export async function GET(
         name,
         description,
         avatar_image,
-        role
+        role,
+        gender,
+        birthday,
+        height,
+        weight,
+        personality,
+        appearance,
+        background
        FROM story_characters 
        WHERE character_id = ?`,
       [characterId]

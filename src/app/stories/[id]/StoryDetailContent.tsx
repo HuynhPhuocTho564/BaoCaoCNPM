@@ -145,7 +145,7 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-start gap-4 mb-4 min-w-0">
             <div className="min-w-0 flex-1">
-              <h1 className="text-2xl sm:text-3xl font-bold truncate leading-normal py-0.5">
+              <h1 className="text-2xl sm:text-3xl font-bold leading-normal py-0.5 break-words">
                 {story.title}
               </h1>
             </div>

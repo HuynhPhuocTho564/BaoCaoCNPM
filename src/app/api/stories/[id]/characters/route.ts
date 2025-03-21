@@ -68,29 +68,37 @@ export async function POST(
     const description = formData.get('description') as string
     const role = formData.get('role') as 'main' | 'supporting'
     const avatarImage = formData.get('avatarImage') as File
+    const gender = formData.get('gender') as string
+    const birthday = formData.get('birthday') as string
+    const height = parseInt(formData.get('height') as string) || null
+    const weight = parseInt(formData.get('weight') as string) || null
+    const personality = formData.get('personality') as string
+    const appearance = formData.get('appearance') as string
+    const background = formData.get('background') as string
 
-    // Kiểm tra xem đã có nhân vật chính chưa
+    // Kiểm tra nhân vật chính
     if (role === 'main') {
       const [existingMain] = await pool.execute(
-        `SELECT character_id FROM story_characters 
-         WHERE story_id = ? AND role = 'main'`,
+        `SELECT character_id FROM story_characters WHERE story_id = ? AND role = 'main'`,
         [storyId]
       ) as any[]
 
       if (existingMain.length > 0) {
         return NextResponse.json(
-          { error: "Truyện này đã có nhân vật chính, không thể thêm nhân vật chính khác" },
+          { error: "Truyện này đã có nhân vật chính" },
           { status: 400 }
         )
       }
     }
 
-    // Tạo nhân vật với role
+    // Tạo nhân vật với các trường mới
     const [result] = await pool.execute(
       `INSERT INTO story_characters 
-       (story_id, name, description, role) 
-       VALUES (?, ?, ?, ?)`,
-      [storyId, name, description, role]
+       (story_id, name, description, role, gender, birthday, height, weight, 
+        personality, appearance, background) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [storyId, name, description, role, gender, birthday, height, weight,
+       personality, appearance, background]
     ) as [ResultSetHeader, any]
 
     // Upload ảnh nếu có

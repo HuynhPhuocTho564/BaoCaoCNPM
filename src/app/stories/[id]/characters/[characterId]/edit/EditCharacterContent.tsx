@@ -22,6 +22,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { IdeaGenerator } from "@/components/character/IdeaGenerator"
 
 interface Character {
   character_id: number
@@ -29,6 +30,13 @@ interface Character {
   description: string
   avatar_image: string
   role: 'main' | 'supporting'
+  gender: string
+  birthday: string
+  height: string
+  weight: string
+  personality: string
+  appearance: string
+  background: string
 }
 
 export default function EditCharacterContent({ 
@@ -44,6 +52,12 @@ export default function EditCharacterContent({
   const [isLoading, setIsLoading] = useState(false)
   const [previewImage, setPreviewImage] = useState<string>("")
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [storyContext, setStoryContext] = useState<{
+    title: string;
+    description: string;
+    mainCategory: string;
+    tags: string[];
+  } | null>(null)
 
   useEffect(() => {
     const fetchCharacter = async () => {
@@ -52,9 +66,15 @@ export default function EditCharacterContent({
         const data = await response.json()
         
         if (response.ok) {
-          setCharacter(data.character)
-          if (data.character.avatar_image) {
-            setPreviewImage(data.character.avatar_image)
+          const formattedCharacter = {
+            ...data.character,
+            birthday: data.character.birthday ? new Date(data.character.birthday).toISOString().split('T')[0] : '',
+            weight: data.character.weight?.toString() || '',
+            height: data.character.height?.toString() || ''
+          }
+          setCharacter(formattedCharacter)
+          if (formattedCharacter.avatar_image) {
+            setPreviewImage(formattedCharacter.avatar_image)
           }
         } else {
           toast.error('Không thể tải thông tin nhân vật')
@@ -64,8 +84,27 @@ export default function EditCharacterContent({
       }
     }
 
+    const fetchStoryContext = async () => {
+      try {
+        const response = await fetch(`/api/stories/${storyId}`)
+        if (!response.ok) {
+          throw new Error('Không thể lấy thông tin truyện')
+        }
+        const data = await response.json()
+        setStoryContext({
+          title: data.story.title,
+          description: data.story.description,
+          mainCategory: data.story.main_category,
+          tags: data.story.tags
+        })
+      } catch (error) {
+        toast.error('Lỗi khi lấy thông tin truyện')
+      }
+    }
+
     if (session?.user) {
       fetchCharacter()
+      fetchStoryContext()
     }
   }, [session, storyId, characterId])
 
@@ -126,6 +165,30 @@ export default function EditCharacterContent({
     }
   }
 
+  const handleApplyIdea = (idea: any) => {
+    if (!character) return;
+    
+    const nameInput = document.querySelector('input[name="name"]') as HTMLInputElement;
+    const descriptionInput = document.querySelector('textarea[name="description"]') as HTMLTextAreaElement;
+    const genderInput = document.querySelector('select[name="gender"]') as HTMLSelectElement;
+    const birthdayInput = document.querySelector('input[name="birthday"]') as HTMLInputElement;
+    const heightInput = document.querySelector('input[name="height"]') as HTMLInputElement;
+    const weightInput = document.querySelector('input[name="weight"]') as HTMLInputElement;
+    const personalityInput = document.querySelector('textarea[name="personality"]') as HTMLTextAreaElement;
+    const appearanceInput = document.querySelector('textarea[name="appearance"]') as HTMLTextAreaElement;
+    const backgroundInput = document.querySelector('textarea[name="background"]') as HTMLTextAreaElement;
+    
+    if (nameInput) nameInput.value = idea.name;
+    if (descriptionInput) descriptionInput.value = idea.description;
+    if (genderInput) genderInput.value = idea.gender;
+    if (birthdayInput) birthdayInput.value = idea.birthday;
+    if (heightInput) heightInput.value = idea.height;
+    if (weightInput) weightInput.value = idea.weight;
+    if (personalityInput) personalityInput.value = idea.personality;
+    if (appearanceInput) appearanceInput.value = idea.appearance;
+    if (backgroundInput) backgroundInput.value = idea.background;
+  }
+
   if (!character) {
     return (
       <div className="container mx-auto px-4 py-12">
@@ -139,120 +202,223 @@ export default function EditCharacterContent({
 
   return (
     <div className="container max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-center mb-8">
-        Chỉnh sửa nhân vật
-      </h1>
+      {character && storyContext ? (
+        <>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            <h1 className="text-3xl font-bold text-center mb-8">
+              Chỉnh sửa nhân vật
+            </h1>
+            <IdeaGenerator 
+              role={character.role}
+              storyContext={storyContext}
+              onApplyIdea={handleApplyIdea}
+              existingCharacter={{
+                name: character.name,
+                description: character.description,
+                role: character.role,
+                gender: character.gender,
+                birthday: character.birthday,
+                height: character.height,
+                weight: character.weight,
+                personality: character.personality,
+                appearance: character.appearance,
+                background: character.background
+              }}
+            />
+          </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="flex flex-col items-center">
-          <div 
-            onClick={handleImageClick}
-            className="relative cursor-pointer group mb-6"
-          >
-            <div className={`w-40 h-40 rounded-full overflow-hidden border-2 border-dashed
-              ${previewImage ? 'border-transparent' : 'border-gray-300'}
-              flex items-center justify-center bg-gray-50 hover:bg-gray-100
-              transition-colors duration-200 relative`}
-            >
-              {previewImage ? (
-                <Image 
-                  src={previewImage} 
-                  alt="Preview" 
-                  fill
-                  sizes="160px"
-                  className="object-cover"
-                  priority
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="flex flex-col items-center">
+              <div 
+                onClick={handleImageClick}
+                className="relative cursor-pointer group mb-6"
+              >
+                <div className={`w-40 h-40 rounded-full overflow-hidden border-2 border-dashed
+                  ${previewImage ? 'border-transparent' : 'border-gray-300'}
+                  flex items-center justify-center bg-gray-50 hover:bg-gray-100
+                  transition-colors duration-200 relative`}
+                >
+                  {previewImage ? (
+                    <Image 
+                      src={previewImage} 
+                      alt="Preview" 
+                      fill
+                      sizes="160px"
+                      className="object-cover"
+                      priority
+                    />
+                  ) : (
+                    <Camera className="w-12 h-12 text-gray-400" />
+                  )}
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="text-white text-sm font-medium">
+                    {previewImage ? 'Thay đổi ảnh' : 'Tải ảnh lên'}
+                  </span>
+                </div>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                name="avatarImage"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium mb-2">Tên nhân vật</label>
+                <Input 
+                  name="name" 
+                  required 
+                  defaultValue={character.name}
+                  placeholder="Nhập tên nhân vật"
+                  className="text-lg"
                 />
-              ) : (
-                <Camera className="w-12 h-12 text-gray-400" />
-              )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Mô tả</label>
+                <Textarea 
+                  name="description" 
+                  defaultValue={character.description}
+                  placeholder="Mô tả về nhân vật"
+                  className="h-32 text-base resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Giới tính</label>
+                <select
+                  name="gender"
+                  className="mt-1 block w-full rounded-md border-gray-300"
+                  defaultValue={character.gender}
+                >
+                  <option value="">Chọn giới tính</option>
+                  <option value="nam">Nam</option>
+                  <option value="nữ">Nữ</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Ngày sinh</label>
+                <input
+                  type="date"
+                  name="birthday"
+                  className="mt-1 block w-full rounded-md border-gray-300"
+                  defaultValue={character.birthday}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Chiều cao</label>
+                <input
+                  type="text"
+                  name="height"
+                  placeholder="Nhập chiều cao (cm)"
+                  className="mt-1 block w-full rounded-md border-gray-300"
+                  defaultValue={character.height}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Cân nặng</label>
+                <input
+                  type="text"
+                  name="weight"
+                  placeholder="Nhập cân nặng (kg)"
+                  className="mt-1 block w-full rounded-md border-gray-300"
+                  defaultValue={character.weight}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Tính cách</label>
+                <Textarea 
+                  name="personality" 
+                  placeholder="Mô tả tính cách"
+                  className="h-32 text-base resize-none"
+                  defaultValue={character.personality}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Ngoại hình</label>
+                <Textarea 
+                  name="appearance" 
+                  placeholder="Mô tả ngoại hình"
+                  className="h-32 text-base resize-none"
+                  defaultValue={character.appearance}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Quá khứ</label>
+                <Textarea 
+                  name="background" 
+                  placeholder="Thông tin về xuất thân, quá khứ"
+                  className="h-32 text-base resize-none"
+                  defaultValue={character.background}
+                />
+              </div>
+
+              <input type="hidden" name="role" value={character.role} />
             </div>
-            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
-              <span className="text-white text-sm font-medium">
-                {previewImage ? 'Thay đổi ảnh' : 'Tải ảnh lên'}
-              </span>
-            </div>
-          </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            name="avatarImage"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="hidden"
-          />
-        </div>
 
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium mb-2">Tên nhân vật</label>
-            <Input 
-              name="name" 
-              required 
-              defaultValue={character.name}
-              placeholder="Nhập tên nhân vật"
-              className="text-lg"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Mô tả</label>
-            <Textarea 
-              name="description" 
-              defaultValue={character.description}
-              placeholder="Mô tả về nhân vật"
-              className="h-32 text-base resize-none"
-            />
-          </div>
-
-          <input type="hidden" name="role" value={character.role} />
-        </div>
-
-        <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
-          <Button 
-            type="submit" 
-            disabled={isLoading}
-            className="w-full sm:w-auto sm:min-w-[120px]"
-          >
-            {isLoading ? 'Đang cập nhật...' : 'Cập nhật'}
-          </Button>
-
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
+            <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
               <Button 
-                type="button" 
-                variant="destructive" 
+                type="submit" 
+                disabled={isLoading}
                 className="w-full sm:w-auto sm:min-w-[120px]"
               >
-                Xóa nhân vật
+                {isLoading ? 'Đang cập nhật...' : 'Cập nhật'}
               </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Bạn có chắc chắn?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Hành động này không thể hoàn tác. Nhân vật này sẽ bị xóa vĩnh viễn.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Hủy</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete}>
-                  Xác nhận xóa
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
 
-          <Button 
-            type="button" 
-            variant="outline"
-            onClick={() => router.push(`/stories/${storyId}?tab=characters`)}
-            className="w-full sm:w-auto sm:min-w-[120px]"
-          >
-            Hủy
-          </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    type="button" 
+                    variant="destructive" 
+                    className="w-full sm:w-auto sm:min-w-[120px]"
+                  >
+                    Xóa nhân vật
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Bạn có chắc chắn?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Hành động này không thể hoàn tác. Nhân vật này sẽ bị xóa vĩnh viễn.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Hủy</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete}>
+                      Xác nhận xóa
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
+              <Button 
+                type="button" 
+                variant="outline"
+                onClick={() => router.push(`/stories/${storyId}?tab=characters`)}
+                className="w-full sm:w-auto sm:min-w-[120px]"
+              >
+                Hủy
+              </Button>
+            </div>
+          </form>
+        </>
+      ) : (
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Đang tải...</p>
         </div>
-      </form>
+      )}
     </div>
   )
 } 
