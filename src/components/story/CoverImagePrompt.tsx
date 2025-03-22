@@ -2,7 +2,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Image } from "lucide-react"
+import { Image, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import {
   Dialog,
@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { generateCoverImagePrompt } from "@/lib/gemini"
+import { generateImage } from "@/lib/together"
 
 interface CoverImagePromptProps {
   storyInfo: {
@@ -21,15 +22,18 @@ interface CoverImagePromptProps {
     mainCategory: string;
     tags: string[];
   };
+  onImageGenerated?: (imageUrl: string) => void;
 }
 
-export function CoverImagePrompt({ storyInfo }: CoverImagePromptProps) {
+export function CoverImagePrompt({ storyInfo, onImageGenerated }: CoverImagePromptProps) {
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isCreatingImage, setIsCreatingImage] = useState(false)
   const [generatedPrompt, setGeneratedPrompt] = useState<{
     prompt: string;
     negativePrompt: string;
     style: string;
   } | null>(null)
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
 
   const generatePrompt = async () => {
@@ -41,6 +45,25 @@ export function CoverImagePrompt({ storyInfo }: CoverImagePromptProps) {
       toast.error("Không thể tạo prompt");
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const createImage = async () => {
+    if (!generatedPrompt) return;
+    
+    setIsCreatingImage(true);
+    try {
+      const imageData = await generateImage({
+        prompt: generatedPrompt.prompt,
+        negativePrompt: generatedPrompt.negativePrompt
+      });
+      
+      setGeneratedImage(imageData);
+      toast.success("Đã tạo ảnh thành công!");
+    } catch (error) {
+      toast.error("Không thể tạo ảnh");
+    } finally {
+      setIsCreatingImage(false);
     }
   };
 
@@ -117,14 +140,59 @@ export function CoverImagePrompt({ storyInfo }: CoverImagePromptProps) {
                 </pre>
               </div>
 
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setGeneratedPrompt(null);
-                }}
-              >
-                Tạo lại
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="default"
+                  onClick={createImage}
+                  disabled={isCreatingImage}
+                  className="flex-1"
+                >
+                  {isCreatingImage ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Đang tạo ảnh...
+                    </>
+                  ) : (
+                    "Tạo ảnh"
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setGeneratedPrompt(null);
+                    setGeneratedImage(null);
+                  }}
+                  className="flex-1"
+                >
+                  Tạo lại prompt
+                </Button>
+              </div>
+
+              {generatedImage && (
+                <div className="space-y-2">
+                  <Label>Ảnh đã tạo</Label>
+                  <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden">
+                    <img 
+                      src={`data:image/jpeg;base64,${generatedImage}`}
+                      alt="Generated cover"
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                  <Button
+                    variant="default"
+                    onClick={() => {
+                      if (onImageGenerated) {
+                        onImageGenerated(generatedImage);
+                        setOpen(false);
+                        toast.success("Đã áp dụng ảnh bìa mới!");
+                      }
+                    }}
+                    className="w-full mt-2"
+                  >
+                    Áp dụng ảnh này
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -57,7 +57,7 @@ interface GeneratedIdea {
   suggestedTags: string[];
 }
 
-function EditStoryContent({ storyId }: { storyId: string }) {
+export function EditStoryContent({ storyId }: { storyId: string }) {
   const router = useRouter()
   const { data: session } = useSession()
   const [isLoading, setIsLoading] = useState(false)
@@ -67,6 +67,7 @@ function EditStoryContent({ storyId }: { storyId: string }) {
   const [selectedTags, setSelectedTags] = useState<number[]>([])
   const [story, setStory] = useState<Story | null>(null)
   const [previewImage, setPreviewImage] = useState<string>("")
+  const [imageFile, setImageFile] = useState<File | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -132,6 +133,9 @@ function EditStoryContent({ storyId }: { storyId: string }) {
 
     try {
       const formData = new FormData(e.currentTarget)
+      if (imageFile) {
+        formData.set('coverImage', imageFile)
+      }
       formData.set('mainCategoryId', selectedMainCategory.toString())
       formData.set('tagIds', JSON.stringify(selectedTags))
       
@@ -232,6 +236,22 @@ function EditStoryContent({ storyId }: { storyId: string }) {
     .filter(t => selectedTags.includes(t.id))
     .map(t => t.name);
 
+  const handleImageGenerated = (imageData: string) => {
+    // Chuyển base64 thành File
+    const byteString = atob(imageData);
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    const blob = new Blob([ab], { type: 'image/jpeg' });
+    const file = new File([blob], 'cover.jpg', { type: 'image/jpeg' });
+    
+    // Cập nhật state
+    setImageFile(file);
+    setPreviewImage(`data:image/jpeg;base64,${imageData}`);
+  };
+
   if (!story) {
     return (
       <div className="container mx-auto px-4 py-12">
@@ -276,6 +296,7 @@ function EditStoryContent({ storyId }: { storyId: string }) {
                 mainCategory: mainCategoryName,
                 tags: selectedTagNames
               }}
+              onImageGenerated={handleImageGenerated}
             />
             {story.status === 'draft' && (
               <AlertDialog>
