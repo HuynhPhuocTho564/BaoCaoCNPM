@@ -159,4 +159,58 @@ Hãy trả về JSON với format sau:
   "role": "${role}"
 }
 \`\`\`` }]
+});
+
+export const createCoverImagePrompt = (storyInfo: {
+  title: string;
+  description: string;
+  mainCategory: string;
+  tags: string[];
+}) => ({
+  role: "user",
+  parts: [{ text: `Hãy tạo một prompt chi tiết để tạo ảnh bìa cho truyện sau bằng AI:
+
+Thông tin truyện:
+- Tiêu đề: ${storyInfo.title}
+- Mô tả: ${storyInfo.description}
+- Thể loại: ${storyInfo.mainCategory}
+- Các tag: ${storyInfo.tags.join(", ")}
+
+Hãy trả về JSON với format sau:
+\`\`\`json
+{
+  "prompt": "mô tả chi tiết cho ảnh bìa bằng tiếng Anh",
+  "negativePrompt": "những yếu tố không mong muốn trong ảnh",
+  "style": "phong cách nghệ thuật đề xuất"
+}
+\`\`\`` }]
+});
+
+export const createAvatarPrompt = (characterInfo: {
+  name: string;
+  description: string;
+  gender: string;
+  personality: string;
+  appearance: string;
+  role: string;
+}) => ({
+  role: "user",
+  parts: [{ text: `Hãy tạo một prompt chi tiết để tạo ảnh avatar cho nhân vật sau bằng AI:
+
+Thông tin nhân vật:
+- Tên: ${characterInfo.name}
+- Mô tả: ${characterInfo.description}
+- Giới tính: ${characterInfo.gender}
+- Tính cách: ${characterInfo.personality}
+- Ngoại hình: ${characterInfo.appearance}
+- Vai trò: ${characterInfo.role === 'main' ? 'Nhân vật chính' : 'Nhân vật phụ'}
+
+Hãy trả về JSON với format sau:
+\`\`\`json
+{
+  "prompt": "mô tả chi tiết cho ảnh avatar bằng tiếng Anh",
+  "negativePrompt": "những yếu tố không mong muốn trong ảnh",
+  "style": "phong cách nghệ thuật đề xuất"
+}
+\`\`\`` }]
 }); 

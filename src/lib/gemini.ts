@@ -3,7 +3,7 @@ import {
   HarmCategory,
   HarmBlockThreshold,
 } from "@google/generative-ai";
-import { DIALOGUE_SUGGESTION_HISTORY, createStoryPrompt, createEditStoryPrompt, createCharacterPrompt, createEditCharacterPrompt } from './gemini-prompts';
+import { DIALOGUE_SUGGESTION_HISTORY, createStoryPrompt, createEditStoryPrompt, createCharacterPrompt, createEditCharacterPrompt, createCoverImagePrompt, createAvatarPrompt } from './gemini-prompts';
 
 let apiKey: string | null = null;
 
@@ -68,6 +68,12 @@ interface CharacterIdea {
 interface DialogueSuggestion {
   content: string;
   type: string;
+}
+
+interface CoverImagePrompt {
+  prompt: string;
+  negativePrompt: string;
+  style: string;
 }
 
 export async function generateStoryIdea(userPrompt: string, categories: string[], tags: string[]): Promise<StoryIdea> {
@@ -228,6 +234,88 @@ export async function generateStoryEdit(
     return JSON.parse(jsonString);
   } catch (error) {
     console.error("Lỗi khi tạo ý tưởng chỉnh sửa:", error);
+    throw error;
+  }
+}
+
+export async function generateCoverImagePrompt(
+  storyInfo: {
+    title: string;
+    description: string;
+    mainCategory: string;
+    tags: string[];
+  }
+): Promise<CoverImagePrompt> {
+  try {
+    const key = await getApiKey();
+    const genAI = new GoogleGenerativeAI(key!);
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash",
+      safetySettings,
+    });
+    
+    const chat = model.startChat({
+      generationConfig,
+      history: [
+        createCoverImagePrompt(storyInfo),
+        {
+          role: "model",
+          parts: [{ text: "Tôi sẽ tạo prompt phù hợp với nội dung và thể loại của truyện." }]
+        }
+      ],
+    });
+
+    const result = await chat.sendMessage("");
+    const response = result.response.text();
+    
+    const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
+    const jsonString = jsonMatch ? jsonMatch[1] : response;
+    
+    return JSON.parse(jsonString);
+  } catch (error) {
+    console.error("Lỗi khi tạo prompt ảnh bìa:", error);
+    throw error;
+  }
+}
+
+export async function generateAvatarPrompt(
+  characterInfo: {
+    name: string;
+    description: string;
+    gender: string;
+    personality: string;
+    appearance: string;
+    role: string;
+  }
+): Promise<CoverImagePrompt> {
+  try {
+    const key = await getApiKey();
+    const genAI = new GoogleGenerativeAI(key!);
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash",
+      safetySettings,
+    });
+    
+    const chat = model.startChat({
+      generationConfig,
+      history: [
+        createAvatarPrompt(characterInfo),
+        {
+          role: "model",
+          parts: [{ text: "Tôi sẽ tạo prompt phù hợp với đặc điểm của nhân vật." }]
+        }
+      ],
+    });
+
+    const result = await chat.sendMessage("");
+    const response = result.response.text();
+    
+    const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
+    const jsonString = jsonMatch ? jsonMatch[1] : response;
+    
+    return JSON.parse(jsonString);
+  } catch (error) {
+    console.error("Lỗi khi tạo prompt avatar:", error);
     throw error;
   }
 } 

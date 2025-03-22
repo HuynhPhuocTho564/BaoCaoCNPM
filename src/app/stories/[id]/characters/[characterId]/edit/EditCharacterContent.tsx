@@ -23,6 +23,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { IdeaGenerator } from "@/components/character/IdeaGenerator"
+import { AvatarImagePrompt } from "@/components/character/AvatarImagePrompt"
 
 interface Character {
   character_id: number
@@ -208,23 +209,35 @@ export default function EditCharacterContent({
             <h1 className="text-3xl font-bold text-center mb-8">
               Chỉnh sửa nhân vật
             </h1>
-            <IdeaGenerator 
-              role={character.role}
-              storyContext={storyContext}
-              onApplyIdea={handleApplyIdea}
-              existingCharacter={{
-                name: character.name,
-                description: character.description,
-                role: character.role,
-                gender: character.gender,
-                birthday: character.birthday,
-                height: character.height,
-                weight: character.weight,
-                personality: character.personality,
-                appearance: character.appearance,
-                background: character.background
-              }}
-            />
+            <div className="flex flex-col sm:flex-row gap-2">
+              <IdeaGenerator 
+                role={character.role}
+                storyContext={storyContext}
+                onApplyIdea={handleApplyIdea}
+                existingCharacter={{
+                  name: character.name,
+                  description: character.description,
+                  role: character.role,
+                  gender: character.gender,
+                  birthday: character.birthday,
+                  height: character.height,
+                  weight: character.weight,
+                  personality: character.personality,
+                  appearance: character.appearance,
+                  background: character.background
+                }}
+              />
+              <AvatarImagePrompt
+                characterInfo={{
+                  name: character.name,
+                  description: character.description,
+                  gender: character.gender,
+                  personality: character.personality,
+                  appearance: character.appearance,
+                  role: character.role
+                }}
+              />
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">

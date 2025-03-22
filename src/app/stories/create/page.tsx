@@ -21,6 +21,7 @@ import {
 import { Wand2 } from "lucide-react"
 import { generateStoryIdea } from "@/lib/gemini"
 import { IdeaGenerator } from "@/components/story/IdeaGenerator"
+import { CoverImagePrompt } from "@/components/story/CoverImagePrompt"
 
 interface MainCategory {
   id: number
@@ -149,6 +150,14 @@ export default function CreateStoryPage() {
               mainCategories={mainCategories}
               tags={tags}
               onApplyIdea={handleApplyIdea}
+            />
+            <CoverImagePrompt
+              storyInfo={{
+                title: (document.getElementById('title') as HTMLInputElement)?.value || '',
+                description: (document.getElementById('description') as HTMLTextAreaElement)?.value || '',
+                mainCategory: mainCategories.find(c => c.id === selectedMainCategory)?.name || '',
+                tags: tags.filter(t => selectedTags.includes(t.id)).map(t => t.name)
+              }}
             />
           </div>
         </div>

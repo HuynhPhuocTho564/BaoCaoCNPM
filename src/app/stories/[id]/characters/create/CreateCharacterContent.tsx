@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Camera } from "lucide-react"
 import { toast } from "sonner"
 import { IdeaGenerator } from "@/components/character/IdeaGenerator"
+import { AvatarImagePrompt } from "@/components/character/AvatarImagePrompt"
 
 export default function CreateCharacterContent({ storyId }: { storyId: string }) {
   const router = useRouter()
@@ -23,6 +24,17 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
     mainCategory: string;
     tags: string[];
   } | null>(null)
+  const [formValues, setFormValues] = useState({
+    name: '',
+    description: '',
+    gender: '',
+    birthday: '',
+    height: '',
+    weight: '',
+    personality: '',
+    appearance: '',
+    background: '',
+  });
   
   useEffect(() => {
     const fetchStoryContext = async () => {
@@ -64,6 +76,14 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
       reader.readAsDataURL(file)
     }
   }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormValues(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -109,6 +129,18 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
     if (personalityInput) personalityInput.value = idea.personality;
     if (appearanceInput) appearanceInput.value = idea.appearance;
     if (backgroundInput) backgroundInput.value = idea.background;
+
+    setFormValues({
+      name: idea.name || '',
+      description: idea.description || '',
+      gender: idea.gender || '',
+      birthday: idea.birthday || '',
+      height: idea.height || '',
+      weight: idea.weight || '',
+      personality: idea.personality || '',
+      appearance: idea.appearance || '',
+      background: idea.background || '',
+    });
   };
 
   return (
@@ -119,11 +151,23 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
             <h1 className="text-3xl font-bold text-center">
               {role === 'main' ? 'Thêm nhân vật chính' : 'Thêm nhân vật phụ'}
             </h1>
-            <IdeaGenerator 
-              role={role}
-              storyContext={storyContext}
-              onApplyIdea={handleApplyIdea}
-            />
+            <div className="flex flex-col sm:flex-row gap-2">
+              <IdeaGenerator 
+                role={role}
+                storyContext={storyContext}
+                onApplyIdea={handleApplyIdea}
+              />
+              <AvatarImagePrompt
+                characterInfo={{
+                  name: formValues.name,
+                  description: formValues.description,
+                  gender: formValues.gender,
+                  personality: formValues.personality,
+                  appearance: formValues.appearance,
+                  role: role
+                }}
+              />
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
@@ -172,7 +216,8 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
                   required 
                   placeholder="Nhập tên nhân vật"
                   className="text-lg"
-                  defaultValue=""
+                  value={formValues.name}
+                  onChange={handleInputChange}
                 />
               </div>
 
@@ -183,7 +228,8 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
                   name="description" 
                   placeholder="Mô tả về nhân vật"
                   className="h-32 text-base resize-none"
-                  defaultValue=""
+                  value={formValues.description}
+                  onChange={handleInputChange}
                 />
               </div>
 
@@ -193,7 +239,8 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
                   id="gender"
                   name="gender"
                   className="mt-1 block w-full rounded-md border-gray-300"
-                  defaultValue=""
+                  value={formValues.gender}
+                  onChange={handleInputChange}
                 >
                   <option value="">Chọn giới tính</option>
                   <option value="nam">Nam</option>
@@ -208,7 +255,8 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
                   type="date"
                   name="birthday"
                   className="mt-1 block w-full rounded-md border-gray-300"
-                  defaultValue=""
+                  value={formValues.birthday}
+                  onChange={handleInputChange}
                 />
               </div>
 
@@ -220,7 +268,8 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
                   name="height"
                   placeholder="Nhập chiều cao (cm)"
                   className="mt-1 block w-full rounded-md border-gray-300"
-                  defaultValue=""
+                  value={formValues.height}
+                  onChange={handleInputChange}
                 />
               </div>
 
@@ -232,7 +281,8 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
                   name="weight"
                   placeholder="Nhập cân nặng (kg)"
                   className="mt-1 block w-full rounded-md border-gray-300"
-                  defaultValue=""
+                  value={formValues.weight}
+                  onChange={handleInputChange}
                 />
               </div>
 
@@ -243,7 +293,8 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
                   name="personality" 
                   placeholder="Mô tả tính cách"
                   className="h-32 text-base resize-none"
-                  defaultValue=""
+                  value={formValues.personality}
+                  onChange={handleInputChange}
                 />
               </div>
 
@@ -254,7 +305,8 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
                   name="appearance" 
                   placeholder="Mô tả ngoại hình"
                   className="h-32 text-base resize-none"
-                  defaultValue=""
+                  value={formValues.appearance}
+                  onChange={handleInputChange}
                 />
               </div>
 
@@ -265,7 +317,8 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
                   name="background" 
                   placeholder="Thông tin về xuất thân, quá khứ"
                   className="h-32 text-base resize-none"
-                  defaultValue=""
+                  value={formValues.background}
+                  onChange={handleInputChange}
                 />
               </div>
 

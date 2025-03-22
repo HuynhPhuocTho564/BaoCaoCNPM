@@ -26,6 +26,7 @@ import {
 import { Suspense } from "react"
 import { ChevronLeft } from "lucide-react"
 import { IdeaGenerator } from "@/components/story/IdeaGenerator"
+import { CoverImagePrompt } from "@/components/story/CoverImagePrompt"
 
 interface MainCategory {
   id: number
@@ -266,6 +267,14 @@ function EditStoryContent({ storyId }: { storyId: string }) {
                 description: story.description,
                 mainCategory: mainCategoryName,
                 currentTags: selectedTagNames
+              }}
+            />
+            <CoverImagePrompt
+              storyInfo={{
+                title: story.title,
+                description: story.description,
+                mainCategory: mainCategoryName,
+                tags: selectedTagNames
               }}
             />
             {story.status === 'draft' && (
