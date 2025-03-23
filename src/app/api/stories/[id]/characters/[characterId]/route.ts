@@ -10,7 +10,7 @@ export async function PUT(
   request: Request,
   context: { params: { id: string, characterId: string } }
 ) {
-  const { id: storyId, characterId } = await context.params
+  const { id: storyId, characterId } = context.params
   
   try {
     const session = await getServerSession(authOptions)
@@ -26,74 +26,87 @@ export async function PUT(
     const description = formData.get('description') as string
     const avatarImage = formData.get('avatarImage') as File | null
     const role = formData.get('role') as 'main' | 'supporting'
+    const gender = formData.get('gender') as string
+    const birthday = formData.get('birthday') as string
+    const height = formData.get('height') as string
+    const weight = formData.get('weight') as string
+    const personality = formData.get('personality') as string
+    const appearance = formData.get('appearance') as string
+    const background = formData.get('background') as string
 
-    // Kiểm tra nếu đổi thành nhân vật chính
-    if (role === 'main') {
-      const [existingMain] = await pool.execute(
-        `SELECT character_id FROM story_characters 
-         WHERE story_id = ? AND role = 'main' AND character_id != ?`,
-        [storyId, characterId]
-      ) as any[]
+    const connection = await pool.getConnection()
+    
+    try {
+      await connection.beginTransaction()
 
-      if (existingMain.length > 0) {
-        return NextResponse.json(
-          { error: "Truyện đã có nhân vật chính" },
-          { status: 400 }
-        )
-      }
-    }
+      // Kiểm tra nếu đổi thành nhân vật chính
+      if (role === 'main') {
+        const [existingMain] = await connection.execute(
+          `SELECT character_id FROM story_characters 
+           WHERE story_id = ? AND role = 'main' AND character_id != ?`,
+          [storyId, characterId]
+        ) as any[]
 
-    // Lấy thông tin nhân vật cũ
-    const [characters] = await pool.execute(
-      'SELECT avatar_file_id FROM story_characters WHERE character_id = ?',
-      [characterId]
-    ) as any[]
-
-    if (!characters.length) {
-      return NextResponse.json(
-        { error: "Không tìm thấy nhân vật" },
-        { status: 404 }
-      )
-    }
-
-    let avatarUrl = null
-    let fileId = characters[0].avatar_file_id
-
-    if (avatarImage instanceof File && avatarImage.size > 0) {
-      // Upload ảnh mới
-      const buffer = Buffer.from(await avatarImage.arrayBuffer())
-      const { directLink, fileId: newFileId } = await GoogleDriveService.uploadFile(
-        buffer,
-        avatarImage.type,
-        parseInt(storyId),
-        'character-avatar',
-        parseInt(characterId)
-      )
-      avatarUrl = directLink
-      fileId = newFileId
-
-      // Xóa ảnh cũ nếu tồn tại
-      if (characters[0].avatar_file_id) {
-        try {
-          await GoogleDriveService.deleteFile(characters[0].avatar_file_id)
-        } catch (error) {
-          console.error("Lỗi khi xóa ảnh cũ:", error)
-          // Tiếp tục xử lý ngay cả khi không xóa được ảnh cũ
+        if (existingMain.length > 0) {
+          return NextResponse.json(
+            { error: "Truyện đã có nhân vật chính" },
+            { status: 400 }
+          )
         }
       }
+
+      // Lấy thông tin nhân vật cũ
+      const [characters] = await connection.execute(
+        'SELECT avatar_file_id FROM story_characters WHERE character_id = ?',
+        [characterId]
+      ) as any[]
+
+      let avatarUrl = null
+      let newFileId = null
+
+      if (avatarImage instanceof File && avatarImage.size > 0) {
+        // Upload ảnh mới trước
+        const buffer = Buffer.from(await avatarImage.arrayBuffer())
+        const { directLink, fileId } = await GoogleDriveService.uploadFile(
+          buffer,
+          avatarImage.type,
+          parseInt(storyId),
+          'character-avatar',
+          parseInt(storyId),
+          parseInt(characterId)
+        )
+        avatarUrl = directLink
+        newFileId = fileId
+
+        // Chỉ xóa ảnh cũ sau khi upload thành công
+        if (characters[0]?.avatar_file_id && characters[0].avatar_file_id !== newFileId) {
+          await GoogleDriveService.deleteFile(characters[0].avatar_file_id)
+        }
+      }
+
+      // Cập nhật thông tin nhân vật
+      const updateQuery = `
+        UPDATE story_characters 
+        SET name = ?, description = ?, role = ?, gender = ?,
+            birthday = ?, height = ?, weight = ?, 
+            personality = ?, appearance = ?, background = ?
+            ${avatarUrl ? ', avatar_image = ?, avatar_file_id = ?' : ''}
+        WHERE character_id = ?`
+
+      const updateParams = avatarUrl 
+        ? [name, description, role, gender, birthday, height, weight, personality, appearance, background, avatarUrl, newFileId, characterId]
+        : [name, description, role, gender, birthday, height, weight, personality, appearance, background, characterId]
+
+      await connection.execute(updateQuery, updateParams)
+      await connection.commit()
+
+      return NextResponse.json({ message: "Cập nhật nhân vật thành công" })
+    } catch (error) {
+      await connection.rollback()
+      throw error
+    } finally {
+      connection.release()
     }
-
-    await pool.execute(
-      `UPDATE story_characters 
-       SET name = ?, description = ?, role = ?
-       ${avatarUrl ? ', avatar_image = ?, avatar_file_id = ?' : ''}
-       WHERE character_id = ?`,
-      avatarUrl 
-        ? [name, description, role, avatarUrl, fileId, characterId]
-        : [name, description, role, characterId]
-    )
-
-    return NextResponse.json({ message: "Cập nhật nhân vật thành công" })
   } catch (error) {
     console.error("Lỗi khi cập nhật nhân vật:", error)
     return NextResponse.json(

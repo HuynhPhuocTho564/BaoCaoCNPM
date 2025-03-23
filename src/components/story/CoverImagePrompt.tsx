@@ -55,7 +55,8 @@ export function CoverImagePrompt({ storyInfo, onImageGenerated }: CoverImageProm
     try {
       const imageData = await generateImage({
         prompt: generatedPrompt.prompt,
-        negativePrompt: generatedPrompt.negativePrompt
+        negativePrompt: generatedPrompt.negativePrompt,
+        type: 'cover'
       });
       
       setGeneratedImage(imageData);

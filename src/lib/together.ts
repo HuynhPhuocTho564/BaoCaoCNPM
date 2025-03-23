@@ -27,8 +27,7 @@ export async function getTogetherClient(): Promise<Together> {
 interface GenerateImageParams {
   prompt: string;
   negativePrompt: string;
-  width?: number;
-  height?: number;
+  type?: 'cover' | 'avatar';
   steps?: number;
 }
 
@@ -38,22 +37,34 @@ interface TogetherResponse {
   }>;
 }
 
+// Cấu hình kích thước cho từng loại ảnh
+const IMAGE_DIMENSIONS = {
+  cover: {
+    width: 768,
+    height: 1024, // Tỷ lệ 3:4
+  },
+  avatar: {
+    width: 1024,
+    height: 1024, // Tỷ lệ 1:1
+  }
+};
+
 export async function generateImage({
   prompt,
   negativePrompt,
-  width = 768,
-  height = 1024,
+  type = 'cover', // Mặc định là ảnh bìa
   steps = 4,
 }: GenerateImageParams): Promise<string> {
   try {
     const together = await getTogetherClient();
+    const dimensions = IMAGE_DIMENSIONS[type];
     
     const response = await together.images.create({
       model: "black-forest-labs/FLUX.1-schnell-Free",
       prompt: prompt,
       negative_prompt: negativePrompt,
-      width,
-      height,
+      width: dimensions.width,
+      height: dimensions.height,
       steps: Math.min(steps, 4),
       n: 1,
       response_format: "base64"

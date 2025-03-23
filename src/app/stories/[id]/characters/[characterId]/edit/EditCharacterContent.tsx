@@ -59,6 +59,7 @@ export default function EditCharacterContent({
     mainCategory: string;
     tags: string[];
   } | null>(null)
+  const [imageFile, setImageFile] = useState<File | null>(null)
 
   useEffect(() => {
     const fetchCharacter = async () => {
@@ -121,8 +122,23 @@ export default function EditCharacterContent({
         setPreviewImage(reader.result as string)
       }
       reader.readAsDataURL(file)
+      setImageFile(file)
     }
   }
+
+  const handleImageGenerated = (imageData: string) => {
+    const byteString = atob(imageData);
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    const blob = new Blob([ab], { type: 'image/jpeg' });
+    const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
+    
+    setImageFile(file);
+    setPreviewImage(`data:image/jpeg;base64,${imageData}`);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -131,6 +147,11 @@ export default function EditCharacterContent({
     try {
       const formData = new FormData(e.currentTarget)
       
+      if (imageFile) {
+        formData.delete('avatarImage')
+        formData.append('avatarImage', imageFile)
+      }
+
       const response = await fetch(`/api/stories/${storyId}/characters/${characterId}`, {
         method: 'PUT',
         body: formData
@@ -236,6 +257,7 @@ export default function EditCharacterContent({
                   appearance: character.appearance,
                   role: character.role
                 }}
+                onImageGenerated={handleImageGenerated}
               />
             </div>
           </div>

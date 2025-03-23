@@ -35,6 +35,7 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
     appearance: '',
     background: '',
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
   
   useEffect(() => {
     const fetchStoryContext = async () => {
@@ -74,6 +75,7 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
         setPreviewImage(reader.result as string)
       }
       reader.readAsDataURL(file)
+      setImageFile(file);
     }
   }
 
@@ -87,10 +89,20 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    
+    if (!imageFile) {
+      toast.error('Vui lòng chọn ảnh avatar')
+      return
+    }
+
     setIsLoading(true)
 
     try {
       const formData = new FormData(e.currentTarget)
+      
+      formData.delete('avatarImage')
+      formData.append('avatarImage', imageFile)
+
       const response = await fetch(`/api/stories/${storyId}/characters`, {
         method: 'POST',
         body: formData
@@ -143,6 +155,20 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
     });
   };
 
+  const handleImageGenerated = (imageData: string) => {
+    const byteString = atob(imageData);
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    const blob = new Blob([ab], { type: 'image/jpeg' });
+    const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
+    
+    setImageFile(file);
+    setPreviewImage(`data:image/jpeg;base64,${imageData}`);
+  };
+
   return (
     <div className="container max-w-2xl mx-auto px-4 py-8">
       {storyContext ? (
@@ -166,6 +192,7 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
                   appearance: formValues.appearance,
                   role: role
                 }}
+                onImageGenerated={handleImageGenerated}
               />
             </div>
           </div>
