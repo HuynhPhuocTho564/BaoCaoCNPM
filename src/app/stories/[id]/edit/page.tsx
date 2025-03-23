@@ -129,27 +129,39 @@ export function EditStoryContent({ storyId }: { storyId: string }) {
       toast.error('Vui lòng chọn thể loại chính')
       return
     }
+
     setIsLoading(true)
 
     try {
       const formData = new FormData(e.currentTarget)
+      
       if (imageFile) {
-        formData.set('coverImage', imageFile)
+        formData.delete('coverImage')
+        formData.append('coverImage', imageFile)
       }
+      
       formData.set('mainCategoryId', selectedMainCategory.toString())
       formData.set('tagIds', JSON.stringify(selectedTags))
-      
+
       const response = await fetch(`/api/stories/${storyId}`, {
         method: 'PUT',
-        body: formData
+        body: formData,
+        cache: 'no-store',
       })
 
       if (!response.ok) {
         throw new Error('Lỗi khi cập nhật truyện')
       }
 
+      await fetch(`/api/revalidate?path=/stories/${storyId}`)
+      
       toast.success('Cập nhật truyện thành công!')
-      router.push('/stories')
+      
+      router.refresh()
+      
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      window.location.href = '/stories'
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
     } finally {
@@ -237,7 +249,6 @@ export function EditStoryContent({ storyId }: { storyId: string }) {
     .map(t => t.name);
 
   const handleImageGenerated = (imageData: string) => {
-    // Chuyển base64 thành File
     const byteString = atob(imageData);
     const ab = new ArrayBuffer(byteString.length);
     const ia = new Uint8Array(ab);
@@ -247,7 +258,6 @@ export function EditStoryContent({ storyId }: { storyId: string }) {
     const blob = new Blob([ab], { type: 'image/jpeg' });
     const file = new File([blob], 'cover.jpg', { type: 'image/jpeg' });
     
-    // Cập nhật state
     setImageFile(file);
     setPreviewImage(`data:image/jpeg;base64,${imageData}`);
   };
@@ -291,10 +301,10 @@ export function EditStoryContent({ storyId }: { storyId: string }) {
             />
             <CoverImagePrompt
               storyInfo={{
-                title: story.title,
-                description: story.description,
-                mainCategory: mainCategoryName,
-                tags: selectedTagNames
+                title: (document.getElementById('title') as HTMLInputElement)?.value || '',
+                description: (document.getElementById('description') as HTMLTextAreaElement)?.value || '',
+                mainCategory: mainCategories.find(c => c.id === selectedMainCategory)?.name || '',
+                tags: tags.filter(t => selectedTags.includes(t.id)).map(t => t.name)
               }}
               onImageGenerated={handleImageGenerated}
             />

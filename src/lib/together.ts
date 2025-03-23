@@ -1,8 +1,28 @@
 import Together from "together-ai";
 
-const together = new Together({
-  apiKey: process.env.NEXT_PUBLIC_TOGETHER_API_KEY || '',
-});
+// Hàm để lấy API key từ API route
+export async function getTogetherApiKey(): Promise<string> {
+  try {
+    const response = await fetch('/api/together/key');
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Không thể lấy API key');
+    }
+    
+    const data = await response.json();
+    return data.apiKey;
+  } catch (error) {
+    console.error("Lỗi khi lấy Together API key:", error);
+    throw error;
+  }
+}
+
+// Khởi tạo Together client với API key
+export async function getTogetherClient(): Promise<Together> {
+  const apiKey = await getTogetherApiKey();
+  return new Together({ apiKey });
+}
 
 interface GenerateImageParams {
   prompt: string;
@@ -26,6 +46,8 @@ export async function generateImage({
   steps = 4,
 }: GenerateImageParams): Promise<string> {
   try {
+    const together = await getTogetherClient();
+    
     const response = await together.images.create({
       model: "black-forest-labs/FLUX.1-schnell-Free",
       prompt: prompt,

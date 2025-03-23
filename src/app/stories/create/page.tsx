@@ -54,6 +54,7 @@ export default function CreateStoryPage() {
   const [generatedIdea, setGeneratedIdea] = useState<GeneratedIdea | null>(null)
   const [open, setOpen] = useState(false)
   const [prompt, setPrompt] = useState("")
+  const [imageFile, setImageFile] = useState<File | null>(null)
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -91,16 +92,45 @@ export default function CreateStoryPage() {
     )
   }
 
+  const handleImageGenerated = (imageData: string) => {
+    const byteString = atob(imageData);
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    const blob = new Blob([ab], { type: 'image/jpeg' });
+    const file = new File([blob], 'cover.jpg', { type: 'image/jpeg' });
+    
+    setImageFile(file);
+    setPreviewImage(`data:image/jpeg;base64,${imageData}`);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!selectedMainCategory) {
       toast.error('Vui lòng chọn thể loại chính')
       return
     }
+
+    // Kiểm tra xem có ảnh bìa không (hoặc từ upload hoặc từ AI)
+    const fileInput = e.currentTarget.querySelector('input[name="coverImage"]') as HTMLInputElement
+    if (!imageFile && (!fileInput.files || fileInput.files.length === 0)) {
+      toast.error('Vui lòng chọn ảnh bìa')
+      return
+    }
+
     setIsLoading(true)
 
     try {
       const formData = new FormData(e.currentTarget)
+      
+      // Nếu có ảnh từ AI, ưu tiên sử dụng ảnh đó
+      if (imageFile) {
+        formData.delete('coverImage') // Xóa file upload nếu có
+        formData.append('coverImage', imageFile)
+      }
+      
       formData.set('mainCategoryId', selectedMainCategory.toString())
       formData.set('tagIds', JSON.stringify(selectedTags))
       
@@ -158,6 +188,7 @@ export default function CreateStoryPage() {
                 mainCategory: mainCategories.find(c => c.id === selectedMainCategory)?.name || '',
                 tags: tags.filter(t => selectedTags.includes(t.id)).map(t => t.name)
               }}
+              onImageGenerated={handleImageGenerated}
             />
           </div>
         </div>
@@ -172,7 +203,6 @@ export default function CreateStoryPage() {
                 name="coverImage"
                 type="file"
                 accept="image/*"
-                required
                 onChange={handleImageChange}
                 className="hidden"
               />

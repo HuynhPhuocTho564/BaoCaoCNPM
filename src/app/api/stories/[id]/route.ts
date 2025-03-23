@@ -91,12 +91,19 @@ export async function PUT(
       let newFileId = null;
 
       // Upload ảnh mới nếu có
-      if (coverImage && coverImage.size > 0) {
+      if (coverImage) {
         const [users] = await connection.execute(
           'SELECT user_id FROM users WHERE email = ?',
           [session.user.email]
         ) as any[];
 
+        // Lấy thông tin ảnh cũ trước
+        const [oldStory] = await connection.execute(
+          'SELECT cover_file_id FROM stories WHERE story_id = ?',
+          [id]
+        ) as any[];
+
+        // Upload ảnh mới trước
         const buffer = Buffer.from(await coverImage.arrayBuffer());
         const { directLink, fileId } = await GoogleDriveService.uploadFile(
           buffer,
@@ -108,30 +115,28 @@ export async function PUT(
         coverImageUrl = directLink;
         newFileId = fileId;
 
-        // Xóa ảnh cũ nếu có
-        const [oldStory] = await connection.execute(
-          'SELECT cover_file_id FROM stories WHERE story_id = ?',
-          [id]
-        ) as any[];
-
-        if (oldStory[0]?.cover_file_id) {
+        // Chỉ xóa ảnh cũ sau khi upload thành công
+        if (oldStory[0]?.cover_file_id && oldStory[0].cover_file_id !== newFileId) {
           await GoogleDriveService.deleteFile(oldStory[0].cover_file_id);
         }
       }
 
       // Cập nhật thông tin truyện
-      await connection.execute(
-        `UPDATE stories SET 
+      const updateQuery = `
+        UPDATE stories SET 
           title = ?,
           description = ?,
           main_category_id = ?,
           ${coverImageUrl ? 'cover_image = ?, cover_file_id = ?,' : ''} 
           updated_at = CURRENT_TIMESTAMP
-        WHERE story_id = ?`,
-        coverImageUrl 
-          ? [title, description, mainCategoryId, coverImageUrl, newFileId, id]
-          : [title, description, mainCategoryId, id]
-      );
+        WHERE story_id = ?
+      `;
+
+      const updateParams = coverImageUrl 
+        ? [title, description, mainCategoryId, coverImageUrl, newFileId, id]
+        : [title, description, mainCategoryId, id];
+
+      await connection.execute(updateQuery, updateParams);
 
       // Cập nhật tags
       await connection.execute(
