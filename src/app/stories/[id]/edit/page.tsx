@@ -159,9 +159,7 @@ export function EditStoryContent({ storyId }: { storyId: string }) {
       
       router.refresh()
       
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      window.location.href = '/stories'
+      router.push('/stories')
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
     } finally {
