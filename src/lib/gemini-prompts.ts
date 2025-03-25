@@ -6,7 +6,7 @@ interface StoryInfo {
 }
 
 export const SYSTEM_PROMPTS = {
-  CHARACTER_IDEA: `Hãy phát triển ý tưởng thành một nhân vật và trả về JSON với format sau:
+  CHARACTER_IDEA: `Bạn là một AI assistant chuyên phát triển nhân vật. LUÔN trả về JSON với format sau, KHÔNG có text khác:
 \`\`\`json
 {
   "name": "tên nhân vật phù hợp",
@@ -15,7 +15,7 @@ export const SYSTEM_PROMPTS = {
 }
 \`\`\``,
 
-  DIALOGUE: `Hãy trả về JSON với format sau:
+  DIALOGUE: `Bạn là một AI assistant chuyên tạo đối thoại. LUÔN trả về JSON với format sau, KHÔNG có text khác:
 \`\`\`json
 {
   "content": "nội dung đối thoại",
@@ -23,47 +23,43 @@ export const SYSTEM_PROMPTS = {
 }
 \`\`\``,
 
-  STORY: `Hãy phát triển ý tưởng thành một truyện và trả về JSON với format sau. CHỈ được chọn thể loại và tag từ danh sách cho sẵn:
-
-Format JSON:
+  STORY: `Bạn là một AI assistant chuyên phát triển ý tưởng truyện. LUÔN trả về JSON với format sau, KHÔNG có text khác:
 \`\`\`json
 {
   "title": "tiêu đề phù hợp với ý tưởng",
   "description": "mô tả chi tiết cốt truyện",
-  "mainCategory": "chọn từ danh sách thể loại trên",
-  "suggestedTags": ["chọn từ danh sách tag trên"]
+  "mainCategory": "chọn từ danh sách thể loại được cung cấp",
+  "suggestedTags": ["chọn từ danh sách tag được cung cấp"]
 }
 \`\`\``,
 
-  EDIT_STORY: `Hãy đề xuất cách cải thiện truyện sau và trả về JSON với format tương tự. CHỈ được chọn thể loại và tag từ danh sách cho sẵn:
-
-Format JSON:
+  EDIT_STORY: `Bạn là một AI assistant chuyên cải thiện truyện. LUÔN trả về JSON với format sau, KHÔNG có text khác:
 \`\`\`json
 {
   "title": "tiêu đề cải thiện",
   "description": "mô tả chi tiết cốt truyện cải thiện",
-  "mainCategory": "chọn từ danh sách thể loại trên",
-  "suggestedTags": ["chọn từ danh sách tag trên"]
+  "mainCategory": "chọn từ danh sách thể loại được cung cấp",
+  "suggestedTags": ["chọn từ danh sách tag được cung cấp"]
 }
 \`\`\``,
 
-  CHARACTER: `Hãy đọc thông tin về câu truyện sau và tạo một nhân vật phù hợp. Trả về JSON với format sau:
+  CHARACTER: `Bạn là một AI assistant chuyên phát triển nhân vật. LUÔN trả về JSON với format sau, KHÔNG có text khác:
 \`\`\`json
 {
-  "name": "tên nhân vật phù hợp với bối cảnh truyện",
+  "name": "tên nhân vật phù hợp với bối cảnh",
   "description": "mô tả tổng quan về nhân vật",
   "gender": "nam hoặc nữ",
   "birthday": "ngày sinh dạng YYYY-MM-DD",
   "height": "chiều cao (cm)",
   "weight": "cân nặng (kg)", 
-  "personality": "mô tả tính cách phù hợp với bối cảnh truyện",
+  "personality": "mô tả tính cách phù hợp với bối cảnh",
   "appearance": "mô tả ngoại hình",
-  "background": "thông tin về xuất thân, quá khứ liên quan đến cốt truyện",
+  "background": "thông tin về xuất thân và quá khứ",
   "role": "main hoặc supporting"
 }
 \`\`\``,
 
-  EDIT_CHARACTER: `Hãy đọc thông tin về câu truyện và nhân vật hiện tại, sau đó đề xuất cách cải thiện. Trả về JSON với format sau:
+  EDIT_CHARACTER: `Bạn là một AI assistant chuyên cải thiện nhân vật. LUÔN trả về JSON với format sau, KHÔNG có text khác:
 \`\`\`json
 {
   "name": "tên nhân vật cải thiện",
@@ -74,12 +70,12 @@ Format JSON:
   "weight": "cân nặng (kg)", 
   "personality": "mô tả tính cách cải thiện",
   "appearance": "mô tả ngoại hình cải thiện",
-  "background": "thông tin về xuất thân, quá khứ cải thiện",
+  "background": "thông tin về xuất thân và quá khứ cải thiện",
   "role": "main hoặc supporting"
 }
 \`\`\``,
 
-  COVER_IMAGE: `Hãy tạo một prompt chi tiết để tạo ảnh bìa cho truyện sau bằng AI. Trả về JSON với format sau:
+  COVER_IMAGE: `Bạn là một AI assistant chuyên tạo prompt cho AI tạo ảnh. LUÔN trả về JSON với format sau, KHÔNG có text khác:
 \`\`\`json
 {
   "prompt": "mô tả chi tiết cho ảnh bìa bằng tiếng Anh",
@@ -88,7 +84,7 @@ Format JSON:
 }
 \`\`\``,
 
-  AVATAR_IMAGE: `Hãy tạo một prompt chi tiết để tạo ảnh avatar cho nhân vật sau bằng AI. Trả về JSON với format sau:
+  AVATAR_IMAGE: `Bạn là một AI assistant chuyên tạo prompt cho AI tạo ảnh. LUÔN trả về JSON với format sau, KHÔNG có text khác:
 \`\`\`json
 {
   "prompt": "mô tả chi tiết cho ảnh avatar bằng tiếng Anh",
