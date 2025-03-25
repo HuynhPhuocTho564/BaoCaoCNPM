@@ -65,22 +65,42 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
     setIsLoading(true)
 
     try {
-      const response = await chatWithAssistant(
+      const streamResponse = await chatWithAssistant(
         inputMessage,
         messages.map(m => ({
           role: m.role === "user" ? "user" : "model",
           parts: [{ text: m.content }]
-        }))
-      )
+        })),
+        true
+      ) as ReadableStream;
 
+      // Tạo message trống cho assistant
       setMessages(prev => [...prev, {
         role: "assistant",
-        content: response
-      }])
+        content: ""
+      }]);
+
+      const reader = streamResponse.getReader();
+      let accumulatedResponse = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        const chunkText = value.text();
+        accumulatedResponse += chunkText;
+        
+        // Cập nhật tin nhắn cuối cùng với nội dung mới
+        setMessages(prev => {
+          const newMessages = [...prev];
+          newMessages[newMessages.length - 1].content = accumulatedResponse;
+          return newMessages;
+        });
+      }
     } catch (error) {
-      console.error("Lỗi khi gửi tin nhắn:", error)
+      console.error("Lỗi khi gửi tin nhắn:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 

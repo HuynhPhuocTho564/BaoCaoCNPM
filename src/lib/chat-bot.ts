@@ -6,11 +6,12 @@ import {
 } from "@google/generative-ai";
 
 const generationConfig = {
-  temperature: 0.7,
-  topP: 0.8,
-  topK: 40,
-  maxOutputTokens: 1024,
-};
+    temperature: 1,
+    topP: 0.95,
+    topK: 40,
+    maxOutputTokens: 8192,
+    responseMimeType: "text/plain",
+  };
 
 const safetySettings = [
   {
@@ -31,24 +32,7 @@ const safetySettings = [
   },
 ];
 
-export const CHAT_ASSISTANT_HISTORY = [
-  {
-    role: "user",
-    parts: [{ text: `Bạn là một trợ lý AI chuyên về truyện. Nhiệm vụ của bạn là:
-- Giúp người dùng tìm hiểu về các truyện
-- Trả lời các câu hỏi liên quan đến cốt truyện, nhân vật
-- Đưa ra các gợi ý và phân tích về truyện
-- Giúp người dùng phát triển ý tưởng viết truyện
-- Đưa ra các gợi ý về cách phát triển cốt truyện và nhân vật
 
-Hãy trả lời một cách thân thiện, chuyên nghiệp và dễ hiểu.
-Luôn giữ giọng điệu tích cực và khuyến khích người dùng.` }]
-  },
-  {
-    role: "model",
-    parts: [{ text: "Xin chào! Tôi là Trợ lý Truyện, rất vui được giúp đỡ bạn về mọi vấn đề liên quan đến truyện. Bạn có câu hỏi gì không?" }]
-  }
-];
 
 let apiKey: string | null = null;
 
@@ -64,7 +48,7 @@ async function getApiKey() {
   return apiKey;
 }
 
-export async function chatWithAssistant(message: string, history: any[] = []): Promise<string> {
+export async function chatWithAssistant(message: string, history: any[] = [], stream = false): Promise<string | ReadableStream> {
   try {
     const key = await getApiKey();
     const genAI = new GoogleGenerativeAI(key!);
@@ -72,10 +56,34 @@ export async function chatWithAssistant(message: string, history: any[] = []): P
       model: "gemini-2.0-flash",
       generationConfig,
       safetySettings,
+      systemInstruction: `Bạn là một trợ lý AI chuyên về truyện. Nhiệm vụ của bạn là:
+- Giúp người dùng tìm hiểu về các truyện
+- Trả lời các câu hỏi liên quan đến cốt truyện, nhân vật
+- Đưa ra các gợi ý và phân tích về truyện
+- Giúp người dùng phát triển ý tưởng viết truyện
+- Đưa ra các gợi ý về cách phát triển cốt truyện và nhân vật
+
+Hãy trả lời một cách thân thiện, chuyên nghiệp và dễ hiểu.
+Luôn giữ giọng điệu tích cực và khuyến khích người dùng.`
     });
     
+    if (stream) {
+      const chat = model.startChat({
+        history: history,
+      });
+      const result = await chat.sendMessageStream(message);
+      return new ReadableStream({
+        async start(controller) {
+          for await (const chunk of result.stream) {
+            controller.enqueue(chunk);
+          }
+          controller.close();
+        },
+      });
+    }
+
     const chat = model.startChat({
-      history: history.length > 0 ? history : CHAT_ASSISTANT_HISTORY,
+      history: history,
     });
 
     const result = await chat.sendMessage(message);

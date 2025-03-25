@@ -3,7 +3,7 @@ import {
   HarmCategory,
   HarmBlockThreshold,
 } from "@google/generative-ai";
-import { DIALOGUE_SUGGESTION_HISTORY, createStoryPrompt, createEditStoryPrompt, createCharacterPrompt, createEditCharacterPrompt, createCoverImagePrompt, createAvatarPrompt } from './gemini-prompts';
+import { SYSTEM_PROMPTS, createStoryPrompt, createEditStoryPrompt, createCharacterPrompt, createEditCharacterPrompt, createCoverImagePrompt, createAvatarPrompt } from './gemini-prompts';
 
 let apiKey: string | null = null;
 
@@ -20,10 +20,11 @@ async function getApiKey() {
 }
 
 const generationConfig = {
-  temperature: 0.9,
+  temperature: 1,
   topP: 0.95,
   topK: 40,
-  maxOutputTokens: 2048,
+  maxOutputTokens: 8192,
+  responseMimeType: "application/json",
 };
 
 const safetySettings = [
@@ -83,16 +84,13 @@ export async function generateStoryIdea(userPrompt: string, categories: string[]
     const model = genAI.getGenerativeModel({ 
       model: "gemini-2.0-flash",
       safetySettings,
+      generationConfig,
+      systemInstruction: SYSTEM_PROMPTS.STORY
     });
     
     const chat = model.startChat({
-      generationConfig,
       history: [
-        createStoryPrompt(categories, tags),
-        {
-          role: "model",
-          parts: [{ text: "Tôi sẽ chỉ sử dụng các thể loại và tag từ danh sách đã cho." }]
-        }
+        createStoryPrompt(categories, tags)
       ],
     });
 
@@ -102,11 +100,22 @@ export async function generateStoryIdea(userPrompt: string, categories: string[]
     const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
     const jsonString = jsonMatch ? jsonMatch[1] : response;
     
-    const storyIdea = JSON.parse(jsonString);
+    let storyIdea: StoryIdea;
+    try {
+      storyIdea = JSON.parse(jsonString);
+      // Kiểm tra tính hợp lệ của dữ liệu
+      if (!storyIdea.title || !storyIdea.description || !storyIdea.mainCategory || !Array.isArray(storyIdea.suggestedTags)) {
+        throw new Error('Dữ liệu không hợp lệ');
+      }
+    } catch (parseError) {
+      console.error("Lỗi khi parse JSON:", parseError);
+      throw new Error('Không thể xử lý phản hồi từ AI');
+    }
+    
     return storyIdea;
   } catch (error) {
     console.error("Lỗi khi tạo ý tưởng:", error);
-    throw error;
+    throw new Error('Có lỗi xảy ra khi tạo ý tưởng. Vui lòng thử lại sau.');
   }
 }
 
@@ -138,21 +147,15 @@ export async function generateCharacterIdea(
     const model = genAI.getGenerativeModel({ 
       model: "gemini-2.0-flash",
       safetySettings,
+      generationConfig,
+      systemInstruction: SYSTEM_PROMPTS.CHARACTER
     });
 
     const chat = model.startChat({
-      generationConfig,
       history: [
         existingCharacter 
           ? createEditCharacterPrompt(role, storyContext, existingCharacter)
           : createCharacterPrompt(role, storyContext),
-        {
-          role: "model",
-          parts: [{ text: existingCharacter 
-            ? "Tôi sẽ đề xuất cách cải thiện nhân vật phù hợp với bối cảnh truyện." 
-            : "Tôi sẽ tạo nhân vật phù hợp với bối cảnh truyện."
-          }]
-        }
       ],
     });
 
@@ -162,7 +165,19 @@ export async function generateCharacterIdea(
     const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
     const jsonString = jsonMatch ? jsonMatch[1] : response;
     
-    return JSON.parse(jsonString);
+    let characterIdea: CharacterIdea;
+    try {
+      characterIdea = JSON.parse(jsonString);
+      // Kiểm tra tính hợp lệ của dữ liệu
+      if (!characterIdea.name || !characterIdea.description || !characterIdea.role) {
+        throw new Error('Dữ liệu không hợp lệ');
+      }
+    } catch (parseError) {
+      console.error("Lỗi khi parse JSON:", parseError);
+      throw new Error('Không thể xử lý phản hồi từ AI');
+    }
+    
+    return characterIdea;
   } catch (error) {
     console.error("Lỗi khi tạo nhân vật:", error);
     throw error;
@@ -176,10 +191,16 @@ export async function generateDialogueSuggestion(prompt: string): Promise<Dialog
     const model = genAI.getGenerativeModel({ 
       model: "gemini-2.0-flash",
       safetySettings,
+      generationConfig,
+      systemInstruction: SYSTEM_PROMPTS.DIALOGUE
     });
     const chat = model.startChat({
-      generationConfig,
-      history: DIALOGUE_SUGGESTION_HISTORY,
+      history: [
+        {
+          role: "user",
+          parts: [{ text: SYSTEM_PROMPTS.DIALOGUE }]
+        }
+      ],
     });
     const result = await chat.sendMessage(prompt);
     const response = result.response.text();
@@ -187,11 +208,21 @@ export async function generateDialogueSuggestion(prompt: string): Promise<Dialog
     const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
     const jsonString = jsonMatch ? jsonMatch[1] : response;
     
-    const characterIdea = JSON.parse(jsonString);
-    return characterIdea;
+    let dialogueIdea: DialogueSuggestion;
+    try {
+      dialogueIdea = JSON.parse(jsonString);
+      if (!dialogueIdea.content || !dialogueIdea.type) {
+        throw new Error('Dữ liệu đối thoại không hợp lệ');
+      }
+    } catch (parseError) {
+      console.error("Lỗi khi parse JSON:", parseError);
+      throw new Error('Không thể xử lý phản hồi từ AI');
+    }
+    
+    return dialogueIdea;
   } catch (error) {
-    console.error("Lỗi khi tạo nhân vật:", error);
-    throw error;
+    console.error("Lỗi khi tạo đối thoại:", error);
+    throw new Error('Có lỗi xảy ra khi tạo đối thoại. Vui lòng thử lại sau.');
   }
 }
 
@@ -212,16 +243,13 @@ export async function generateStoryEdit(
     const model = genAI.getGenerativeModel({ 
       model: "gemini-2.0-flash",
       safetySettings,
+      generationConfig,
+      systemInstruction: SYSTEM_PROMPTS.EDIT_STORY
     });
     
     const chat = model.startChat({
-      generationConfig,
       history: [
         createEditStoryPrompt(categories, tags, existingStory),
-        {
-          role: "model",
-          parts: [{ text: "Tôi sẽ chỉ sử dụng các thể loại và tag từ danh sách đã cho." }]
-        }
       ],
     });
 
@@ -231,10 +259,21 @@ export async function generateStoryEdit(
     const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
     const jsonString = jsonMatch ? jsonMatch[1] : response;
     
-    return JSON.parse(jsonString);
+    let editedStory: StoryIdea;
+    try {
+      editedStory = JSON.parse(jsonString);
+      if (!editedStory.title || !editedStory.description || !editedStory.mainCategory || !Array.isArray(editedStory.suggestedTags)) {
+        throw new Error('Dữ liệu chỉnh sửa không hợp lệ');
+      }
+    } catch (parseError) {
+      console.error("Lỗi khi parse JSON:", parseError);
+      throw new Error('Không thể xử lý phản hồi từ AI');
+    }
+    
+    return editedStory;
   } catch (error) {
-    console.error("Lỗi khi tạo ý tưởng chỉnh sửa:", error);
-    throw error;
+    console.error("Lỗi khi chỉnh sửa truyện:", error);
+    throw new Error('Có lỗi xảy ra khi chỉnh sửa. Vui lòng thử lại sau.');
   }
 }
 
@@ -252,16 +291,13 @@ export async function generateCoverImagePrompt(
     const model = genAI.getGenerativeModel({ 
       model: "gemini-2.0-flash",
       safetySettings,
+      generationConfig,
+      systemInstruction: SYSTEM_PROMPTS.COVER_IMAGE
     });
     
     const chat = model.startChat({
-      generationConfig,
       history: [
         createCoverImagePrompt(storyInfo),
-        {
-          role: "model",
-          parts: [{ text: "Tôi sẽ tạo prompt phù hợp với nội dung và thể loại của truyện." }]
-        }
       ],
     });
 
@@ -271,10 +307,21 @@ export async function generateCoverImagePrompt(
     const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
     const jsonString = jsonMatch ? jsonMatch[1] : response;
     
-    return JSON.parse(jsonString);
+    let coverPrompt: CoverImagePrompt;
+    try {
+      coverPrompt = JSON.parse(jsonString);
+      if (!coverPrompt.prompt || !coverPrompt.negativePrompt || !coverPrompt.style) {
+        throw new Error('Dữ liệu prompt ảnh bìa không hợp lệ');
+      }
+    } catch (parseError) {
+      console.error("Lỗi khi parse JSON:", parseError);
+      throw new Error('Không thể xử lý phản hồi từ AI');
+    }
+    
+    return coverPrompt;
   } catch (error) {
     console.error("Lỗi khi tạo prompt ảnh bìa:", error);
-    throw error;
+    throw new Error('Có lỗi xảy ra khi tạo prompt ảnh bìa. Vui lòng thử lại sau.');
   }
 }
 
@@ -294,16 +341,13 @@ export async function generateAvatarPrompt(
     const model = genAI.getGenerativeModel({ 
       model: "gemini-2.0-flash",
       safetySettings,
+      generationConfig,
+      systemInstruction: SYSTEM_PROMPTS.AVATAR_IMAGE
     });
     
     const chat = model.startChat({
-      generationConfig,
       history: [
         createAvatarPrompt(characterInfo),
-        {
-          role: "model",
-          parts: [{ text: "Tôi sẽ tạo prompt phù hợp với đặc điểm của nhân vật." }]
-        }
       ],
     });
 
@@ -313,9 +357,20 @@ export async function generateAvatarPrompt(
     const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
     const jsonString = jsonMatch ? jsonMatch[1] : response;
     
-    return JSON.parse(jsonString);
+    let avatarPrompt: CoverImagePrompt;
+    try {
+      avatarPrompt = JSON.parse(jsonString);
+      if (!avatarPrompt.prompt || !avatarPrompt.negativePrompt || !avatarPrompt.style) {
+        throw new Error('Dữ liệu prompt avatar không hợp lệ');
+      }
+    } catch (parseError) {
+      console.error("Lỗi khi parse JSON:", parseError);
+      throw new Error('Không thể xử lý phản hồi từ AI');
+    }
+    
+    return avatarPrompt;
   } catch (error) {
     console.error("Lỗi khi tạo prompt avatar:", error);
-    throw error;
+    throw new Error('Có lỗi xảy ra khi tạo prompt avatar. Vui lòng thử lại sau.');
   }
 } 
