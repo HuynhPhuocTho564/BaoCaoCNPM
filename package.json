@@ -54,10 +54,7 @@
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
     "together-ai": "^0.13.0",
-<<<<<<< HEAD
     "unified": "^11.0.5",
-=======
->>>>>>> 9940022f571deded270f377aaccad74f1b307c89
     "vnpay": "^1.6.1"
   },
   "devDependencies": {

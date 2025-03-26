@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 /* eslint-disable @typescript-eslint/no-unused-vars */
-=======
->>>>>>> 9940022f571deded270f377aaccad74f1b307c89
 "use client"
 
 import * as React from "react"
@@ -9,7 +6,6 @@ import { MessageCircle, X, Send, Trash2 } from "lucide-react"
 import clsx from "clsx"
 import { usePathname } from "next/navigation"
 import { chatWithAssistant, Message } from "@/lib/chat-bot"
-<<<<<<< HEAD
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -20,8 +16,6 @@ import rehypePrism from 'rehype-prism-plus'
 // Import CSS cần thiết
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/github-dark.css'
-=======
->>>>>>> 9940022f571deded270f377aaccad74f1b307c89
 
 interface ChatBotProps {
   className?: string
@@ -138,23 +132,21 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
   }
 
   return (
-    <div className="fixed bottom-8 right-8 z-50" ref={chatRef}>
+    <div className="fixed bottom-8 right-8 z-50 md:bottom-8 md:right-8 bottom-0 right-0" ref={chatRef}>
       <div
         className={clsx(
-<<<<<<< HEAD
           "bg-background rounded-lg shadow-lg",
-=======
-          "bg-white rounded-lg shadow-lg",
->>>>>>> 9940022f571deded270f377aaccad74f1b307c89
-          "w-[400px] h-[600px]",
+          "w-full h-screen md:w-[400px] md:h-[600px]",
           "transition-all duration-300 ease-in-out",
-          "absolute bottom-16 right-0",
+          "fixed md:absolute bottom-0 right-0",
           "flex flex-col",
           isOpen ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0 pointer-events-none",
+          "md:rounded-lg rounded-none",
+          isOpen ? "overflow-hidden" : "",
         )}
       >
         {/* Header */}
-        <div className="p-4 border-b flex justify-between items-center bg-primary text-primary-foreground rounded-t-lg">
+        <div className="p-4 border-b flex justify-between items-center bg-primary text-primary-foreground md:rounded-t-lg rounded-none sticky top-0 z-10">
           <div className="flex items-center gap-2">
             <MessageCircle className="w-5 h-5" />
             <h3 className="font-semibold text-lg">Trợ lý Truyện</h3>
@@ -177,7 +169,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
         </div>
 
         {/* Chat Messages Area */}
-        <div className="flex-1 p-4 overflow-y-auto">
+        <div className="flex-1 p-4 overflow-y-auto overscroll-contain">
           {messages.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
               Chào mừng bạn đến với Trợ lý Truyện! Hãy đặt câu hỏi để bắt đầu.
@@ -190,7 +182,6 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
                   "mb-4 max-w-[80%] rounded-lg p-3",
                   message.role === "user"
                     ? "ml-auto bg-primary text-primary-foreground"
-<<<<<<< HEAD
                     : "bg-muted/50 prose prose-stone dark:prose-invert max-w-none"
                 )}
               >
@@ -234,21 +225,11 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
                     {message.content}
                   </ReactMarkdown>
                 )}
-=======
-                    : "bg-muted"
-                )}
-              >
-                {message.content}
->>>>>>> 9940022f571deded270f377aaccad74f1b307c89
               </div>
             ))
           )}
           {isLoading && (
-<<<<<<< HEAD
             <div className="bg-muted/50 rounded-lg p-3 max-w-[80%] animate-pulse">
-=======
-            <div className="bg-muted rounded-lg p-3 max-w-[80%] animate-pulse">
->>>>>>> 9940022f571deded270f377aaccad74f1b307c89
               Đang trả lời...
             </div>
           )}
@@ -256,11 +237,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
         </div>
 
         {/* Input Area */}
-<<<<<<< HEAD
-        <div className="p-4 border-t border-border bg-background/50">
-=======
-        <div className="p-4 border-t bg-muted/30">
->>>>>>> 9940022f571deded270f377aaccad74f1b307c89
+        <div className="p-4 border-t border-border bg-background/50 sticky bottom-0 z-10">
           <div className="flex gap-3 items-end">
             <textarea
               rows={1}
@@ -268,11 +245,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Nhập tin nhắn..."
-<<<<<<< HEAD
               className="flex-1 px-4 py-3 border border-border rounded-2xl bg-background focus:outline-none focus:ring-2 focus:ring-primary resize-none min-h-[50px] max-h-[150px]"
-=======
-              className="flex-1 px-4 py-3 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary resize-none min-h-[50px] max-h-[150px]"
->>>>>>> 9940022f571deded270f377aaccad74f1b307c89
             />
             <button
               onClick={handleSendMessage}
@@ -302,6 +275,8 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
           "transition-all duration-300 ease-in-out",
           "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
           "flex items-center gap-2",
+          "md:static fixed bottom-4 right-4",
+          isOpen ? "md:block hidden" : "block",
           className
         )}
         aria-label="Mở trợ lý truyện"
