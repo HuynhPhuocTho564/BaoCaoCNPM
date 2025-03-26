@@ -35,7 +35,7 @@ export const ScrollToTop: React.FC<ScrollToTopProps> = ({
   return (
     <button
       className={clsx(
-        "fixed bottom-8 right-8 p-3 rounded-full",
+        "fixed bottom-28 right-8 p-3 rounded-full",
         "bg-primary hover:bg-primary/90",
         "text-primary-foreground",
         "shadow-lg",

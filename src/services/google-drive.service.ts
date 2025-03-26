@@ -30,8 +30,13 @@ export class GoogleDriveService {
     characterId?: number
   ) {
     try {
-      const extension = mimeType === 'image/jpeg' ? '.jpg' : 
-                       mimeType === 'image/png' ? '.png' : '.gif';
+      // Đảm bảo mimeType luôn đúng định dạng
+      const normalizedMimeType = mimeType.startsWith('data:') 
+        ? 'image/jpeg'  // Ảnh từ AI luôn là JPEG
+        : mimeType;
+      
+      const extension = normalizedMimeType === 'image/jpeg' ? '.jpg' : 
+                       normalizedMimeType === 'image/png' ? '.png' : '.gif';
       
       // Tạo tên file dựa trên loại
       const fileName = type === 'avatar' ? `avatar_${userId}${extension}` :
@@ -50,21 +55,16 @@ export class GoogleDriveService {
         const existingFile = existingFiles.data.files[0];
         fileId = existingFile.id!;
 
-        if (existingFile.mimeType !== mimeType) {
-          await this.deleteFile(fileId);
-          const newFile = await this.createFile(file, mimeType, fileName);
-          fileId = newFile.id!;
-        } else {
-          await this.driveClient.files.update({
-            fileId: fileId,
-            media: {
-              mimeType: mimeType,
-              body: this.bufferToStream(file),
-            },
-          });
-        }
+        // Luôn cập nhật file thay vì kiểm tra mimeType
+        await this.driveClient.files.update({
+          fileId: fileId,
+          media: {
+            mimeType: normalizedMimeType,
+            body: this.bufferToStream(file),
+          },
+        });
       } else {
-        const newFile = await this.createFile(file, mimeType, fileName);
+        const newFile = await this.createFile(file, normalizedMimeType, fileName);
         fileId = newFile.id!;
       }
 
@@ -76,8 +76,9 @@ export class GoogleDriveService {
         },
       });
 
-      // Tạo link preview thủ công:
-      const directLink = `https://drive.google.com/uc?id=${fileId}`;
+      // Thêm timestamp vào URL để tránh cache
+      const timestamp = Date.now();
+      const directLink = `https://drive.google.com/uc?export=view&id=${fileId}&t=${timestamp}`;
 
       return {
         fileId,
@@ -107,14 +108,17 @@ export class GoogleDriveService {
 
   static async deleteFile(fileId: string) {
     try {
+      // Thử xóa file
       await this.driveClient.files.delete({
         fileId: fileId,
       });
+
+      // Thêm một khoảng thời gian chờ để đảm bảo file đã được xóa hoàn toàn
+      await new Promise(resolve => setTimeout(resolve, 1000));
     } catch (error: any) {
       // Kiểm tra nếu lỗi là 404 Not Found
       if (error.code === 404) {
         console.warn(`File not found on Google Drive: ${fileId}`);
-        // Bỏ qua lỗi, không throw exception
         return;
       }
       console.error('Error deleting from Google Drive:', error);

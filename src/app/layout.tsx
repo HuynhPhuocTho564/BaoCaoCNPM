@@ -6,6 +6,7 @@ import { Toaster } from 'sonner';
 import { ScrollToTop } from "@/components/scroll-to-top"
 import { Nav } from "@/components/nav/nav";
 import { Footer } from "@/components/footer";
+import { ChatBot } from "@/components/chat-bot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,6 +39,7 @@ export default function RootLayout({
           <Footer />
           <Toaster richColors position="top-center" />
           <ScrollToTop />
+          <ChatBot />
         </AuthProvider>
       </body>
     </html>

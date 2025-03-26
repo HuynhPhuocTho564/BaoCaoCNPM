@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Suspense } from "react"
 import { ChevronLeft } from "lucide-react"
+import { IdeaGenerator } from "@/components/story/IdeaGenerator"
+import { CoverImagePrompt } from "@/components/story/CoverImagePrompt"
 
 interface MainCategory {
   id: number
@@ -48,7 +50,14 @@ interface Story {
   status: 'draft' | 'published' | 'archived'
 }
 
-function EditStoryContent({ storyId }: { storyId: string }) {
+interface GeneratedIdea {
+  title: string;
+  description: string;
+  mainCategory: string;
+  suggestedTags: string[];
+}
+
+export function EditStoryContent({ storyId }: { storyId: string }) {
   const router = useRouter()
   const { data: session } = useSession()
   const [isLoading, setIsLoading] = useState(false)
@@ -58,6 +67,7 @@ function EditStoryContent({ storyId }: { storyId: string }) {
   const [selectedTags, setSelectedTags] = useState<number[]>([])
   const [story, setStory] = useState<Story | null>(null)
   const [previewImage, setPreviewImage] = useState<string>("")
+  const [imageFile, setImageFile] = useState<File | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -119,23 +129,36 @@ function EditStoryContent({ storyId }: { storyId: string }) {
       toast.error('Vui lòng chọn thể loại chính')
       return
     }
+
     setIsLoading(true)
 
     try {
       const formData = new FormData(e.currentTarget)
+      
+      if (imageFile) {
+        formData.delete('coverImage')
+        formData.append('coverImage', imageFile)
+      }
+      
       formData.set('mainCategoryId', selectedMainCategory.toString())
       formData.set('tagIds', JSON.stringify(selectedTags))
-      
+
       const response = await fetch(`/api/stories/${storyId}`, {
         method: 'PUT',
-        body: formData
+        body: formData,
+        cache: 'no-store',
       })
 
       if (!response.ok) {
         throw new Error('Lỗi khi cập nhật truyện')
       }
 
+      await fetch(`/api/revalidate?path=/stories/${storyId}`)
+      
       toast.success('Cập nhật truyện thành công!')
+      
+      router.refresh()
+      
       router.push('/stories')
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
@@ -146,12 +169,14 @@ function EditStoryContent({ storyId }: { storyId: string }) {
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(`/api/stories/${storyId}`, {
+      // Thêm tham số để yêu cầu xóa tất cả dữ liệu liên quan
+      const response = await fetch(`/api/stories/${storyId}?cascade=true`, {
         method: 'DELETE',
       })
 
       if (!response.ok) {
-        throw new Error('Lỗi khi xóa truyện')
+        const error = await response.json()
+        throw new Error(error.message || 'Lỗi khi xóa truyện')
       }
 
       toast.success('Xóa truyện thành công')
@@ -198,6 +223,43 @@ function EditStoryContent({ storyId }: { storyId: string }) {
     }
   }
 
+  const handleApplyIdea = (idea: GeneratedIdea) => {
+    const titleInput = document.getElementById('title') as HTMLInputElement;
+    const descriptionInput = document.getElementById('description') as HTMLTextAreaElement;
+    
+    if (titleInput) titleInput.value = idea.title;
+    if (descriptionInput) descriptionInput.value = idea.description;
+    
+    const matchedCategory = mainCategories.find(
+      cat => cat.name.toLowerCase() === idea.mainCategory.toLowerCase()
+    );
+    if (matchedCategory) setSelectedMainCategory(matchedCategory.id);
+    
+    const matchedTags = tags.filter(tag =>
+      idea.suggestedTags.some(suggestedTag => tag.name.toLowerCase() === suggestedTag.toLowerCase())
+    );
+    setSelectedTags(matchedTags.map(tag => tag.id));
+  };
+
+  const mainCategoryName = mainCategories.find(c => c.id === selectedMainCategory)?.name || '';
+  const selectedTagNames = tags
+    .filter(t => selectedTags.includes(t.id))
+    .map(t => t.name);
+
+  const handleImageGenerated = (imageData: string) => {
+    const byteString = atob(imageData);
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    const blob = new Blob([ab], { type: 'image/jpeg' });
+    const file = new File([blob], 'cover.jpg', { type: 'image/jpeg' });
+    
+    setImageFile(file);
+    setPreviewImage(`data:image/jpeg;base64,${imageData}`);
+  };
+
   if (!story) {
     return (
       <div className="container mx-auto px-4 py-12">
@@ -221,9 +283,29 @@ function EditStoryContent({ storyId }: { storyId: string }) {
       </Button>
 
       <div className="max-w-5xl mx-auto">
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold mb-4 sm:mb-0">Chỉnh sửa truyện</h1>
-          <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold">Chỉnh sửa truyện</h1>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <IdeaGenerator 
+              mainCategories={mainCategories}
+              tags={tags}
+              onApplyIdea={handleApplyIdea}
+              existingStory={{
+                title: story.title,
+                description: story.description,
+                mainCategory: mainCategoryName,
+                currentTags: selectedTagNames
+              }}
+            />
+            <CoverImagePrompt
+              storyInfo={{
+                title: (document.getElementById('title') as HTMLInputElement)?.value || '',
+                description: (document.getElementById('description') as HTMLTextAreaElement)?.value || '',
+                mainCategory: mainCategories.find(c => c.id === selectedMainCategory)?.name || '',
+                tags: tags.filter(t => selectedTags.includes(t.id)).map(t => t.name)
+              }}
+              onImageGenerated={handleImageGenerated}
+            />
             {story.status === 'draft' && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
