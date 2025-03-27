@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { User, Pencil, Trash2, ChevronLeft, Users, ChevronUp, ChevronDown } from "lucide-react"
+import { User, Pencil, Trash2, ChevronLeft, Users, ChevronUp, ChevronDown, Sparkles } from "lucide-react"
 import { toast } from "sonner"
 import {
   Tabs,
@@ -24,10 +25,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { DialogueGenerator } from "@/components/ai/DialogueGenerator"
 
 interface Character {
   character_id: number
   name: string
+  description: string
+  gender: string
+  personality: string
+  appearance: string
   avatar_image: string
   role: 'main' | 'supporting'
 }
@@ -44,6 +50,13 @@ interface Chapter {
   chapter_id: number
   title: string
   status: 'draft' | 'published'
+}
+
+interface Story {
+  title: string
+  description: string
+  mainCategory: string
+  tags: string[]
 }
 
 export default function WriteChapterContent({
@@ -65,6 +78,15 @@ export default function WriteChapterContent({
   const [editContent, setEditContent] = useState("")
   const [chapter, setChapter] = useState<Chapter | null>(null)
   const [messageType, setMessageType] = useState<'dialogue' | 'aside'>('dialogue')
+  const [story, setStory] = useState<Story | null>(null)
+  const [generatedDialogues, setGeneratedDialogues] = useState<Array<{
+    content: string;
+    type: string;
+    characters: string[];
+    added: boolean;
+    id?: number;
+  }>>([])
+  const [isAIDialogOpen, setIsAIDialogOpen] = useState(false)
 
   const mainCharacters = characters.filter(c => c.role === 'main')
   const supportingCharacters = characters.filter(c => c.role === 'supporting')
@@ -72,6 +94,12 @@ export default function WriteChapterContent({
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const storyRes = await fetch(`/api/stories/${storyId}`)
+        const storyData = await storyRes.json()
+        if (storyRes.ok) {
+          setStory(storyData.story)
+        }
+
         const chapterRes = await fetch(`/api/stories/${storyId}/chapters/${chapterId}`)
         const chapterData = await chapterRes.json()
         if (chapterRes.ok) {
@@ -228,6 +256,19 @@ export default function WriteChapterContent({
       toast.error('Đã có lỗi xảy ra');
     }
   };
+
+  // Tạo callback function với useCallback để tránh re-render không cần thiết
+  const handleGenerateDialogues = useCallback(async (newDialogues: any[]) => {
+    // Thay thế hoàn toàn state hiện tại với danh sách mới
+    setGeneratedDialogues(newDialogues);
+  }, []);
+
+  // Thêm useEffect để reset state khi mở dialog
+  useEffect(() => {
+    if (isAIDialogOpen) {
+      // Không cần reset generatedDialogues ở đây vì nó sẽ được tải lại từ API
+    }
+  }, [isAIDialogOpen]);
 
   return (
     <div className="container mx-auto px-4 py-4 max-w-7xl min-h-screen">
@@ -532,11 +573,28 @@ export default function WriteChapterContent({
                   >
                     Aside
                   </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      // Reset hasFetchedRef trước khi mở dialog
+                      setIsAIDialogOpen(true);
+                    }}
+                    size="sm"
+                    className="ml-auto"
+                  >
+                    <Sparkles className="h-3.5 w-3.5 mr-1" />
+                    AI
+                  </Button>
                 </div>
+
                 <Textarea
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder={messageType === 'aside' ? "Nhập nội dung aside..." : "Nhập nội dung hội thoại..."}
+                  placeholder={
+                    messageType === 'aside' 
+                      ? "Nhập nội dung aside..." 
+                      : "Nhập nội dung hội thoại..."
+                  }
                   className="resize-none min-h-[120px]"
                 />
                 <Button 
@@ -550,6 +608,77 @@ export default function WriteChapterContent({
           </div>
         </div>
       </div>
+
+      {/* AI Dialog Generator */}
+      <DialogueGenerator 
+        storyContext={{
+          title: story?.title || '',
+          description: story?.description || '',
+          mainCategory: story?.mainCategory || '',
+          tags: story?.tags || [],
+          characters: characters
+        }}
+        chapterTitle={chapter?.title}
+        existingDialogues={dialogues.filter(d => d.type === 'dialogue' || d.type === 'aside').map(d => ({
+          character_id: d.character_id,
+          content: d.content,
+          type: d.type as 'dialogue' | 'aside'
+        }))}
+        onGenerateDialogues={handleGenerateDialogues}
+        generatedDialogues={generatedDialogues}
+        onAddDialogue={async (dialogue) => {
+          setIsLoading(true)
+          try {
+            const response = await fetch(`/api/stories/${storyId}/chapters/${chapterId}/dialogues`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                character_id: dialogue.character_id,
+                content: dialogue.content,
+                order_number: dialogues.length + 1,
+                type: dialogue.type
+              })
+            })
+
+            if (!response.ok) {
+              throw new Error('Lỗi khi thêm đoạn hội thoại')
+            }
+
+            const data = await response.json()
+            setDialogues([...dialogues, data.dialogue])
+            
+            return Promise.resolve()
+          } catch (error) {
+            return Promise.reject(error)
+          } finally {
+            setIsLoading(false)
+          }
+        }}
+        onRemoveDialogue={async (index) => {
+          // Không cần xử lý gì ở đây vì đã xử lý trong component DialogueGenerator
+          // Hàm này chỉ để truyền vào prop, thực tế xử lý sẽ dùng handleRemoveDialogue trong DialogueGenerator
+        }}
+        onClearAll={async () => {
+          try {
+            // Xóa tất cả từ database
+            await fetch(`/api/stories/${storyId}/chapters/${chapterId}/ai-dialogues?clearAll=true`, {
+              method: 'DELETE'
+            });
+            
+            // Cập nhật state
+            setGeneratedDialogues([]);
+            toast.success("Đã xóa tất cả đoạn hội thoại");
+          } catch (error) {
+            toast.error("Không thể xóa tất cả đoạn hội thoại");
+          }
+        }}
+        storyId={parseInt(storyId)}
+        chapterId={parseInt(chapterId)}
+        open={isAIDialogOpen}
+        onOpenChange={setIsAIDialogOpen}
+      />
 
       <AlertDialog 
         open={deleteDialogueId !== null}
