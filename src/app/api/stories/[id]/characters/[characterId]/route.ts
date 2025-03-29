@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "../../../../auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth"
 import pool from "@/lib/db"
 import { GoogleDriveService } from "@/services/google-drive.service"
 
