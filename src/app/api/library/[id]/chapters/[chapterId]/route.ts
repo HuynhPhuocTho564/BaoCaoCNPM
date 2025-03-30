@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import pool from "@/lib/db"
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string, chapterId: string } }
+  request: NextRequest,
+  { params }: { params: { id: string; chapterId: string } }
 ) {
   try {
     const { chapterId } = params
