@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server"
 import pool from "@/lib/db"
-import { type NextRequest } from "next/server"
 
 export async function GET(
-  request: NextRequest,
-  context: { params: { id: string; chapterId: string } }
+  request: Request,
+  { params }: { params: { id: string; chapterId: string } }
 ) {
   try {
-    const { chapterId } = context.params
+    const { chapterId } = params
     
     const [chapters] = await pool.execute(`
       SELECT 
