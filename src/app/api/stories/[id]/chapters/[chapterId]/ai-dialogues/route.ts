@@ -8,9 +8,11 @@ import pool from "@/lib/db";
 // GET: Lấy danh sách hội thoại AI đã tạo
 export async function GET(
   request: Request,
-  context: { params: { id: string; chapterId: string } }
+  { params }: { params: Promise<{ id: string; chapterId: string }> }
 ) {
   try {
+    const resolvedParams = await params;
+    const { id: storyId, chapterId } = resolvedParams;
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json(
@@ -18,9 +20,6 @@ export async function GET(
         { status: 401 }
       );
     }
-
-    const storyId = parseInt(context.params.id);
-    const chapterId = parseInt(context.params.chapterId);
 
     // Kiểm tra quyền truy cập
     const [stories] = await pool.execute(
@@ -63,9 +62,11 @@ export async function GET(
 // POST: Thêm hội thoại AI mới
 export async function POST(
   request: Request,
-  context: { params: { id: string; chapterId: string } }
+  { params }: { params: Promise<{ id: string; chapterId: string }> }
 ) {
   try {
+    const resolvedParams = await params;
+    const { id: storyId, chapterId } = resolvedParams;
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json(
@@ -74,8 +75,6 @@ export async function POST(
       );
     }
 
-    const storyId = parseInt(context.params.id);
-    const chapterId = parseInt(context.params.chapterId);
     const { content, type, character_names } = await request.json();
 
     // Kiểm tra quyền truy cập
@@ -121,9 +120,11 @@ export async function POST(
 // PUT: Cập nhật trạng thái đã thêm
 export async function PUT(
   request: Request,
-  context: { params: { id: string; chapterId: string } }
+  { params }: { params: Promise<{ id: string; chapterId: string }> }
 ) {
   try {
+    const resolvedParams = await params;
+    const { id: storyId, chapterId } = resolvedParams;
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json(
@@ -132,8 +133,6 @@ export async function PUT(
       );
     }
 
-    const storyId = parseInt(context.params.id);
-    const chapterId = parseInt(context.params.chapterId);
     const { dialogue_id, is_added } = await request.json();
 
     // Kiểm tra quyền truy cập
@@ -168,9 +167,11 @@ export async function PUT(
 // DELETE: Xóa tất cả hội thoại AI của chapter
 export async function DELETE(
   request: Request,
-  context: { params: { id: string; chapterId: string } }
+  { params }: { params: Promise<{ id: string; chapterId: string }> }
 ) {
   try {
+    const resolvedParams = await params;
+    const { id: storyId, chapterId } = resolvedParams;
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json(
@@ -179,9 +180,6 @@ export async function DELETE(
       );
     }
 
-    const storyId = parseInt(context.params.id);
-    const chapterId = parseInt(context.params.chapterId);
-    
     // Kiểm tra quyền truy cập
     const [stories] = await pool.execute(
       "SELECT * FROM stories WHERE story_id = ? AND user_id = ?",

@@ -6,11 +6,12 @@ import pool from "@/lib/db"
 
 export async function GET(
   request: Request,
-  context: { params: { characterId: string } }
+  context: { params: Promise<{ characterId: string }> }
 ) {
-  const { characterId } = context.params
-  
   try {
+    const resolvedParams = await context.params
+    const { characterId } = resolvedParams
+    
     const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
       return NextResponse.json(

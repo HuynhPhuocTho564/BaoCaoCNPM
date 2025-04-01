@@ -5,9 +5,10 @@ import pool from "@/lib/db"
 
 export async function PUT(
   request: Request,
-  context: { params: { dialogueId: string } }
+  { params }: { params: Promise<{ dialogueId: string }> }
 ) {
-  const { dialogueId } = context.params
+  const resolvedParams = await params
+  const { dialogueId } = resolvedParams
   
   try {
     const session = await getServerSession(authOptions)

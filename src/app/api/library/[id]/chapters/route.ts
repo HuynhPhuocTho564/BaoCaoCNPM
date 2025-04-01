@@ -4,11 +4,12 @@ import pool from "@/lib/db"
 
 export async function GET(
   request: Request,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = context.params
-  
   try {
+    const resolvedParams = await params
+    const { id } = resolvedParams
+  
     const [chapters] = await pool.execute(`
       SELECT 
         chapter_id,
