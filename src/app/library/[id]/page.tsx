@@ -12,10 +12,11 @@ function LoadingFallback() {
   )
 }
 
-export default function StoryDetailPage({ params }: { params: { id: string } }) {
+export default async function StoryDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <StoryDetailContent storyId={params.id} />
+      <StoryDetailContent storyId={resolvedParams.id} />
     </Suspense>
   )
 } 

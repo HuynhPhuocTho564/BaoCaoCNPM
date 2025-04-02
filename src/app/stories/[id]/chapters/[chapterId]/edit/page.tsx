@@ -1,9 +1,10 @@
 import EditChapterContent from "./EditChapterContent"
 
-export default function EditChapterPage({ 
+export default async function EditChapterPage({ 
   params 
 }: { 
-  params: { id: string; chapterId: string } 
+  params: Promise<{ id: string; chapterId: string }> 
 }) {
-  return <EditChapterContent storyId={params.id} chapterId={params.chapterId} />
+  const resolvedParams = await params;
+  return <EditChapterContent storyId={resolvedParams.id} chapterId={resolvedParams.chapterId} />
 } 
