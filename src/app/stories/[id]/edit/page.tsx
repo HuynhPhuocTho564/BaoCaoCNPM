@@ -58,7 +58,7 @@ interface GeneratedIdea {
   suggestedTags: string[];
 }
 
-export function EditStoryContent({ storyId }: { storyId: string }) {
+function EditStoryContent({ storyId }: { storyId: string }) {
   const router = useRouter()
   const { data: session } = useSession()
   const [isLoading, setIsLoading] = useState(false)
