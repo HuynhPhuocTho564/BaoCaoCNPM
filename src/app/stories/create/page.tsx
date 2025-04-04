@@ -55,8 +55,11 @@ export default function CreateStoryPage() {
   const [open, setOpen] = useState(false)
   const [prompt, setPrompt] = useState("")
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
+    setIsMounted(true)
+    
     const fetchCategories = async () => {
       try {
         const response = await fetch('/api/categories')
@@ -153,6 +156,8 @@ export default function CreateStoryPage() {
   }
 
   const handleApplyIdea = (idea: GeneratedIdea) => {
+    if (!isMounted) return;
+    
     const titleInput = document.getElementById('title') as HTMLInputElement;
     const descriptionInput = document.getElementById('description') as HTMLTextAreaElement;
     
@@ -181,15 +186,17 @@ export default function CreateStoryPage() {
               tags={tags}
               onApplyIdea={handleApplyIdea}
             />
-            <CoverImagePrompt
-              storyInfo={{
-                title: (document.getElementById('title') as HTMLInputElement)?.value || '',
-                description: (document.getElementById('description') as HTMLTextAreaElement)?.value || '',
-                mainCategory: mainCategories.find(c => c.id === selectedMainCategory)?.name || '',
-                tags: tags.filter(t => selectedTags.includes(t.id)).map(t => t.name)
-              }}
-              onImageGenerated={handleImageGenerated}
-            />
+            {isMounted && (
+              <CoverImagePrompt
+                storyInfo={{
+                  title: (document.getElementById('title') as HTMLInputElement)?.value || '',
+                  description: (document.getElementById('description') as HTMLTextAreaElement)?.value || '',
+                  mainCategory: mainCategories.find(c => c.id === selectedMainCategory)?.name || '',
+                  tags: tags.filter(t => selectedTags.includes(t.id)).map(t => t.name)
+                }}
+                onImageGenerated={handleImageGenerated}
+              />
+            )}
           </div>
         </div>
         
