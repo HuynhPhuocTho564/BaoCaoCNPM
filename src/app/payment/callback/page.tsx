@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { XCircle, Loader2, Coffee } from "lucide-react";
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { AuthClient } from '@/services/auth.client';
 
-export default function PaymentCallback() {
+function PaymentCallbackContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { update } = useSession();
@@ -119,5 +119,29 @@ export default function PaymentCallback() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function PaymentCallback() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center pb-2">
+            <div className="flex justify-center mb-4">
+              <Loader2 className="h-12 w-12 text-primary animate-spin" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-primary">
+              Đang tải
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="text-muted-foreground">Đang xử lý thanh toán...</p>
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <PaymentCallbackContent />
+    </Suspense>
   );
 } 
