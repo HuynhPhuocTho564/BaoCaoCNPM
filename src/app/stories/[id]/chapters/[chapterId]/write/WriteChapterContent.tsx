@@ -89,7 +89,10 @@ export default function WriteChapterContent({
     id?: number;
   }>>([])
   const [isAIDialogOpen, setIsAIDialogOpen] = useState(false)
+<<<<<<< HEAD
   const [isLoadingData, setIsLoadingData] = useState(true)
+=======
+>>>>>>> 9ac5ed503abc3f72fbcb624ec9e4f00e70825aad
 
   const mainCharacters = characters.filter(c => c.role === 'main')
   const supportingCharacters = characters.filter(c => c.role === 'supporting')
@@ -630,16 +633,26 @@ export default function WriteChapterContent({
                   </Button>
                   <Button
                     variant="outline"
+<<<<<<< HEAD
                     onClick={() => setIsAIDialogOpen(true)}
                     size="sm"
                     className="ml-auto"
                     disabled={isLoadingData}
+=======
+                    onClick={() => {
+                      // Reset hasFetchedRef trước khi mở dialog
+                      setIsAIDialogOpen(true);
+                    }}
+                    size="sm"
+                    className="ml-auto"
+>>>>>>> 9ac5ed503abc3f72fbcb624ec9e4f00e70825aad
                   >
                     <Sparkles className="h-3.5 w-3.5 mr-1" />
                     AI
                   </Button>
                 </div>
 
+<<<<<<< HEAD
                 {isLoadingData ? (
                   <Skeleton height={120} />
                 ) : (
@@ -655,6 +668,18 @@ export default function WriteChapterContent({
                   />
                 )}
                 
+=======
+                <Textarea
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder={
+                    messageType === 'aside' 
+                      ? "Nhập nội dung aside..." 
+                      : "Nhập nội dung hội thoại..."
+                  }
+                  className="resize-none min-h-[120px]"
+                />
+>>>>>>> 9ac5ed503abc3f72fbcb624ec9e4f00e70825aad
                 <Button 
                   onClick={handleSendMessage}
                   disabled={isLoading || isLoadingData || (!selectedCharacter && messageType === 'dialogue') || !newMessage.trim()}
