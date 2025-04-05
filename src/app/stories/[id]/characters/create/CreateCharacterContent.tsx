@@ -7,8 +7,10 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Camera } from "lucide-react"
+import { Camera, ChevronLeft } from "lucide-react"
 import { toast } from "sonner"
+import Skeleton from "react-loading-skeleton"
+import "react-loading-skeleton/dist/skeleton.css"
 import { IdeaGenerator } from "@/components/character/IdeaGenerator"
 import { AvatarImagePrompt } from "@/components/character/AvatarImagePrompt"
 
@@ -16,6 +18,7 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingData, setIsLoadingData] = useState(true)
   const [previewImage, setPreviewImage] = useState<string>("")
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [storyContext, setStoryContext] = useState<{
@@ -39,6 +42,7 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
   
   useEffect(() => {
     const fetchStoryContext = async () => {
+      setIsLoadingData(true)
       try {
         const response = await fetch(`/api/stories/${storyId}`)
         if (!response.ok) {
@@ -53,6 +57,8 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
         })
       } catch (error) {
         toast.error('Lỗi khi lấy thông tin truyện')
+      } finally {
+        setIsLoadingData(false)
       }
     }
 
@@ -168,6 +174,78 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
     setImageFile(file);
     setPreviewImage(`data:image/jpeg;base64,${imageData}`);
   };
+
+  if (isLoadingData) {
+    return (
+      <div className="container max-w-2xl mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <Skeleton width={200} height={36} />
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Skeleton width={120} height={36} />
+            <Skeleton width={120} height={36} />
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center mb-8">
+          <div className="mb-6">
+            <Skeleton circle width={160} height={160} />
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div>
+            <Skeleton width={100} height={20} />
+            <Skeleton height={40} className="mt-2" />
+          </div>
+
+          <div>
+            <Skeleton width={80} height={20} />
+            <Skeleton height={128} className="mt-2" />
+          </div>
+
+          <div>
+            <Skeleton width={80} height={20} />
+            <Skeleton height={40} className="mt-2" />
+          </div>
+
+          <div>
+            <Skeleton width={100} height={20} />
+            <Skeleton height={40} className="mt-2" />
+          </div>
+
+          <div>
+            <Skeleton width={100} height={20} />
+            <Skeleton height={40} className="mt-2" />
+          </div>
+
+          <div>
+            <Skeleton width={100} height={20} />
+            <Skeleton height={40} className="mt-2" />
+          </div>
+
+          <div>
+            <Skeleton width={100} height={20} />
+            <Skeleton height={128} className="mt-2" />
+          </div>
+
+          <div>
+            <Skeleton width={100} height={20} />
+            <Skeleton height={128} className="mt-2" />
+          </div>
+
+          <div>
+            <Skeleton width={100} height={20} />
+            <Skeleton height={128} className="mt-2" />
+          </div>
+        </div>
+
+        <div className="flex justify-center gap-4 pt-8">
+          <Skeleton width={120} height={40} />
+          <Skeleton width={120} height={40} />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="container max-w-2xl mx-auto px-4 py-8">

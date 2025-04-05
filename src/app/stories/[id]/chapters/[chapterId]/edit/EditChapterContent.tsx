@@ -25,6 +25,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { toast } from "sonner"
+import Skeleton from "react-loading-skeleton"
+import "react-loading-skeleton/dist/skeleton.css"
 
 interface Chapter {
   chapter_id: number
@@ -43,10 +45,12 @@ export default function EditChapterContent({
   const router = useRouter()
   const [chapter, setChapter] = useState<Chapter | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingData, setIsLoadingData] = useState(true)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   useEffect(() => {
     const fetchChapter = async () => {
+      setIsLoadingData(true)
       try {
         const response = await fetch(
           `/api/stories/${storyId}/chapters/${chapterId}`
@@ -60,6 +64,8 @@ export default function EditChapterContent({
         }
       } catch (error) {
         toast.error('Đã có lỗi xảy ra khi tải thông tin chương')
+      } finally {
+        setIsLoadingData(false)
       }
     }
 
@@ -102,6 +108,8 @@ export default function EditChapterContent({
   const handleCancel = () => {
     if (chapter) {
       router.push(`/stories/${storyId}?tab=chapters&status=${chapter.status}`)
+    } else {
+      router.push(`/stories/${storyId}?tab=chapters`)
     }
   }
 
@@ -123,7 +131,42 @@ export default function EditChapterContent({
     }
   }
 
-  if (!chapter) {
+  if (isLoadingData) {
+    return (
+      <div className="container max-w-2xl mx-auto px-4 py-6 md:py-8">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <Skeleton width={200} height={32} />
+            <Skeleton width={100} height={36} />
+          </div>
+
+          <div className="rounded-lg border bg-card p-4 md:p-6">
+            <div className="space-y-4 md:space-y-6">
+              <div className="space-y-2">
+                <Skeleton width={120} height={20} />
+                <Skeleton height={40} />
+              </div>
+
+              <div className="space-y-2">
+                <Skeleton width={100} height={20} />
+                <Skeleton height={40} />
+              </div>
+
+              <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
+                <Skeleton width={120} height={40} />
+                <div className="flex flex-col-reverse sm:flex-row gap-3 w-full sm:w-auto sm:ml-auto">
+                  <Skeleton width={100} height={40} />
+                  <Skeleton width={120} height={40} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!chapter && !isLoadingData) {
     return (
       <div className="text-center py-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
@@ -155,7 +198,7 @@ export default function EditChapterContent({
               <Input
                 id="title"
                 name="title"
-                defaultValue={chapter.title}
+                defaultValue={chapter?.title}
                 required
                 className="w-full"
               />
@@ -165,8 +208,8 @@ export default function EditChapterContent({
               <Label htmlFor="status">Trạng thái</Label>
               <Select 
                 name="status" 
-                defaultValue={chapter.status}
-                disabled={chapter.dialogue_count === 0}
+                defaultValue={chapter?.status}
+                disabled={chapter?.dialogue_count === 0}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Chọn trạng thái" />
@@ -175,13 +218,13 @@ export default function EditChapterContent({
                   <SelectItem value="draft">Bản nháp</SelectItem>
                   <SelectItem 
                     value="published"
-                    disabled={chapter.dialogue_count === 0}
+                    disabled={chapter?.dialogue_count === 0}
                   >
                     Xuất bản
                   </SelectItem>
                 </SelectContent>
               </Select>
-              {chapter.dialogue_count === 0 && (
+              {chapter?.dialogue_count === 0 && (
                 <p className="text-sm text-destructive mt-1">
                   Cần có ít nhất một tin nhắn trong chương để xuất bản
                 </p>

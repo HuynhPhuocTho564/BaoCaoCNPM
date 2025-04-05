@@ -12,6 +12,8 @@ import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { IdeaGenerator } from "@/components/story/IdeaGenerator"
 import { CoverImagePrompt } from "@/components/story/CoverImagePrompt"
+import Skeleton from "react-loading-skeleton"
+import "react-loading-skeleton/dist/skeleton.css"
 
 interface MainCategory {
   id: number
@@ -35,6 +37,7 @@ interface GeneratedIdea {
 export default function CreateStoryPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingData, setIsLoadingData] = useState(true)
   const [mainCategories, setMainCategories] = useState<MainCategory[]>([])
   const [tags, setTags] = useState<Tag[]>([])
   const [selectedMainCategory, setSelectedMainCategory] = useState<number | null>(null)
@@ -45,6 +48,7 @@ export default function CreateStoryPage() {
 
   useEffect(() => {
     setIsMounted(true)
+    setIsLoadingData(true)
     
     const fetchCategories = async () => {
       try {
@@ -56,6 +60,8 @@ export default function CreateStoryPage() {
         }
       } catch (error) {
         toast.error('Không thể tải danh sách thể loại')
+      } finally {
+        setIsLoadingData(false)
       }
     }
 
@@ -160,6 +166,69 @@ export default function CreateStoryPage() {
     );
     setSelectedTags(matchedTags.map(tag => tag.id));
   };
+
+  if (isLoadingData) {
+    return (
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 md:mb-8">
+            <Skeleton width={200} height={36} />
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Skeleton width={120} height={36} />
+              <Skeleton width={120} height={36} />
+            </div>
+          </div>
+          
+          <div className="grid md:grid-cols-[300px,1fr] gap-6 md:gap-8">
+            {/* Cột trái - Ảnh bìa */}
+            <div className="space-y-4">
+              <Skeleton width={100} height={20} />
+              <Skeleton height={400} className="aspect-[3/4]" />
+            </div>
+
+            {/* Cột phải - Form thông tin */}
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Skeleton width={80} height={20} />
+                <Skeleton height={40} />
+              </div>
+
+              <div className="space-y-2">
+                <Skeleton width={80} height={20} />
+                <Skeleton height={120} />
+              </div>
+
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Skeleton width={120} height={20} />
+                  <div className="flex flex-wrap gap-2">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <Skeleton key={i} width={80} height={28} />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Skeleton width={100} height={20} />
+                  <div className="flex flex-wrap gap-2">
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                      <Skeleton key={i} width={70} height={28} />
+                    ))}
+                  </div>
+                  <Skeleton width={150} height={16} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-4 pt-4 mt-6">
+            <Skeleton width={150} height={40} />
+            <Skeleton width={150} height={40} />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">

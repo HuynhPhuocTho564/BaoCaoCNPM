@@ -13,6 +13,8 @@ import TextareaAutosize from 'react-textarea-autosize'
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import Image from "next/image"
+import Skeleton from "react-loading-skeleton"
+import "react-loading-skeleton/dist/skeleton.css"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -62,6 +64,7 @@ function EditStoryContent({ storyId }: { storyId: string }) {
   const router = useRouter()
   const { data: session } = useSession()
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingData, setIsLoadingData] = useState(true)
   const [mainCategories, setMainCategories] = useState<MainCategory[]>([])
   const [tags, setTags] = useState<Tag[]>([])
   const [selectedMainCategory, setSelectedMainCategory] = useState<number | null>(null)
@@ -72,6 +75,7 @@ function EditStoryContent({ storyId }: { storyId: string }) {
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoadingData(true)
       try {
         // Fetch categories và tags
         const categoriesResponse = await fetch('/api/categories')
@@ -97,6 +101,8 @@ function EditStoryContent({ storyId }: { storyId: string }) {
         }
       } catch (error) {
         toast.error('Đã có lỗi xảy ra')
+      } finally {
+        setIsLoadingData(false)
       }
     }
 
@@ -260,6 +266,74 @@ function EditStoryContent({ storyId }: { storyId: string }) {
     setImageFile(file);
     setPreviewImage(`data:image/jpeg;base64,${imageData}`);
   };
+
+  if (isLoadingData) {
+    return (
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="flex items-center gap-2 mb-8">
+          <Skeleton width={100} height={36} />
+        </div>
+
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 md:mb-8">
+            <Skeleton width={200} height={36} />
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Skeleton width={120} height={36} />
+              <Skeleton width={120} height={36} />
+              <Skeleton width={120} height={36} />
+            </div>
+          </div>
+          
+          <div className="grid md:grid-cols-[300px,1fr] gap-6 md:gap-8">
+            {/* Cột trái - Ảnh bìa */}
+            <div className="space-y-4">
+              <Skeleton width={100} height={20} />
+              <Skeleton height={400} className="aspect-[3/4]" />
+            </div>
+
+            {/* Cột phải - Form thông tin */}
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Skeleton width={80} height={20} />
+                <Skeleton height={40} />
+              </div>
+
+              <div className="space-y-2">
+                <Skeleton width={80} height={20} />
+                <Skeleton height={120} />
+              </div>
+
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Skeleton width={120} height={20} />
+                  <div className="flex flex-wrap gap-2">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <Skeleton key={i} width={80} height={28} />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Skeleton width={100} height={20} />
+                  <div className="flex flex-wrap gap-2">
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                      <Skeleton key={i} width={70} height={28} />
+                    ))}
+                  </div>
+                  <Skeleton width={150} height={16} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-4 pt-4 mt-6">
+            <Skeleton width={150} height={40} />
+            <Skeleton width={150} height={40} />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (!story) {
     return (
