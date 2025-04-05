@@ -2,7 +2,7 @@
 import { AuthService } from "@/services/auth.service";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";;
 
 export async function PATCH(request: Request) {
   try {

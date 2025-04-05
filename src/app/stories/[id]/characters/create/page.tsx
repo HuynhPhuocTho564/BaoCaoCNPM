@@ -2,14 +2,15 @@ import { Suspense } from "react"
 import CreateCharacterContent from "./CreateCharacterContent"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
-export default function CreateCharacterPage({ 
+export default async function CreateCharacterPage({ 
   params,
 }: { 
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const resolvedParams = await params;
   return (
     <Suspense fallback={<LoadingSpinner />}>
-      <CreateCharacterContent storyId={params.id} />
+      <CreateCharacterContent storyId={resolvedParams.id} />
     </Suspense>
   )
 } 

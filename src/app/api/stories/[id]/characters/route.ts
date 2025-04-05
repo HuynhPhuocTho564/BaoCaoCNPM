@@ -1,16 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "../../../auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth"
 import pool from "@/lib/db"
 import { GoogleDriveService } from "@/services/google-drive.service"
 import { ResultSetHeader } from "mysql2"
 
 export async function GET(
   request: Request,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await context.params
+  const resolvedParams = await params
+  const { id } = resolvedParams
   
   try {
     const session = await getServerSession(authOptions)
@@ -50,9 +51,10 @@ export async function GET(
 // POST - Tạo nhân vật mới
 export async function POST(
   request: Request,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: storyId } = await context.params
+  const resolvedParams = await params
+  const { id: storyId } = resolvedParams
   
   try {
     const session = await getServerSession(authOptions)

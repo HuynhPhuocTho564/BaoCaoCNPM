@@ -119,6 +119,10 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   const { data: session } = useSession()
   const [open, setOpen] = React.useState(false)
 
+  const handleCloseMenu = () => {
+    setOpen(false)
+  }
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
@@ -154,7 +158,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                 key={index} 
                 item={item} 
                 isDarkTheme={isDarkTheme}
-                onClose={() => setOpen(false)}
+                onClose={handleCloseMenu}
               />
             ))}
           </div>
@@ -162,7 +166,11 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
 
         <div className="border-t border-gray-200 dark:border-gray-800 p-6 space-y-4">
           {session ? (
-            <UserMenu isDarkTheme={isDarkTheme} isMobile={true} />
+            <UserMenu 
+              isDarkTheme={isDarkTheme} 
+              isMobile={true} 
+              onMobileMenuClose={handleCloseMenu} 
+            />
           ) : (
             <Login />
           )}

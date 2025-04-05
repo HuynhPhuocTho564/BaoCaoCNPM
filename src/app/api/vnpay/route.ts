@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       vnp_TxnRef: txnRef,
       vnp_OrderInfo: orderInfo,
       vnp_OrderType: ProductCode.Other,
-      vnp_ReturnUrl: 'http://localhost:3000/payment/callback',
+      vnp_ReturnUrl: process.env.NEXT_PUBLIC_URL + '/payment/callback',
       vnp_Locale: VnpLocale.VN, // 'vn' hoặc 'en'
       vnp_CreateDate: dateFormat(new Date()), // tùy chọn, mặc định là hiện tại
       vnp_ExpireDate: dateFormat(tomorrow), // tùy chọn

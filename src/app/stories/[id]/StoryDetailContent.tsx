@@ -11,6 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
+import Skeleton from "react-loading-skeleton"
+import "react-loading-skeleton/dist/skeleton.css"
 
 interface Character {
   character_id: number
@@ -94,10 +96,43 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
 
   if (isLoading || !story) {
     return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Đang tải...</p>
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="flex items-center gap-4 mb-8">
+          <Skeleton width={150} height={36} />
+        </div>
+
+        <div className="grid md:grid-cols-[300px_1fr] gap-8 mb-8">
+          <div className="space-y-4">
+            <Skeleton height={400} className="aspect-[3/4]" />
+            <Skeleton height={36} />
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            <Skeleton height={40} width="80%" className="mb-4" />
+            <div className="flex flex-wrap gap-2 mb-4">
+              <Skeleton width={100} height={24} />
+              <Skeleton width={80} height={24} />
+              <Skeleton width={120} height={24} />
+            </div>
+            <Skeleton count={3} className="mb-1" />
+          </div>
+        </div>
+
+        <div className="mb-8">
+          <Skeleton width={300} height={40} />
+        </div>
+
+        <div>
+          <div className="mb-4 flex justify-between">
+            <Skeleton width={200} height={32} />
+            <Skeleton width={150} height={36} />
+          </div>
+          <Skeleton width={250} height={40} className="mb-4" />
+          <div className="grid gap-4">
+            <Skeleton height={100} />
+            <Skeleton height={100} />
+            <Skeleton height={100} />
+          </div>
         </div>
       </div>
     )

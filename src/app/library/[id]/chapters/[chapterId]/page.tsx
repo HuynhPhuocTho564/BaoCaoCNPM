@@ -12,14 +12,15 @@ function LoadingFallback() {
   )
 }
 
-export default function ChapterPage({ 
+export default async function ChapterPage({ 
   params 
 }: { 
-  params: { id: string; chapterId: string } 
+  params: Promise<{ id: string; chapterId: string }> 
 }) {
+  const resolvedParams = await params;
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <ChapterContent storyId={params.id} chapterId={params.chapterId} />
+      <ChapterContent storyId={resolvedParams.id} chapterId={resolvedParams.chapterId} />
     </Suspense>
   )
 } 

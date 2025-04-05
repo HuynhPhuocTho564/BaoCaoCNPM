@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
@@ -7,9 +6,11 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Plus, BookOpen, Clock, Archive, BookOpenText } from "lucide-react"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 import Image from "next/image"
+import Skeleton from "react-loading-skeleton"
+import "react-loading-skeleton/dist/skeleton.css"
 
 interface Story {
   story_id: number
@@ -89,9 +90,36 @@ export default function StoriesPage() {
           </div>
 
           {isLoadingStories ? (
-            <div className="text-center py-8 sm:py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-4 text-muted-foreground">Đang tải danh sách truyện...</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {[1, 2, 3, 4, 5, 6].map((item) => (
+                <Card key={item} className="flex flex-row h-[140px] sm:h-[160px] overflow-hidden">
+                  <div className="relative w-[105px] sm:w-[120px] h-full flex-shrink-0">
+                    <Skeleton height="100%" style={{ aspectRatio: '3/4' }} />
+                  </div>
+                  <div className="flex flex-col flex-1 min-w-0 p-2 sm:p-4">
+                    <CardHeader className="p-0 space-y-1.5 sm:space-y-3">
+                      <div className="flex items-start gap-1.5 sm:gap-2">
+                        <div className="min-w-0 flex-1">
+                          <Skeleton width="80%" height={20} />
+                        </div>
+                        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 mt-0.5">
+                          <Skeleton width={60} height={16} />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+                        <Skeleton width={80} height={20} />
+                        <div className="ml-auto">
+                          <Skeleton width={60} height={16} />
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardFooter className="flex flex-row justify-between gap-1.5 sm:gap-2 p-0 mt-auto pt-1.5 sm:pt-3">
+                      <Skeleton width="48%" height={32} />
+                      <Skeleton width="48%" height={32} />
+                    </CardFooter>
+                  </div>
+                </Card>
+              ))}
             </div>
           ) : stories.length === 0 ? (
             <div className="text-center py-8 sm:py-12">

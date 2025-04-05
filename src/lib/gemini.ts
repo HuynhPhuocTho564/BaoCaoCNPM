@@ -3,7 +3,7 @@ import {
   HarmCategory,
   HarmBlockThreshold,
 } from "@google/generative-ai";
-import { SYSTEM_PROMPTS, createStoryPrompt, createEditStoryPrompt, createCharacterPrompt, createEditCharacterPrompt, createCoverImagePrompt, createAvatarPrompt } from './gemini-prompts';
+import { SYSTEM_PROMPTS, createStoryPrompt, createEditStoryPrompt, createCharacterPrompt, createEditCharacterPrompt, createCoverImagePrompt, createAvatarPrompt, createDialoguePrompt } from './gemini-prompts';
 
 let apiKey: string | null = null;
 
@@ -66,9 +66,14 @@ interface CharacterIdea {
   role: string;
 }
 
-interface DialogueSuggestion {
+interface DialogueItem {
   content: string;
   type: string;
+  characters: string[];
+}
+
+interface MultipleDialoguesResponse {
+  dialogues: DialogueItem[];
 }
 
 interface CoverImagePrompt {
@@ -184,7 +189,30 @@ export async function generateCharacterIdea(
   }
 }
 
-export async function generateDialogueSuggestion(prompt: string): Promise<DialogueSuggestion> {
+export async function generateDialogueSuggestion(
+  prompt: string,
+  storyContext: {
+    title: string;
+    description: string;
+    mainCategory: string;
+    tags: string[];
+    characters: {
+      name: string;
+      description: string;
+      gender: string;
+      personality: string;
+      appearance: string;
+      role: string;
+    }[];
+  },
+  count: number = 3,
+  chapterTitle?: string,
+  existingDialogues?: {
+    character_name?: string;
+    content: string;
+    type: 'dialogue' | 'aside';
+  }[]
+): Promise<DialogueItem[]> {
   try {
     const key = await getApiKey();
     const genAI = new GoogleGenerativeAI(key!);
@@ -192,37 +220,48 @@ export async function generateDialogueSuggestion(prompt: string): Promise<Dialog
       model: "gemini-2.0-flash",
       safetySettings,
       generationConfig,
-      systemInstruction: SYSTEM_PROMPTS.DIALOGUE
+      systemInstruction: SYSTEM_PROMPTS.DIALOGUE + "\n\nCHÚ Ý QUAN TRỌNG: Chỉ sử dụng tên nhân vật đã được liệt kê trong danh sách nhân vật. KHÔNG tạo ra nhân vật mới."
     });
+    
+    const fullPrompt = createDialoguePrompt(prompt, storyContext, chapterTitle, existingDialogues);
+    fullPrompt.parts[0].text += `\n\nHãy tạo ${count} đoạn hội thoại khác nhau. CHỈ sử dụng tên nhân vật đã được liệt kê trong danh sách nhân vật, KHÔNG tạo ra nhân vật mới.`;
+    
     const chat = model.startChat({
-      history: [
-        {
-          role: "user",
-          parts: [{ text: SYSTEM_PROMPTS.DIALOGUE }]
-        }
-      ],
+      history: [fullPrompt],
     });
-    const result = await chat.sendMessage(prompt);
-    const response = result.response.text();
 
+    const result = await chat.sendMessage("");
+    const response = result.response.text();
+    
+    console.log("Raw response:", response);
+    
     const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
     const jsonString = jsonMatch ? jsonMatch[1] : response;
     
-    let dialogueIdea: DialogueSuggestion;
     try {
-      dialogueIdea = JSON.parse(jsonString);
-      if (!dialogueIdea.content || !dialogueIdea.type) {
+      const parsedResponse = JSON.parse(jsonString) as MultipleDialoguesResponse;
+      
+      if (!parsedResponse.dialogues || !Array.isArray(parsedResponse.dialogues)) {
         throw new Error('Dữ liệu đối thoại không hợp lệ');
       }
+      
+      // Validate each dialogue
+      parsedResponse.dialogues.forEach(dialogue => {
+        if (!dialogue.content || 
+            !['dialogue', 'aside'].includes(dialogue.type) || 
+            !Array.isArray(dialogue.characters)) {
+          throw new Error('Dữ liệu đối thoại không hợp lệ');
+        }
+      });
+      
+      return parsedResponse.dialogues;
     } catch (parseError) {
-      console.error("Lỗi khi parse JSON:", parseError);
+      console.error("Lỗi khi parse JSON:", parseError, "Response:", response);
       throw new Error('Không thể xử lý phản hồi từ AI');
     }
-    
-    return dialogueIdea;
   } catch (error) {
     console.error("Lỗi khi tạo đối thoại:", error);
-    throw new Error('Có lỗi xảy ra khi tạo đối thoại. Vui lòng thử lại sau.');
+    throw error;
   }
 }
 

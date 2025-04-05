@@ -1,15 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "../../../../auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth"
 import pool from "@/lib/db"
 
 // GET - Lấy thông tin chương
 export async function GET(
   request: Request,
-  context: { params: { id: string, chapterId: string } }
+  { params }: { params: Promise<{ id: string; chapterId: string }> }
 ) {
   try {
+    const resolvedParams = await params
+    const { chapterId } = resolvedParams
     const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
       return NextResponse.json(
@@ -18,8 +20,6 @@ export async function GET(
       )
     }
 
-    const { chapterId } = context.params
-    
     const [chapters] = await pool.execute(`
       SELECT 
         sc.chapter_id,
@@ -50,9 +50,10 @@ export async function GET(
 // PUT - Cập nhật chương
 export async function PUT(
   request: Request,
-  context: { params: { id: string, chapterId: string } }
+  { params }: { params: Promise<{ id: string; chapterId: string }> }
 ) {
-  const { id: storyId, chapterId } = context.params
+  const resolvedParams = await params
+  const { id: storyId, chapterId } = resolvedParams
   
   try {
     const session = await getServerSession(authOptions)
@@ -139,9 +140,10 @@ export async function PUT(
 // DELETE - Xóa chương
 export async function DELETE(
   request: Request,
-  context: { params: { id: string, chapterId: string } }
+  { params }: { params: Promise<{ id: string; chapterId: string }> }
 ) {
-  const { chapterId } = context.params
+  const resolvedParams = await params
+  const { chapterId } = resolvedParams
   
   try {
     const session = await getServerSession(authOptions)

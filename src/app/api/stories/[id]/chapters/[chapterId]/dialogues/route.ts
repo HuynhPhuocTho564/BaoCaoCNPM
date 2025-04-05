@@ -1,15 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth"
 import pool from "@/lib/db"
 
 // GET - Lấy danh sách dialogue
 export async function GET(
   request: Request,
-  { params }: { params: { id: string; chapterId: string } }
+  { params }: { params: Promise<{ id: string; chapterId: string }> }
 ) {
-  const { chapterId } = params
+  const resolvedParams = await params
+  const { chapterId } = resolvedParams
   
   try {
     const session = await getServerSession(authOptions)
@@ -40,9 +41,10 @@ export async function GET(
 // POST - Thêm dialogue mới
 export async function POST(
   request: Request,
-  { params }: { params: { id: string; chapterId: string } }
+  { params }: { params: Promise<{ id: string; chapterId: string }> }
 ) {
-  const { chapterId } = params
+  const resolvedParams = await params
+  const { chapterId } = resolvedParams
   
   try {
     const session = await getServerSession(authOptions)

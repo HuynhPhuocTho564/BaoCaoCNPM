@@ -1,9 +1,10 @@
 import CreateChapterContent from "./CreateChapterContent"
 
-export default function CreateChapterPage({ 
+export default async function CreateChapterPage({ 
   params 
 }: { 
-  params: { id: string } 
+  params: Promise<{ id: string }> 
 }) {
-  return <CreateChapterContent storyId={params.id} />
+  const resolvedParams = await params;
+  return <CreateChapterContent storyId={resolvedParams.id} />
 } 

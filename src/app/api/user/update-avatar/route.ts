@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";;
 import { GoogleDriveService } from "@/services/google-drive.service";
 import { AuthService } from "@/services/auth.service";
 
@@ -32,7 +32,13 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(await file.arrayBuffer());
     
     // Upload file mới lên Google Drive với userId
-    const uploadResultPromise = GoogleDriveService.uploadFile(buffer, file.type, userId);
+    const uploadResultPromise = GoogleDriveService.uploadFile(
+      buffer, 
+      file.type, 
+      userId, 
+      'avatar', // type
+      null      // storyId
+    );
 
     // Lấy thông tin user cũ để xóa ảnh cũ nếu có
     const userPromise = AuthService.getUser(userId);

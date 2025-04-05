@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-async-client-component */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
@@ -57,7 +58,7 @@ interface GeneratedIdea {
   suggestedTags: string[];
 }
 
-export function EditStoryContent({ storyId }: { storyId: string }) {
+function EditStoryContent({ storyId }: { storyId: string }) {
   const router = useRouter()
   const { data: session } = useSession()
   const [isLoading, setIsLoading] = useState(false)
@@ -481,10 +482,11 @@ export function EditStoryContent({ storyId }: { storyId: string }) {
   )
 }
 
-export default function EditStoryPage({ params }: { params: { id: string } }) {
+export default async function EditStoryPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <EditStoryContent storyId={params.id} />
+      <EditStoryContent storyId={resolvedParams.id} />
     </Suspense>
   )
 } 

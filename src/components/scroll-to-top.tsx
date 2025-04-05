@@ -3,6 +3,7 @@
 import * as React from "react"
 import { ArrowUp } from "lucide-react"
 import clsx from "clsx"
+import { usePathname } from "next/navigation"
 
 interface ScrollToTopProps {
   showBelow?: number // Hiển thị nút khi scroll xuống bao nhiêu pixel
@@ -14,6 +15,10 @@ export const ScrollToTop: React.FC<ScrollToTopProps> = ({
   className 
 }) => {
   const [show, setShow] = React.useState(false)
+  const pathname = usePathname()
+  
+  // Kiểm tra xem có đang ở trang stories hay không
+  const isStoriesPage = pathname?.includes("/stories")
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -35,7 +40,7 @@ export const ScrollToTop: React.FC<ScrollToTopProps> = ({
   return (
     <button
       className={clsx(
-        "fixed bottom-28 right-8 p-3 rounded-full",
+        "fixed right-8 p-3 rounded-full",
         "bg-primary hover:bg-primary/90",
         "text-primary-foreground",
         "shadow-lg",
@@ -43,6 +48,8 @@ export const ScrollToTop: React.FC<ScrollToTopProps> = ({
         "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
         show ? "translate-y-0 opacity-100" : "translate-y-16 opacity-0",
         "z-50",
+        // Điều chỉnh vị trí dựa trên trang hiện tại
+        isStoriesPage ? "bottom-28" : "bottom-8",
         className
       )}
       onClick={handleClick}

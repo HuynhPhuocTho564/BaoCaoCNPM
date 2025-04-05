@@ -16,14 +16,29 @@ import { UserAvatar } from "@/components/user/user-avatar"
 interface UserMenuProps {
   isDarkTheme?: boolean;
   isMobile?: boolean;
+  onMobileMenuClose?: () => void;
 }
 
-export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => {
+export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMobileMenuClose }) => {
   const router = useRouter()
   const { data: session } = useSession()
   const [isOpen, setIsOpen] = React.useState(false)
 
   if (!session) return null
+
+  const handleNavigation = (path: string) => {
+    router.push(path)
+    if (isMobile && onMobileMenuClose) {
+      onMobileMenuClose()
+    }
+  }
+
+  const handleSignOut = () => {
+    if (isMobile && onMobileMenuClose) {
+      onMobileMenuClose()
+    }
+    signOut({ callbackUrl: '/' })
+  }
 
   if (isMobile) {
     return (
@@ -46,7 +61,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
         {isOpen && (
           <div className="mt-1 bg-gray-50 dark:bg-[#1C1D21] rounded-lg">
             <button
-              onClick={() => router.push('/account')}
+              onClick={() => handleNavigation('/account')}
               className="flex w-full items-center px-6 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
             >
               <User className="mr-2 h-4 w-4" />
@@ -54,7 +69,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
             </button>
 
             <button
-              onClick={() => router.push('/stories')}
+              onClick={() => handleNavigation('/stories')}
               className="flex w-full items-center px-6 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
             >
               <BookOpen className="mr-2 h-4 w-4" />
@@ -62,7 +77,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
             </button>
 
             <button
-              onClick={() => router.push('/settings')}
+              onClick={() => handleNavigation('/settings')}
               className="flex w-full items-center px-6 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
             >
               <Settings className="mr-2 h-4 w-4" />
@@ -72,7 +87,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile }) => 
             <div className="my-1 h-px bg-gray-200 dark:bg-gray-700" />
 
             <button
-              onClick={() => signOut({ callbackUrl: '/' })}
+              onClick={handleSignOut}
               className="flex w-full items-center px-6 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg"
             >
               <LogOut className="mr-2 h-4 w-4" />

@@ -1,9 +1,10 @@
 import EditCharacterContent from "./EditCharacterContent"
 
-export default function EditCharacterPage({ 
+export default async function EditCharacterPage({ 
   params 
 }: { 
-  params: { id: string; characterId: string } 
+  params: Promise<{ id: string; characterId: string }> 
 }) {
-  return <EditCharacterContent storyId={params.id} characterId={params.characterId} />
+  const resolvedParams = await params;
+  return <EditCharacterContent storyId={resolvedParams.id} characterId={resolvedParams.characterId} />
 } 

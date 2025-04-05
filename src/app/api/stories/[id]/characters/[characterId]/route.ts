@@ -1,18 +1,20 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "../../../../auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth"
 import pool from "@/lib/db"
 import { GoogleDriveService } from "@/services/google-drive.service"
 
 // PUT - Cập nhật nhân vật
 export async function PUT(
   request: Request,
-  context: { params: { id: string, characterId: string } }
+  context: { params: Promise<{ id: string, characterId: string }> }
 ) {
-  const { id: storyId, characterId } = context.params
-  
   try {
+    const resolvedParams = await context.params
+    const { id: storyId, characterId } = resolvedParams
+    
     const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
       return NextResponse.json(
@@ -119,11 +121,12 @@ export async function PUT(
 // DELETE - Xóa nhân vật
 export async function DELETE(
   request: Request,
-  context: { params: { id: string, characterId: string } }
+  context: { params: Promise<{ id: string, characterId: string }> }
 ) {
-  const { id: characterId } = await context.params
-  
   try {
+    const resolvedParams = await context.params
+    const { id: storyId, characterId } = resolvedParams
+    
     const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
       return NextResponse.json(

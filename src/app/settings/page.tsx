@@ -160,8 +160,8 @@ export default function SettingsPage() {
                 Cập nhật ảnh đại diện của bạn
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex items-center gap-6">
-              <div className="relative w-24 h-24">
+            <CardContent className="flex flex-col sm:flex-row items-center gap-6">
+              <div className="relative w-24 h-24 flex-shrink-0">
                 <Image 
                   src={avatar}
                   alt="Avatar"
@@ -171,7 +171,7 @@ export default function SettingsPage() {
                   priority
                 />
               </div>
-              <div>
+              <div className="w-full">
                 <Input
                   type="file"
                   accept="image/*"
