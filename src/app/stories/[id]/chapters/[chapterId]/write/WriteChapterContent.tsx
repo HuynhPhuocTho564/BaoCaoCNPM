@@ -467,12 +467,14 @@ export default function WriteChapterContent({
                         </div>
                       ) : (
                         <div className="flex flex-col gap-2">
-                          <div className={`mt-1 flex ${isMainCharacter ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`inline-block p-3 rounded-lg max-w-[80%] break-words whitespace-pre-wrap ${
-                              isMainCharacter 
-                                ? 'bg-primary text-primary-foreground' 
-                                : 'bg-muted'
-                            }`}>
+                          <div className={`mt-1 ${isMainCharacter ? 'flex justify-end' : ''}`}>
+                            <div 
+                              className={`inline-block p-3 rounded-lg break-words whitespace-pre-wrap text-left ${
+                                isMainCharacter 
+                                  ? 'bg-primary text-primary-foreground' 
+                                  : 'bg-muted'
+                              } max-w-[calc(100%-20px)]`}
+                            >
                               {dialogue.content}
                             </div>
                           </div>

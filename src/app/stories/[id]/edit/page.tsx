@@ -72,6 +72,7 @@ function EditStoryContent({ storyId }: { storyId: string }) {
   const [story, setStory] = useState<Story | null>(null)
   const [previewImage, setPreviewImage] = useState<string>("")
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [isPublishing, setIsPublishing] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -209,9 +210,11 @@ function EditStoryContent({ storyId }: { storyId: string }) {
 
   const handlePublish = async () => {
     try {
+      setIsPublishing(true)
       const canPublish = await checkPublishConditions(storyId)
       if (!canPublish) {
         toast.error('Cần có ít nhất một chương đã xuất bản để xuất bản truyện')
+        setIsPublishing(false)
         return
       }
 
@@ -224,9 +227,13 @@ function EditStoryContent({ storyId }: { storyId: string }) {
       }
 
       toast.success('Xuất bản truyện thành công!')
+      // Cập nhật trạng thái truyện thành 'published'
+      setStory(prev => prev ? {...prev, status: 'published'} : null)
       router.refresh()
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
+    } finally {
+      setIsPublishing(false)
     }
   }
 
@@ -381,10 +388,16 @@ function EditStoryContent({ storyId }: { storyId: string }) {
               }}
               onImageGenerated={handleImageGenerated}
             />
-            {story.status === 'draft' && (
+            {story.status === 'draft' ? (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="default" className="w-full sm:w-auto">Xuất bản truyện</Button>
+                  <Button 
+                    variant="default" 
+                    className="w-full sm:w-auto"
+                    disabled={isPublishing}
+                  >
+                    {isPublishing ? "Đang xuất bản..." : "Xuất bản truyện"}
+                  </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
@@ -395,12 +408,20 @@ function EditStoryContent({ storyId }: { storyId: string }) {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Hủy</AlertDialogCancel>
-                    <AlertDialogAction onClick={handlePublish}>
-                      Xuất bản
+                    <AlertDialogAction onClick={handlePublish} disabled={isPublishing}>
+                      {isPublishing ? "Đang xuất bản..." : "Xuất bản"}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
+            ) : (
+              <Button 
+                variant="default" 
+                className="w-full sm:w-auto" 
+                disabled={true}
+              >
+                Đã xuất bản
+              </Button>
             )}
             <AlertDialog>
               <AlertDialogTrigger asChild>

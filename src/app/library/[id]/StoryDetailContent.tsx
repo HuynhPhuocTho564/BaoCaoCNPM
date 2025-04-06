@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { BookOpenText, Clock, Eye } from "lucide-react"
 import { Card, CardHeader } from "@/components/ui/card"
+import Skeleton from "react-loading-skeleton"
+import "react-loading-skeleton/dist/skeleton.css"
 
 interface Story {
   story_id: number
@@ -57,10 +59,45 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
 
   if (isLoading || !story) {
     return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Đang tải...</p>
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid md:grid-cols-[300px_1fr] gap-8">
+          {/* Skeleton cho cột trái - ảnh bìa */}
+          <div className="space-y-4">
+            <div className="relative aspect-[3/4] w-full rounded-lg overflow-hidden">
+              <Skeleton height="100%" />
+            </div>
+          </div>
+
+          {/* Skeleton cho cột phải - thông tin truyện */}
+          <div className="space-y-6">
+            <div>
+              <Skeleton height={32} width="80%" className="mb-2" />
+              <Skeleton count={3} className="mb-1" />
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Skeleton width={100} height={28} />
+                <Skeleton width={120} height={24} />
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {Array(5).fill(0).map((_, index) => (
+                  <Skeleton key={index} width={80} height={28} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Skeleton cho danh sách chương */}
+        <div className="mt-8">
+          <Skeleton height={32} width={200} className="mb-4" />
+          <div className="space-y-3">
+            {Array(5).fill(0).map((_, index) => (
+              <Skeleton key={index} height={60} />
+            ))}
+          </div>
         </div>
       </div>
     )

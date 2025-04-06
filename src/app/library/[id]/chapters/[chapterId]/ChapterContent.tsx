@@ -6,6 +6,8 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, User, Hand } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import Skeleton from "react-loading-skeleton"
+import "react-loading-skeleton/dist/skeleton.css"
 
 interface Character {
   character_id: number
@@ -103,10 +105,40 @@ export default function ChapterContent({
 
   if (isLoading || !chapter) {
     return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Đang tải nội dung chương...</p>
+      <div className="container max-w-2xl mx-auto px-4 py-8 select-none">
+        {/* Skeleton cho nút quay lại */}
+        <div className="mb-8">
+          <Skeleton width={180} height={40} />
+        </div>
+
+        {/* Skeleton cho tiêu đề chương */}
+        <div className="mb-8 text-center">
+          <Skeleton width="70%" height={36} className="mx-auto" />
+        </div>
+
+        {/* Skeleton cho khu vực nội dung hội thoại */}
+        <div className="min-h-[50vh] max-h-[70vh] px-4">
+          <div className="space-y-6">
+            {Array(5).fill(0).map((_, index) => (
+              <div key={index} className={`flex items-start gap-3 ${index % 2 === 0 ? 'flex-row' : 'flex-row-reverse'}`}>
+                <div className="w-10 h-10 rounded-full overflow-hidden">
+                  <Skeleton circle width={40} height={40} />
+                </div>
+                <div className={`flex-1 ${index % 2 === 0 ? '' : 'text-right'}`}>
+                  <Skeleton width={100} height={20} className={index % 2 === 0 ? '' : 'ml-auto'} />
+                  <div className={`mt-1 flex ${index % 2 === 0 ? 'justify-start' : 'justify-end'}`}>
+                    <Skeleton width={200} height={80} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Skeleton cho nút điều hướng chương */}
+        <div className="flex justify-between items-center mt-12 gap-4">
+          <Skeleton width={120} height={40} />
+          <Skeleton width={120} height={40} />
         </div>
       </div>
     )
@@ -166,39 +198,54 @@ export default function ChapterContent({
                         </div>
                       </div>
                     ) : (
-                      <div 
-                        className={`flex items-start gap-3 ${
-                          dialogue.character?.role === 'main' 
-                            ? 'flex-row-reverse' 
-                            : 'flex-row'
-                        }`}
-                      >
-                        <div className="w-10 h-10 rounded-full overflow-hidden bg-muted flex-shrink-0">
-                          {dialogue.character?.avatar_image ? (
-                            <Image
-                              src={dialogue.character.avatar_image}
-                              alt={dialogue.character.name}
-                              width={40}
-                              height={40}
-                              className="object-cover"
-                              draggable="false"
-                            />
-                          ) : (
-                            <User className="w-6 h-6 m-2" />
-                          )}
-                        </div>
-                        <div className={`flex-1 ${dialogue.character?.role === 'main' ? 'text-right' : ''}`}>
-                          <div className="font-semibold">{dialogue.character?.name}</div>
-                          <div className={`mt-1 flex ${dialogue.character?.role === 'main' ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`inline-block p-3 rounded-lg max-w-[80%] break-words whitespace-pre-wrap ${
-                              dialogue.character?.role === 'main' 
-                                ? 'bg-primary text-primary-foreground' 
-                                : 'bg-muted'
-                            }`}>
+                      <div className="mb-4">
+                        {dialogue.character?.role === 'main' ? (
+                          <div className="flex flex-col items-end">
+                            <div className="flex items-center mb-1">
+                              <span className="mr-2 font-semibold">{dialogue.character?.name}</span>
+                              <div className="w-8 h-8 rounded-full overflow-hidden bg-muted flex-shrink-0">
+                                {dialogue.character?.avatar_image ? (
+                                  <Image
+                                    src={dialogue.character.avatar_image}
+                                    alt={dialogue.character.name}
+                                    width={32}
+                                    height={32}
+                                    className="object-cover"
+                                    draggable="false"
+                                  />
+                                ) : (
+                                  <User className="w-5 h-5 m-1.5" />
+                                )}
+                              </div>
+                            </div>
+                            <div className="bg-primary text-primary-foreground p-3 rounded-lg max-w-[75%] break-words whitespace-pre-wrap">
                               {dialogue.content}
                             </div>
                           </div>
-                        </div>
+                        ) : (
+                          <div className="flex flex-col items-start">
+                            <div className="flex items-center mb-1">
+                              <div className="w-8 h-8 rounded-full overflow-hidden bg-muted flex-shrink-0 mr-2">
+                                {dialogue.character?.avatar_image ? (
+                                  <Image
+                                    src={dialogue.character.avatar_image}
+                                    alt={dialogue.character.name}
+                                    width={32}
+                                    height={32}
+                                    className="object-cover"
+                                    draggable="false"
+                                  />
+                                ) : (
+                                  <User className="w-5 h-5 m-1.5" />
+                                )}
+                              </div>
+                              <span className="font-semibold">{dialogue.character?.name}</span>
+                            </div>
+                            <div className="bg-muted p-3 rounded-lg max-w-[75%] break-words whitespace-pre-wrap">
+                              {dialogue.content}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </motion.div>

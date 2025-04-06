@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import { StoryCard } from "@/components/story-card"
 import { BookOpenText } from "lucide-react"
+import Skeleton from "react-loading-skeleton"
+import "react-loading-skeleton/dist/skeleton.css"
 
 interface Story {
   story_id: number
@@ -42,9 +44,17 @@ export default function NewStoriesPage() {
       <h1 className="text-3xl font-bold mb-8">Truyện Mới Xuất Bản</h1>
 
       {isLoading ? (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Đang tải danh sách truyện...</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {Array(8).fill(0).map((_, index) => (
+            <div key={index} className="flex flex-col">
+              <div className="relative aspect-[3/4] w-full rounded-lg overflow-hidden mb-3">
+                <Skeleton height="100%" />
+              </div>
+              <Skeleton width="70%" height={24} className="mb-2" />
+              <Skeleton width="40%" height={20} className="mb-2" />
+              <Skeleton width="30%" height={16} />
+            </div>
+          ))}
         </div>
       ) : stories.length === 0 ? (
         <div className="text-center py-12">
