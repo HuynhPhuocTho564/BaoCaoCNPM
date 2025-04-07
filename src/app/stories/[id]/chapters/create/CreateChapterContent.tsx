@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import Skeleton from "react-loading-skeleton"
 import "react-loading-skeleton/dist/skeleton.css"
+import { ChapterIdeaGenerator } from "@/components/chapter/ChapterIdeaGenerator"
+import { ChevronLeft, Sparkles } from "lucide-react"
 
 export default function CreateChapterContent({ 
   storyId 
@@ -20,6 +22,25 @@ export default function CreateChapterContent({
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [storyTitle, setStoryTitle] = useState("")
+  const [showIdeaGenerator, setShowIdeaGenerator] = useState(false)
+  const [storyContext, setStoryContext] = useState<{
+    title: string;
+    description: string;
+    mainCategory: string;
+    tags: string[];
+    characters?: {
+      name: string;
+      description: string;
+      gender: string;
+      personality: string;
+      appearance: string;
+      role: string;
+    }[];
+  } | null>(null)
+  const [publishedChapters, setPublishedChapters] = useState<{
+    title: string;
+    summary?: string;
+  }[]>([])
 
   useEffect(() => {
     const fetchStoryTitle = async () => {
@@ -38,7 +59,41 @@ export default function CreateChapterContent({
       }
     }
 
-    fetchStoryTitle()
+    const fetchStoryContext = async () => {
+      try {
+        const response = await fetch(`/api/stories/${storyId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setStoryContext({
+            title: data.story.title,
+            description: data.story.description,
+            mainCategory: data.story.main_category,
+            tags: data.story.tags,
+            characters: data.story.characters
+          });
+        }
+      } catch (error) {
+        toast.error('Lỗi khi lấy thông tin truyện');
+      }
+    };
+
+    const fetchData = async () => {
+      try {
+        await fetchStoryTitle()
+        await fetchStoryContext()
+
+        // Fetch published chapters
+        const chaptersResponse = await fetch(`/api/stories/${storyId}/chapters?status=published`);
+        if (chaptersResponse.ok) {
+          const data = await chaptersResponse.json();
+          setPublishedChapters(data.chapters);
+        }
+      } catch (error) {
+        toast.error('Lỗi khi lấy danh sách chương');
+      }
+    };
+
+    fetchData()
   }, [storyId])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -78,6 +133,14 @@ export default function CreateChapterContent({
     router.push(`/stories/${storyId}?tab=chapters&status=draft`)
   }
 
+  const handleApplyIdea = (idea: { title: string; summary: string }) => {
+    const titleInput = document.getElementById('title') as HTMLInputElement;
+    const summaryInput = document.getElementById('summary') as HTMLTextAreaElement;
+    
+    if (titleInput) titleInput.value = idea.title;
+    if (summaryInput) summaryInput.value = idea.summary;
+  };
+
   if (isLoadingData) {
     return (
       <div className="container max-w-2xl mx-auto px-4 py-6 md:py-8">
@@ -113,16 +176,27 @@ export default function CreateChapterContent({
   return (
     <div className="container max-w-2xl mx-auto px-4 py-6 md:py-8">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl md:text-2xl font-bold">Tạo chương mới</h1>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleCancel}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Quay lại
+            </Button>
+            <h1 className="text-xl md:text-2xl font-bold">Tạo chương mới</h1>
+          </div>
           <Button
-            type="button"
-            variant="ghost"
+            variant="outline"
             size="sm"
-            onClick={handleCancel}
+            onClick={() => setShowIdeaGenerator(true)}
+            className="ml-auto"
           >
-            <span className="sr-only">Quay lại</span>
-            ← Quay lại
+            <Sparkles className="h-4 w-4 mr-2" />
+            Gợi ý ý tưởng
           </Button>
         </div>
         
@@ -169,6 +243,16 @@ export default function CreateChapterContent({
           </form>
         </div>
       </div>
+
+      {storyContext && (
+        <ChapterIdeaGenerator
+          storyContext={storyContext}
+          publishedChapters={publishedChapters}
+          onApplyIdea={handleApplyIdea}
+          open={showIdeaGenerator}
+          onOpenChange={setShowIdeaGenerator}
+        />
+      )}
     </div>
   )
 } 

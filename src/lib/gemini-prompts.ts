@@ -133,7 +133,23 @@ LUÔN trả về JSON với format sau, KHÔNG có text khác:
   "negativePrompt": "3d, realistic, photograph, photorealistic, real life, " + "những yếu tố không mong muốn trong ảnh", 
   "style": "anime character illustration"
 }
-\`\`\``
+\`\`\``,
+
+CHAPTER: `Bạn là một AI assistant chuyên phát triển nội dung chương truyện. LUÔN trả về JSON với format sau, KHÔNG có text khác:
+\`\`\`json
+{
+  "title": "tiêu đề chương phù hợp với bối cảnh",
+  "summary": "tóm tắt nội dung chương"
+}
+\`\`\``,
+
+  EDIT_CHAPTER: `Bạn là một AI assistant chuyên cải thiện nội dung chương truyện. LUÔN trả về JSON với format sau, KHÔNG có text khác:
+\`\`\`json
+{
+  "title": "tiêu đề chương cải thiện",
+  "summary": "tóm tắt nội dung chương cải thiện"
+}
+\`\`\``,
 };
 
 export const createStoryPrompt = (categories: string[], tags: string[]) => ({
@@ -268,4 +284,75 @@ ${i+1}. ${d.type === 'dialogue' ? `[${d.character_name || 'Không xác định'}
 ` : ''}
 
 Yêu cầu tạo đoạn hội thoại: ${prompt}` }]
+});
+
+export const createChapterPrompt = (storyContext: StoryContext, publishedChapters?: {
+  title: string;
+  summary?: string;
+}[]) => ({
+  role: "user",
+  parts: [{ text: `Thông tin truyện:
+- Tiêu đề: ${storyContext.title}
+- Mô tả: ${storyContext.description}
+- Thể loại: ${storyContext.mainCategory}
+- Các tag: ${storyContext.tags.join(", ")}
+
+${storyContext.characters ? `Danh sách nhân vật:
+${storyContext.characters.map(char => `
+- Tên: ${char.name}
+  + Mô tả: ${char.description}
+  + Giới tính: ${char.gender}
+  + Tính cách: ${char.personality}
+  + Ngoại hình: ${char.appearance}
+  + Vai trò: ${char.role}
+`).join("\n")}` : ''}
+
+${publishedChapters && publishedChapters.length > 0 ? `
+Các chương đã xuất bản:
+${publishedChapters.map((chapter, index) => `
+${index + 1}. ${chapter.title}
+   ${chapter.summary ? `Tóm tắt: ${chapter.summary}` : ''}
+`).join('')}
+` : ''}` }]
+});
+
+export const createEditChapterPrompt = (
+  storyContext: StoryContext,
+  existingChapter: {
+    title: string;
+    summary?: string;
+  },
+  publishedChapters?: {
+    title: string;
+    summary?: string;
+  }[]
+) => ({
+  role: "user",
+  parts: [{ text: `Thông tin truyện:
+- Tiêu đề: ${storyContext.title}
+- Mô tả: ${storyContext.description}
+- Thể loại: ${storyContext.mainCategory}
+- Các tag: ${storyContext.tags.join(", ")}
+
+${storyContext.characters ? `Danh sách nhân vật:
+${storyContext.characters.map(char => `
+- Tên: ${char.name}
+  + Mô tả: ${char.description}
+  + Giới tính: ${char.gender}
+  + Tính cách: ${char.personality}
+  + Ngoại hình: ${char.appearance}
+  + Vai trò: ${char.role}
+`).join("\n")}` : ''}
+
+Thông tin chương hiện tại:
+- Tiêu đề: ${existingChapter.title}
+- Tóm tắt: ${existingChapter.summary || ''}
+
+${publishedChapters && publishedChapters.length > 0 ? `
+Các chương đã xuất bản:
+${publishedChapters.map((chapter, index) => `
+${index + 1}. ${chapter.title}
+   ${chapter.summary ? `Tóm tắt: ${chapter.summary}` : ''}
+`).join('')}
+` : ''}` }]
 }); 

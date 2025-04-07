@@ -27,6 +27,8 @@ import {
 import { toast } from "sonner"
 import Skeleton from "react-loading-skeleton"
 import "react-loading-skeleton/dist/skeleton.css"
+import { ChapterIdeaGenerator } from "@/components/chapter/ChapterIdeaGenerator"
+import { ChevronLeft, Sparkles } from "lucide-react"
 
 interface Chapter {
   chapter_id: number
@@ -48,10 +50,29 @@ export default function EditChapterContent({
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showIdeaGenerator, setShowIdeaGenerator] = useState(false)
+  const [storyContext, setStoryContext] = useState<{
+    title: string;
+    description: string;
+    mainCategory: string;
+    tags: string[];
+    characters?: {
+      name: string;
+      description: string;
+      gender: string;
+      personality: string;
+      appearance: string;
+      role: string;
+    }[];
+  } | null>(null);
+  const [publishedChapters, setPublishedChapters] = useState<{
+    title: string;
+    summary?: string;
+  }[]>([]);
 
   useEffect(() => {
-    const fetchChapter = async () => {
-      setIsLoadingData(true)
+    const fetchData = async () => {
+      setIsLoadingData(true);
       try {
         const response = await fetch(
           `/api/stories/${storyId}/chapters/${chapterId}`
@@ -63,14 +84,34 @@ export default function EditChapterContent({
         } else {
           toast.error(data.error || 'Không thể tải thông tin chương')
         }
+
+        // Fetch story context
+        const storyResponse = await fetch(`/api/stories/${storyId}`);
+        if (storyResponse.ok) {
+          const storyData = await storyResponse.json();
+          setStoryContext({
+            title: storyData.story.title,
+            description: storyData.story.description,
+            mainCategory: storyData.story.main_category,
+            tags: storyData.story.tags,
+            characters: storyData.story.characters
+          });
+        }
+
+        // Fetch published chapters
+        const chaptersResponse = await fetch(`/api/stories/${storyId}/chapters?status=published`);
+        if (chaptersResponse.ok) {
+          const data = await chaptersResponse.json();
+          setPublishedChapters(data.chapters);
+        }
       } catch (error) {
-        toast.error('Đã có lỗi xảy ra khi tải thông tin chương')
+        toast.error('Đã có lỗi xảy ra khi tải dữ liệu');
       } finally {
-        setIsLoadingData(false)
+        setIsLoadingData(false);
       }
     }
 
-    fetchChapter()
+    fetchData()
   }, [storyId, chapterId])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -134,6 +175,14 @@ export default function EditChapterContent({
     }
   }
 
+  const handleApplyIdea = (idea: { title: string; summary: string }) => {
+    const titleInput = document.getElementById('title') as HTMLInputElement;
+    const summaryInput = document.getElementById('summary') as HTMLTextAreaElement;
+    
+    if (titleInput) titleInput.value = idea.title;
+    if (summaryInput) summaryInput.value = idea.summary;
+  };
+
   if (isLoadingData) {
     return (
       <div className="container max-w-2xl mx-auto px-4 py-6 md:py-8">
@@ -186,19 +235,30 @@ export default function EditChapterContent({
   return (
     <div className="container max-w-2xl mx-auto px-4 py-6 md:py-8">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl md:text-2xl font-bold">Chỉnh sửa chương</h1>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleCancel}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Quay lại
+            </Button>
+            <h1 className="text-xl md:text-2xl font-bold">Chỉnh sửa chương</h1>
+          </div>
           <Button
-            type="button"
-            variant="ghost"
+            variant="outline"
             size="sm"
-            onClick={handleCancel}
+            onClick={() => setShowIdeaGenerator(true)}
+            className="ml-auto"
           >
-            <span className="sr-only">Quay lại</span>
-            ← Quay lại
+            <Sparkles className="h-4 w-4 mr-2" />
+            Gợi ý cải thiện
           </Button>
         </div>
-
+        
         <div className="rounded-lg border bg-card p-4 md:p-6">
           <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
             <div className="space-y-2">
@@ -300,6 +360,17 @@ export default function EditChapterContent({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {storyContext && chapter && (
+        <ChapterIdeaGenerator
+          storyContext={storyContext}
+          existingChapter={chapter}
+          publishedChapters={publishedChapters}
+          onApplyIdea={handleApplyIdea}
+          open={showIdeaGenerator}
+          onOpenChange={setShowIdeaGenerator}
+        />
+      )}
     </div>
   )
 } 
