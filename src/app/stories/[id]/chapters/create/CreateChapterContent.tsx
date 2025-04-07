@@ -48,6 +48,7 @@ export default function CreateChapterContent({
     try {
       const formData = new FormData(e.currentTarget)
       const title = formData.get('title')
+      const summary = formData.get('summary')
       const status = 'draft'
 
       const response = await fetch(`/api/stories/${storyId}/chapters`, {
@@ -55,7 +56,7 @@ export default function CreateChapterContent({
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ title, status })
+        body: JSON.stringify({ title, summary, status })
       })
 
       if (!response.ok) {
@@ -91,6 +92,11 @@ export default function CreateChapterContent({
               <div className="space-y-2">
                 <Skeleton width={120} height={20} />
                 <Skeleton height={40} />
+              </div>
+              
+              <div className="space-y-2">
+                <Skeleton width={120} height={20} />
+                <Skeleton height={100} />
               </div>
 
               <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
@@ -130,6 +136,16 @@ export default function CreateChapterContent({
                 placeholder="Nhập tiêu đề chương"
                 required
                 className="w-full"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="summary">Tóm tắt chương</Label>
+              <textarea
+                id="summary"
+                name="summary"
+                placeholder="Nhập tóm tắt nội dung chương"
+                className="w-full min-h-[100px] px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background"
               />
             </div>
 

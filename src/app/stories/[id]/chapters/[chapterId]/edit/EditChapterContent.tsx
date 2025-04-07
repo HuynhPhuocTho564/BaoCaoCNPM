@@ -31,6 +31,7 @@ import "react-loading-skeleton/dist/skeleton.css"
 interface Chapter {
   chapter_id: number
   title: string
+  summary?: string
   status: 'draft' | 'published'
   dialogue_count: number
 }
@@ -79,6 +80,7 @@ export default function EditChapterContent({
     try {
       const formData = new FormData(e.currentTarget)
       const title = formData.get('title')
+      const summary = formData.get('summary')
       const status = formData.get('status')
 
       const response = await fetch(
@@ -88,16 +90,17 @@ export default function EditChapterContent({
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ title, status })
+          body: JSON.stringify({ title, summary, status })
         }
       )
 
+      const data = await response.json()
       if (!response.ok) {
-        throw new Error('Lỗi khi cập nhật chương')
+        throw new Error(data.error || 'Lỗi khi cập nhật chương')
       }
 
       toast.success('Cập nhật chương thành công!')
-      router.push(`/stories/${storyId}?tab=chapters&status=${status}`)
+      router.push(`/stories/${storyId}?tab=chapters&status=${data.chapter.status}`)
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
     } finally {
@@ -145,6 +148,11 @@ export default function EditChapterContent({
               <div className="space-y-2">
                 <Skeleton width={120} height={20} />
                 <Skeleton height={40} />
+              </div>
+
+              <div className="space-y-2">
+                <Skeleton width={120} height={20} />
+                <Skeleton height={100} />
               </div>
 
               <div className="space-y-2">
@@ -201,6 +209,17 @@ export default function EditChapterContent({
                 defaultValue={chapter?.title}
                 required
                 className="w-full"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="summary">Tóm tắt chương</Label>
+              <textarea
+                id="summary"
+                name="summary"
+                defaultValue={chapter?.summary || ""}
+                placeholder="Nhập tóm tắt nội dung chương"
+                className="w-full min-h-[100px] px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background"
               />
             </div>
 

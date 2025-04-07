@@ -25,6 +25,7 @@ export async function GET(
       SELECT 
         chapter_id,
         title,
+        summary,
         order_number,
         status,
         publish_order,
@@ -57,7 +58,7 @@ export async function POST(
   try {
     const resolvedParams = await params
     const { id } = resolvedParams
-    const { title, status } = await request.json()
+    const { title, summary, status } = await request.json()
 
     // Bắt đầu transaction
     const connection = await pool.getConnection()
@@ -76,23 +77,25 @@ export async function POST(
       const nextOrder = (maxOrders[0].max_order || 0) + 1
       const nextPublish = status === 'published' ? (maxOrders[0].max_publish || 0) + 1 : null
 
-      // Tạo chương mới
+      // Tạo chương mới với trường summary
       const [result] = await connection.execute(`
         INSERT INTO story_chapters (
           story_id, 
-          title, 
+          title,
+          summary, 
           status,
           order_number,
           publish_order,
           created_at
-        ) VALUES (?, ?, ?, ?, ?, NOW())
-      `, [id, title, status, nextOrder, nextPublish]) as any[]
+        ) VALUES (?, ?, ?, ?, ?, ?, NOW())
+      `, [id, title, summary, status, nextOrder, nextPublish]) as any[]
 
       await connection.commit()
 
       return NextResponse.json({
         chapter_id: result.insertId,
         title,
+        summary,
         status,
         order_number: nextOrder,
         publish_order: nextPublish
