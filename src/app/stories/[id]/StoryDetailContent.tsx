@@ -41,6 +41,13 @@ interface Story {
   status: 'draft' | 'published' | 'archived'
 }
 
+interface Outline {
+  outline_id: number
+  title: string
+  description: string
+  order_number: number
+}
+
 export default function StoryDetailContent({ storyId }: { storyId: string }) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -48,6 +55,7 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
   const [story, setStory] = useState<Story | null>(null)
   const [chapters, setChapters] = useState<Chapter[]>([])
   const [characters, setCharacters] = useState<Character[]>([])
+  const [outlines, setOutlines] = useState<Outline[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   // Lấy cả tab và status từ URL
@@ -81,6 +89,14 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
         
         if (charactersResponse.ok) {
           setCharacters(charactersData.characters)
+        }
+
+        // Fetch outlines
+        const outlinesResponse = await fetch(`/api/stories/${storyId}/outlines`)
+        const outlinesData = await outlinesResponse.json()
+        
+        if (outlinesResponse.ok) {
+          setOutlines(outlinesData.outlines)
         }
       } catch (error) {
         toast.error('Đã có lỗi xảy ra')
@@ -224,6 +240,7 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
         <TabsList className="mb-8">
           <TabsTrigger value="chapters">Danh sách chương</TabsTrigger>
           <TabsTrigger value="characters">Nhân vật</TabsTrigger>
+          <TabsTrigger value="outlines">Đại cương</TabsTrigger>
         </TabsList>
 
         <TabsContent value="chapters">
@@ -446,6 +463,46 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
                 )}
               </div>
             </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="outlines">
+          <div className="space-y-6">
+            <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
+              <h2 className="text-xl sm:text-2xl font-semibold">Đại cương truyện</h2>
+              <Button onClick={() => router.push(`/stories/${storyId}/outlines/create`)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Thêm đại cương
+              </Button>
+            </div>
+
+            {outlines.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Chưa có đại cương nào</p>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {outlines.map((outline) => (
+                  <Card key={outline.outline_id}>
+                    <CardHeader>
+                      <CardTitle>{outline.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground">{outline.description}</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => router.push(`/stories/${storyId}/outlines/${outline.outline_id}/edit`)}
+                      >
+                        Chỉnh sửa
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         </TabsContent>
       </Tabs>
