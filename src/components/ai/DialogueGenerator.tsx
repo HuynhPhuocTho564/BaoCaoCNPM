@@ -32,6 +32,7 @@ interface DialogueGeneratorProps {
     }[];
   };
   chapterTitle?: string;
+  chapterSummary?: string;
   existingDialogues?: {
     character_id: number | null;
     content: string;
@@ -61,11 +62,16 @@ interface DialogueGeneratorProps {
   chapterId?: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  publishedChapters?: {
+    title: string;
+    summary?: string;
+  }[];
 }
 
 export function DialogueGenerator({ 
   storyContext, 
-  chapterTitle, 
+  chapterTitle,
+  chapterSummary,
   existingDialogues = [],
   onGenerateDialogues,
   generatedDialogues,
@@ -75,7 +81,8 @@ export function DialogueGenerator({
   storyId,
   chapterId,
   open,
-  onOpenChange
+  onOpenChange,
+  publishedChapters = []
 }: DialogueGeneratorProps) {
   const [prompt, setPrompt] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
@@ -163,7 +170,9 @@ export function DialogueGenerator({
         storyContext, 
         numDialogues,
         chapterTitle,
-        formattedExistingDialogues
+        chapterSummary,
+        formattedExistingDialogues,
+        publishedChapters
       );
       
       const newDialogues = dialogues.map(d => ({...d, added: false}));

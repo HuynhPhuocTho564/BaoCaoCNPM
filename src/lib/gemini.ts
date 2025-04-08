@@ -211,26 +211,18 @@ export async function generateCharacterIdea(
 
 export async function generateDialogueSuggestion(
   prompt: string,
-  storyContext: {
-    title: string;
-    description: string;
-    mainCategory: string;
-    tags: string[];
-    characters: {
-      name: string;
-      description: string;
-      gender: string;
-      personality: string;
-      appearance: string;
-      role: string;
-    }[];
-  },
-  count: number = 3,
+  storyContext: StoryContext,
+  numDialogues: number,
   chapterTitle?: string,
+  chapterSummary?: string,
   existingDialogues?: {
     character_name?: string;
     content: string;
     type: 'dialogue' | 'aside';
+  }[],
+  publishedChapters?: {
+    title: string;
+    summary?: string;
   }[]
 ): Promise<DialogueItem[]> {
   try {
@@ -240,14 +232,21 @@ export async function generateDialogueSuggestion(
       model: "gemini-2.0-flash",
       safetySettings,
       generationConfig,
-      systemInstruction: SYSTEM_PROMPTS.DIALOGUE + "\n\nCHÚ Ý QUAN TRỌNG: Chỉ sử dụng tên nhân vật đã được liệt kê trong danh sách nhân vật. KHÔNG tạo ra nhân vật mới."
+      systemInstruction: SYSTEM_PROMPTS.DIALOGUE
     });
     
-    const fullPrompt = createDialoguePrompt(prompt, storyContext, chapterTitle, existingDialogues);
-    fullPrompt.parts[0].text += `\n\nHãy tạo ${count} đoạn hội thoại khác nhau. CHỈ sử dụng tên nhân vật đã được liệt kê trong danh sách nhân vật, KHÔNG tạo ra nhân vật mới.`;
-    
     const chat = model.startChat({
-      history: [fullPrompt],
+      history: [
+        createDialoguePrompt(
+          prompt, 
+          storyContext, 
+          numDialogues, 
+          chapterTitle,
+          chapterSummary,
+          existingDialogues,
+          publishedChapters
+        )
+      ],
     });
 
     const result = await chat.sendMessage("");

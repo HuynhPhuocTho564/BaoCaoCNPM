@@ -35,6 +35,7 @@ export const SYSTEM_PROMPTS = {
   DIALOGUE: `Bạn là một AI assistant chuyên tạo đối thoại cho truyện. Dựa vào thông tin về truyện, chương và các nhân vật được cung cấp, hãy tạo nhiều đoạn hội thoại phù hợp với bối cảnh và tính cách của các nhân vật.
 
 Khi tạo đối thoại, hãy:
+- CHỈ sử dụng các nhân vật đã có trong danh sách, KHÔNG tạo nhân vật mới
 - Đảm bảo phù hợp với thể loại và bối cảnh của truyện
 - Thể hiện đúng tính cách của các nhân vật
 - Tạo tương tác tự nhiên giữa các nhân vật
@@ -49,17 +50,12 @@ LUÔN trả về JSON với format sau, KHÔNG có text khác:
     {
       "content": "nội dung đoạn hội thoại",
       "type": "dialogue",
-      "characters": ["tên nhân vật chính"]
+      "characters": ["tên nhân vật - PHẢI có trong danh sách nhân vật"]
     },
     {
       "content": "nội dung đoạn mô tả",
       "type": "aside",
       "characters": []
-    },
-    {
-      "content": "nội dung đoạn hội thoại khác",
-      "type": "dialogue",
-      "characters": ["tên nhân vật khác"]
     }
   ]
 }
@@ -248,13 +244,19 @@ export const createAvatarPrompt = (characterInfo: {
 });
 
 export const createDialoguePrompt = (
-  prompt: string, 
+  prompt: string,
   storyContext: StoryContext,
+  numDialogues: number,
   chapterTitle?: string,
+  chapterSummary?: string,
   existingDialogues?: {
     character_name?: string;
     content: string;
     type: 'dialogue' | 'aside';
+  }[],
+  publishedChapters?: {
+    title: string;
+    summary?: string;
   }[]
 ) => ({
   role: "user",
@@ -264,7 +266,9 @@ export const createDialoguePrompt = (
 - Thể loại: ${storyContext.mainCategory}
 - Các tag: ${storyContext.tags.join(", ")}
 
-${chapterTitle ? `Tên chương: ${chapterTitle}` : ''}
+${chapterTitle ? `Thông tin chương hiện tại:
+- Tiêu đề: ${chapterTitle}
+${chapterSummary ? `- Tóm tắt: ${chapterSummary}` : ''}` : ''}
 
 ${storyContext.characters ? `Danh sách nhân vật:
 ${storyContext.characters.map(char => `
@@ -276,6 +280,14 @@ ${storyContext.characters.map(char => `
   + Vai trò: ${char.role}
 `).join("\n")}` : ''}
 
+${publishedChapters && publishedChapters.length > 0 ? `
+Các chương đã xuất bản:
+${publishedChapters.map((chapter, index) => `
+${index + 1}. ${chapter.title}
+   ${chapter.summary ? `Tóm tắt: ${chapter.summary}` : ''}
+`).join('')}
+` : ''}
+
 ${existingDialogues && existingDialogues.length > 0 ? `
 Các hội thoại đã có (theo thứ tự):
 ${existingDialogues.map((d, i) => `
@@ -283,7 +295,7 @@ ${i+1}. ${d.type === 'dialogue' ? `[${d.character_name || 'Không xác định'}
 `).join('')}
 ` : ''}
 
-Yêu cầu tạo đoạn hội thoại: ${prompt}` }]
+Yêu cầu tạo ${numDialogues} đoạn hội thoại: ${prompt}` }]
 });
 
 export const createChapterPrompt = (storyContext: StoryContext, publishedChapters?: {
