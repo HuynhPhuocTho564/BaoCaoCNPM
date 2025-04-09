@@ -3,7 +3,7 @@ import {
   HarmCategory,
   HarmBlockThreshold,
 } from "@google/generative-ai";
-import { SYSTEM_PROMPTS, createStoryPrompt, createEditStoryPrompt, createCharacterPrompt, createEditCharacterPrompt, createCoverImagePrompt, createAvatarPrompt, createDialoguePrompt, createChapterPrompt, createEditChapterPrompt } from './gemini-prompts';
+import { SYSTEM_PROMPTS, createStoryPrompt, createEditStoryPrompt, createCharacterPrompt, createEditCharacterPrompt, createCoverImagePrompt, createAvatarPrompt, createDialoguePrompt, createChapterPrompt, createEditChapterPrompt, createOutlinePrompt, createEditOutlinePrompt } from './gemini-prompts';
 
 let apiKey: string | null = null;
 
@@ -100,6 +100,11 @@ interface StoryContext {
     appearance: string;
     role: string;
   }[];
+}
+
+interface OutlineIdea {
+  title: string;
+  description: string;
 }
 
 export async function generateStoryIdea(userPrompt: string, categories: string[], tags: string[]): Promise<StoryIdea> {
@@ -529,6 +534,106 @@ export async function generateChapterEdit(
     return editedChapter;
   } catch (error) {
     console.error("Lỗi khi chỉnh sửa chương:", error);
+    throw error;
+  }
+}
+
+export async function generateOutlineIdea(
+  prompt: string,
+  storyContext: StoryContext,
+  publishedChapters?: {
+    title: string;
+    summary?: string;
+  }[]
+): Promise<OutlineIdea> {
+  try {
+    const key = await getApiKey();
+    const genAI = new GoogleGenerativeAI(key!);
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash",
+      safetySettings,
+      generationConfig,
+      systemInstruction: SYSTEM_PROMPTS.OUTLINE
+    });
+    
+    const chat = model.startChat({
+      history: [
+        createOutlinePrompt(storyContext, publishedChapters)
+      ],
+    });
+
+    const result = await chat.sendMessage([{ text: prompt }]);
+    const response = result.response.text();
+    
+    const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
+    const jsonString = jsonMatch ? jsonMatch[1] : response;
+    
+    let outlineIdea: OutlineIdea;
+    try {
+      outlineIdea = JSON.parse(jsonString);
+      if (!outlineIdea.title || !outlineIdea.description) {
+        throw new Error('Dữ liệu không hợp lệ');
+      }
+    } catch (parseError) {
+      console.error("Lỗi khi parse JSON:", parseError);
+      throw new Error('Không thể xử lý phản hồi từ AI');
+    }
+    
+    return outlineIdea;
+  } catch (error) {
+    console.error("Lỗi khi tạo ý tưởng đại cương:", error);
+    throw error;
+  }
+}
+
+export async function generateOutlineEdit(
+  prompt: string,
+  storyContext: StoryContext,
+  existingOutline: {
+    title: string;
+    description: string;
+  },
+  publishedChapters?: {
+    title: string;
+    summary?: string;
+  }[]
+): Promise<OutlineIdea> {
+  try {
+    const key = await getApiKey();
+    const genAI = new GoogleGenerativeAI(key!);
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash",
+      safetySettings,
+      generationConfig,
+      systemInstruction: SYSTEM_PROMPTS.EDIT_OUTLINE
+    });
+    
+    const chat = model.startChat({
+      history: [
+        createEditOutlinePrompt(storyContext, existingOutline, publishedChapters)
+      ],
+    });
+
+    const result = await chat.sendMessage([{ text: prompt }]);
+    const response = result.response.text();
+    
+    const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
+    const jsonString = jsonMatch ? jsonMatch[1] : response;
+    
+    let editedOutline: OutlineIdea;
+    try {
+      editedOutline = JSON.parse(jsonString);
+      if (!editedOutline.title || !editedOutline.description) {
+        throw new Error('Dữ liệu chỉnh sửa không hợp lệ');
+      }
+    } catch (parseError) {
+      console.error("Lỗi khi parse JSON:", parseError);
+      throw new Error('Không thể xử lý phản hồi từ AI');
+    }
+    
+    return editedOutline;
+  } catch (error) {
+    console.error("Lỗi khi chỉnh sửa đại cương:", error);
     throw error;
   }
 } 

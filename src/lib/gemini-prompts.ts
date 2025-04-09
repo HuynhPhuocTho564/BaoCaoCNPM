@@ -146,6 +146,22 @@ CHAPTER: `Bạn là một AI assistant chuyên phát triển nội dung chương
   "summary": "tóm tắt nội dung chương cải thiện"
 }
 \`\`\``,
+
+  OUTLINE: `Bạn là một AI assistant chuyên phát triển đại cương cho truyện. LUÔN trả về JSON với format sau, KHÔNG có text khác:
+\`\`\`json
+{
+  "title": "tiêu đề đại cương phù hợp với bối cảnh",
+  "description": "mô tả chi tiết về đại cương"
+}
+\`\`\``,
+
+  EDIT_OUTLINE: `Bạn là một AI assistant chuyên cải thiện đại cương cho truyện. LUÔN trả về JSON với format sau, KHÔNG có text khác:
+\`\`\`json
+{
+  "title": "tiêu đề đại cương cải thiện",
+  "description": "mô tả chi tiết về đại cương cải thiện"
+}
+\`\`\``,
 };
 
 export const createStoryPrompt = (categories: string[], tags: string[]) => ({
@@ -359,6 +375,77 @@ ${storyContext.characters.map(char => `
 Thông tin chương hiện tại:
 - Tiêu đề: ${existingChapter.title}
 - Tóm tắt: ${existingChapter.summary || ''}
+
+${publishedChapters && publishedChapters.length > 0 ? `
+Các chương đã xuất bản:
+${publishedChapters.map((chapter, index) => `
+${index + 1}. ${chapter.title}
+   ${chapter.summary ? `Tóm tắt: ${chapter.summary}` : ''}
+`).join('')}
+` : ''}` }]
+});
+
+export const createOutlinePrompt = (storyContext: StoryContext, publishedChapters?: {
+  title: string;
+  summary?: string;
+}[]) => ({
+  role: "user",
+  parts: [{ text: `Thông tin truyện:
+- Tiêu đề: ${storyContext.title}
+- Mô tả: ${storyContext.description}
+- Thể loại: ${storyContext.mainCategory}
+- Các tag: ${storyContext.tags.join(", ")}
+
+${storyContext.characters ? `Danh sách nhân vật:
+${storyContext.characters.map(char => `
+- Tên: ${char.name}
+  + Mô tả: ${char.description}
+  + Giới tính: ${char.gender}
+  + Tính cách: ${char.personality}
+  + Ngoại hình: ${char.appearance}
+  + Vai trò: ${char.role}
+`).join("\n")}` : ''}
+
+${publishedChapters && publishedChapters.length > 0 ? `
+Các chương đã xuất bản:
+${publishedChapters.map((chapter, index) => `
+${index + 1}. ${chapter.title}
+   ${chapter.summary ? `Tóm tắt: ${chapter.summary}` : ''}
+`).join('')}
+` : ''}` }]
+});
+
+export const createEditOutlinePrompt = (
+  storyContext: StoryContext,
+  existingOutline: {
+    title: string;
+    description: string;
+  },
+  publishedChapters?: {
+    title: string;
+    summary?: string;
+  }[]
+) => ({
+  role: "user",
+  parts: [{ text: `Thông tin truyện:
+- Tiêu đề: ${storyContext.title}
+- Mô tả: ${storyContext.description}
+- Thể loại: ${storyContext.mainCategory}
+- Các tag: ${storyContext.tags.join(", ")}
+
+${storyContext.characters ? `Danh sách nhân vật:
+${storyContext.characters.map(char => `
+- Tên: ${char.name}
+  + Mô tả: ${char.description}
+  + Giới tính: ${char.gender}
+  + Tính cách: ${char.personality}
+  + Ngoại hình: ${char.appearance}
+  + Vai trò: ${char.role}
+`).join("\n")}` : ''}
+
+Thông tin đại cương hiện tại:
+- Tiêu đề: ${existingOutline.title}
+- Mô tả: ${existingOutline.description}
 
 ${publishedChapters && publishedChapters.length > 0 ? `
 Các chương đã xuất bản:

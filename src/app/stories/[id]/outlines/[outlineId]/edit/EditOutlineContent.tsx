@@ -20,8 +20,24 @@ import {
 import { toast } from "sonner"
 import Skeleton from "react-loading-skeleton"
 import "react-loading-skeleton/dist/skeleton.css"
-import { ChevronLeft } from "lucide-react"
+import { ChevronLeft, Sparkles } from "lucide-react"
 import TextareaAutosize from 'react-textarea-autosize'
+import { OutlineIdeaGenerator } from "@/components/outline/OutlineIdeaGenerator"
+
+interface Story {
+  title: string
+  description: string
+  main_category: string
+  tags: string[]
+  characters?: {
+    name: string
+    description: string
+    gender: string
+    personality: string
+    appearance: string
+    role: string
+  }[]
+}
 
 interface Outline {
   outline_id: number
@@ -38,22 +54,51 @@ export default function EditOutlineContent({
 }) {
   const router = useRouter()
   const [outline, setOutline] = useState<Outline | null>(null)
+  const [storyData, setStoryData] = useState<Story | null>(null)
+  const [publishedChapters, setPublishedChapters] = useState<{
+    title: string
+    summary?: string
+  }[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showIdeaGenerator, setShowIdeaGenerator] = useState(false)
+  const [formData, setFormData] = useState({
+    title: '',
+    description: ''
+  })
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
+        // Fetch outline data
+        const outlineResponse = await fetch(
           `/api/stories/${storyId}/outlines/${outlineId}`
         )
-        const data = await response.json()
+        const outlineData = await outlineResponse.json()
         
-        if (response.ok) {
-          setOutline(data.outline)
+        if (outlineResponse.ok) {
+          setOutline(outlineData.outline)
+          setFormData({
+            title: outlineData.outline.title,
+            description: outlineData.outline.description || ''
+          })
         } else {
-          toast.error(data.error || 'Không thể tải thông tin đại cương')
+          toast.error(outlineData.error || 'Không thể tải thông tin đại cương')
+        }
+
+        // Fetch story data
+        const storyResponse = await fetch(`/api/stories/${storyId}`)
+        const storyJson = await storyResponse.json()
+        if (storyResponse.ok) {
+          setStoryData(storyJson.story)
+        }
+
+        // Fetch published chapters
+        const chaptersResponse = await fetch(`/api/stories/${storyId}/chapters/published`)
+        const chaptersJson = await chaptersResponse.json()
+        if (chaptersResponse.ok) {
+          setPublishedChapters(chaptersJson.chapters)
         }
       } catch (error) {
         toast.error('Đã có lỗi xảy ra khi tải dữ liệu')
@@ -70,10 +115,6 @@ export default function EditOutlineContent({
     setIsLoading(true)
 
     try {
-      const formData = new FormData(e.currentTarget)
-      const title = formData.get('title')
-      const description = formData.get('description')
-
       const response = await fetch(
         `/api/stories/${storyId}/outlines/${outlineId}`,
         {
@@ -81,7 +122,7 @@ export default function EditOutlineContent({
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ title, description })
+          body: JSON.stringify(formData)
         }
       )
 
@@ -121,6 +162,13 @@ export default function EditOutlineContent({
     }
   }
 
+  const handleApplyIdea = (idea: { title: string; description: string }) => {
+    setFormData({
+      title: idea.title,
+      description: idea.description
+    })
+  }
+
   if (isLoadingData) {
     return (
       <div className="container max-w-2xl mx-auto px-4 py-6 md:py-8">
@@ -155,7 +203,7 @@ export default function EditOutlineContent({
     )
   }
 
-  if (!outline && !isLoadingData) {
+  if (!outline || !storyData) {
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground">Không tìm thấy đại cương</p>
@@ -166,17 +214,30 @@ export default function EditOutlineContent({
   return (
     <div className="container max-w-2xl mx-auto px-4 py-6 md:py-8">
       <div className="space-y-6">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleCancel}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Quay lại
+            </Button>
+            <h1 className="text-xl md:text-2xl font-bold">Chỉnh sửa đại cương</h1>
+          </div>
+
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="sm"
-            onClick={handleCancel}
+            className="ml-auto"
+            onClick={() => setShowIdeaGenerator(true)}
           >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Quay lại
+            <Sparkles className="h-4 w-4 mr-2" />
+            Đề xuất cải thiện
           </Button>
-          <h1 className="text-xl md:text-2xl font-bold">Chỉnh sửa đại cương</h1>
         </div>
         
         <div className="rounded-lg border bg-card p-4 md:p-6">
@@ -186,7 +247,8 @@ export default function EditOutlineContent({
               <Input
                 id="title"
                 name="title"
-                defaultValue={outline?.title}
+                value={formData.title}
+                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                 required
                 className="w-full"
               />
@@ -197,7 +259,8 @@ export default function EditOutlineContent({
               <TextareaAutosize
                 id="description"
                 name="description"
-                defaultValue={outline?.description || ""}
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 minRows={3}
                 className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background resize-none"
               />
@@ -253,6 +316,24 @@ export default function EditOutlineContent({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <OutlineIdeaGenerator
+        storyContext={{
+          title: storyData.title,
+          description: storyData.description,
+          mainCategory: storyData.main_category,
+          tags: storyData.tags,
+          characters: storyData.characters
+        }}
+        existingOutline={{
+          title: outline.title,
+          description: outline.description
+        }}
+        publishedChapters={publishedChapters}
+        onApplyIdea={handleApplyIdea}
+        open={showIdeaGenerator}
+        onOpenChange={setShowIdeaGenerator}
+      />
     </div>
   )
 } 
