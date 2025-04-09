@@ -273,6 +273,10 @@ export const createDialoguePrompt = (
   publishedChapters?: {
     title: string;
     summary?: string;
+  }[],
+  outlines?: {
+    title: string;
+    description: string;
   }[]
 ) => ({
   role: "user",
@@ -301,6 +305,14 @@ Các chương đã xuất bản:
 ${publishedChapters.map((chapter, index) => `
 ${index + 1}. ${chapter.title}
    ${chapter.summary ? `Tóm tắt: ${chapter.summary}` : ''}
+`).join('')}
+` : ''}
+
+${outlines && outlines.length > 0 ? `
+Các đại cương của truyện:
+${outlines.map((outline, index) => `
+${index + 1}. ${outline.title}
+   Mô tả: ${outline.description}
 `).join('')}
 ` : ''}
 

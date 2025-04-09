@@ -66,6 +66,10 @@ interface DialogueGeneratorProps {
     title: string;
     summary?: string;
   }[];
+  outlines?: {
+    title: string;
+    description: string;
+  }[];
 }
 
 export function DialogueGenerator({ 
@@ -82,7 +86,8 @@ export function DialogueGenerator({
   chapterId,
   open,
   onOpenChange,
-  publishedChapters = []
+  publishedChapters = [],
+  outlines = []
 }: DialogueGeneratorProps) {
   const [prompt, setPrompt] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
@@ -172,7 +177,8 @@ export function DialogueGenerator({
         chapterTitle,
         chapterSummary,
         formattedExistingDialogues,
-        publishedChapters
+        publishedChapters,
+        outlines
       );
       
       const newDialogues = dialogues.map(d => ({...d, added: false}));

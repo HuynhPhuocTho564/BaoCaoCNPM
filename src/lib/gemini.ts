@@ -228,6 +228,10 @@ export async function generateDialogueSuggestion(
   publishedChapters?: {
     title: string;
     summary?: string;
+  }[],
+  outlines?: {
+    title: string;
+    description: string;
   }[]
 ): Promise<DialogueItem[]> {
   try {
@@ -249,7 +253,8 @@ export async function generateDialogueSuggestion(
           chapterTitle,
           chapterSummary,
           existingDialogues,
-          publishedChapters
+          publishedChapters,
+          outlines
         )
       ],
     });
