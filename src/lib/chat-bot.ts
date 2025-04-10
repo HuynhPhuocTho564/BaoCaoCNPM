@@ -48,15 +48,75 @@ async function getApiKey() {
   return apiKey;
 }
 
-export async function chatWithAssistant(message: string, history: any[] = [], stream = false): Promise<string | ReadableStream> {
+interface CharacterContext {
+  basic: boolean;
+  appearance: boolean;
+  background: boolean;
+  personality: boolean;
+  physical: boolean;
+}
+
+interface Character {
+  character_id: number;
+  name: string;
+  description: string;
+  role: string;
+  gender: string;
+  birthday: string;
+  height: string;
+  weight: string;
+  personality: string;
+  appearance: string;
+  background: string;
+}
+
+interface OutlineContext {
+  title: boolean;
+  description: boolean;
+}
+
+interface Outline {
+  outline_id: number;
+  title: string;
+  description: string;
+}
+
+interface ChapterSelection {
+  title: boolean;
+  summary: boolean;
+  dialogues?: boolean;
+}
+
+interface Chapter {
+  chapter_id: number;
+  title: string;
+  summary: string;
+  status: string;
+}
+
+export async function chatWithAssistant(
+  message: string, 
+  history: any[] = [], 
+  stream = false,
+  context?: {
+    title?: string;
+    description?: string;
+    category?: string;
+    tags?: string[];
+    characters?: { [key: number]: CharacterContext };
+    outlines?: { [key: number]: OutlineContext };
+    chapters?: { [key: number]: ChapterSelection };
+    characterData?: Character[];
+    outlineData?: Outline[];
+    dialogueData?: { [key: number]: any[] };
+    chapterData?: Chapter[];
+  }
+): Promise<string | ReadableStream> {
   try {
     const key = await getApiKey();
     const genAI = new GoogleGenerativeAI(key!);
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.0-flash",
-      generationConfig,
-      safetySettings,
-      systemInstruction: `Bạn là một trợ lý AI chuyên về truyện. Nhiệm vụ của bạn là:
+
+    let systemPrompt = `Bạn là một trợ lý AI chuyên về truyện. Nhiệm vụ của bạn là:
 - Giúp người dùng tìm hiểu về các truyện
 - Trả lời các câu hỏi liên quan đến cốt truyện, nhân vật
 - Đưa ra các gợi ý và phân tích về truyện
@@ -64,7 +124,83 @@ export async function chatWithAssistant(message: string, history: any[] = [], st
 - Đưa ra các gợi ý về cách phát triển cốt truyện và nhân vật
 
 Hãy trả lời một cách thân thiện, chuyên nghiệp và dễ hiểu.
-Luôn giữ giọng điệu tích cực và khuyến khích người dùng.`
+Luôn giữ giọng điệu tích cực và khuyến khích người dùng.`;
+
+    if (context) {
+      let contextString = '\n\nNgữ cảnh hiện tại của truyện:';
+      
+      // Thông tin cơ bản
+      if (context.title) contextString += `\n- Tên truyện: ${context.title}`;
+      if (context.description) contextString += `\n- Mô tả: ${context.description}`;
+      if (context.category) contextString += `\n- Thể loại: ${context.category}`;
+      if (context.tags?.length) contextString += `\n- Tags: ${context.tags.join(', ')}`;
+
+      // Thông tin chương
+      if (context.chapters && context.chapterData) {
+        contextString += '\n\nDanh sách chương:';
+        context.chapterData.forEach(chapter => {
+          const chapterContext = context.chapters?.[chapter.chapter_id];
+          if (chapterContext) {
+            if (chapterContext.title) {
+              contextString += `\n\nChương: ${chapter.title}`;
+              if (chapterContext.summary) {
+                contextString += `\nTóm tắt: ${chapter.summary}`;
+              }
+              if (chapterContext.dialogues && context.dialogueData?.[chapter.chapter_id]) {
+                contextString += '\nHội thoại trong chương:';
+                context.dialogueData[chapter.chapter_id].forEach(dialogue => {
+                  contextString += `\n- ${dialogue.type === 'dialogue' ? 'Hội thoại' : 'Độc thoại'}: ${dialogue.content}`;
+                });
+              }
+            }
+          }
+        });
+      }
+
+      // Thông tin nhân vật
+      if (context.characters && context.characterData) {
+        contextString += '\n\nThông tin nhân vật:';
+        context.characterData.forEach(char => {
+          const charContext = context.characters?.[char.character_id];
+          if (charContext) {
+            contextString += `\n\nNhân vật: ${char.name}`;
+            if (charContext.basic) {
+              contextString += `\n- Vai trò: ${char.role}`;
+              contextString += `\n- Mô tả: ${char.description}`;
+            }
+            if (charContext.physical) {
+              contextString += `\n- Giới tính: ${char.gender}`;
+              contextString += `\n- Ngày sinh: ${char.birthday}`;
+              contextString += `\n- Chiều cao: ${char.height}`;
+              contextString += `\n- Cân nặng: ${char.weight}`;
+            }
+            if (charContext.appearance) contextString += `\n- Ngoại hình: ${char.appearance}`;
+            if (charContext.personality) contextString += `\n- Tính cách: ${char.personality}`;
+            if (charContext.background) contextString += `\n- Tiểu sử: ${char.background}`;
+          }
+        });
+      }
+
+      // Thông tin đại cương
+      if (context.outlines && context.outlineData) {
+        contextString += '\n\nĐại cương:';
+        context.outlineData.forEach(outline => {
+          const outlineContext = context.outlines?.[outline.outline_id];
+          if (outlineContext) {
+            if (outlineContext.title) contextString += `\n\n${outline.title}`;
+            if (outlineContext.description) contextString += `\n${outline.description}`;
+          }
+        });
+      }
+
+      systemPrompt += contextString;
+    }
+
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash",
+      generationConfig,
+      safetySettings,
+      systemInstruction: systemPrompt
     });
     
     if (stream) {
