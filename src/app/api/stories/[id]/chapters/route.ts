@@ -11,6 +11,8 @@ export async function GET(
 ) {
   const resolvedParams = await params
   const { id } = resolvedParams
+  const { searchParams } = new URL(request.url)
+  const status = searchParams.get('status')
   
   try {
     const session = await getServerSession(authOptions)
@@ -21,7 +23,7 @@ export async function GET(
       )
     }
 
-    const [chapters] = await pool.execute(`
+    let query = `
       SELECT 
         chapter_id,
         title,
@@ -32,13 +34,23 @@ export async function GET(
         created_at
       FROM story_chapters
       WHERE story_id = ?
-      ORDER BY 
-        CASE 
-          WHEN status = 'published' THEN publish_order
-          ELSE order_number
-        END ASC,
-        order_number ASC
-    `, [id]) as any[]
+    `
+
+    const queryParams = [id]
+
+    if (status) {
+      query += ` AND status = ?`
+      queryParams.push(status)
+    }
+
+    query += ` ORDER BY 
+      CASE 
+        WHEN status = 'published' THEN publish_order
+        ELSE order_number
+      END ASC,
+      order_number ASC`
+
+    const [chapters] = await pool.execute(query, queryParams) as any[]
 
     return NextResponse.json({ chapters })
   } catch (error) {
