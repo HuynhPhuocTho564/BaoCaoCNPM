@@ -20,6 +20,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { toast } from "sonner"
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
 
 // Import CSS cần thiết
 import 'katex/dist/katex.min.css'
@@ -341,6 +343,18 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
     localStorage.removeItem('chatHistory')
   }
 
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'auto'
+    }
+
+    return () => {
+      document.body.style.overflow = 'auto'
+    }
+  }, [isOpen])
+
   if (!pathname?.includes("/stories")) {
     return null
   }
@@ -481,191 +495,176 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="space-y-4 p-2">
-                  <div className="space-y-2">
-                    <h4 className="font-medium">Thông tin truyện</h4>
-                    {contextData.title && (
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start font-normal"
-                        onClick={() => setSelectedContext(prev => ({ ...prev, title: !prev.title }))}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedContext.title}
-                          className="mr-2"
-                          onChange={() => {}}
-                        />
-                        Tên truyện
-                      </Button>
-                    )}
-                    {contextData.description && (
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start font-normal"
-                        onClick={() => setSelectedContext(prev => ({ ...prev, description: !prev.description }))}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedContext.description}
-                          className="mr-2"
-                          onChange={() => {}}
-                        />
-                        Mô tả truyện
-                      </Button>
-                    )}
-                    {contextData.category && (
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start font-normal"
-                        onClick={() => setSelectedContext(prev => ({ ...prev, category: !prev.category }))}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedContext.category}
-                          className="mr-2"
-                          onChange={() => {}}
-                        />
-                        Thể loại
-                      </Button>
-                    )}
-                    {contextData.tags && (
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start font-normal"
-                        onClick={() => setSelectedContext(prev => ({ ...prev, tags: !prev.tags }))}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedContext.tags}
-                          className="mr-2"
-                          onChange={() => {}}
-                        />
-                        Tags
-                      </Button>
-                    )}
-                  </div>
-
-                  {chapters.length > 0 && (
+                  <h3 className="font-semibold text-center border-b pb-2">Ngữ cảnh cho AI</h3>
+                  
+                  {/* Loading state */}
+                  {!contextData.title && !characters.length && !outlines.length ? (
                     <div className="space-y-2">
-                      <h4 className="font-medium">Danh sách chương</h4>
-                      {chapters.map((chapter) => (
-                        <div key={chapter.chapter_id} className="pl-2 space-y-1">
-                          <Button
-                            variant="ghost"
-                            className="w-full justify-start font-normal text-sm"
-                            onClick={() => {
-                              setSelectedContext(prev => ({
-                                ...prev,
-                                [`chapter_${chapter.chapter_id}_title`]: !prev[`chapter_${chapter.chapter_id}_title`]
-                              }))
-                            }}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={selectedContext[`chapter_${chapter.chapter_id}_title`] || false}
-                              className="mr-2"
-                              onChange={() => {}}
-                            />
-                            {chapter.title}
-                          </Button>
-
-                          {selectedContext[`chapter_${chapter.chapter_id}_title`] && (
-                            <div className="pl-4 space-y-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="w-full justify-start text-xs"
-                                onClick={() => {
-                                  setSelectedContext(prev => ({
-                                    ...prev,
-                                    [`chapter_${chapter.chapter_id}_summary`]: !prev[`chapter_${chapter.chapter_id}_summary`]
-                                  }))
-                                }}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={selectedContext[`chapter_${chapter.chapter_id}_summary`] || false}
-                                  className="mr-2"
-                                  onChange={() => {}}
-                                />
-                                Tóm tắt chương
-                              </Button>
-
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="w-full justify-start text-xs"
-                                onClick={() => {
-                                  setSelectedContext(prev => ({
-                                    ...prev,
-                                    [`chapter_${chapter.chapter_id}_dialogues`]: !prev[`chapter_${chapter.chapter_id}_dialogues`]
-                                  }))
-                                }}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={selectedContext[`chapter_${chapter.chapter_id}_dialogues`] || false}
-                                  className="mr-2"
-                                  onChange={() => {}}
-                                />
-                                Hội thoại trong chương
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                      <Skeleton height={24} />
+                      <Skeleton count={3} height={32} />
+                      <Skeleton height={24} />
+                      <Skeleton count={2} height={32} />
                     </div>
-                  )}
-
-                  {characters.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="font-medium">Nhân vật</h4>
-                      {characters.map((char) => (
-                        <div key={char.character_id} className="pl-2 space-y-1">
+                  ) : (
+                    <>
+                      {/* Existing content */}
+                      <div className="space-y-2">
+                        <h4 className="font-medium">Thông tin truyện</h4>
+                        {contextData.title && (
                           <Button
                             variant="ghost"
-                            className="w-full justify-start font-normal text-sm"
-                            onClick={() => {
-                              const currentCharContext = selectedContext.characters[char.character_id];
-                              const newValue = !currentCharContext?.basic;
-                              setSelectedContext(prev => ({
-                                ...prev,
-                                characters: {
-                                  ...prev.characters,
-                                  [char.character_id]: {
-                                    basic: newValue,
-                                    appearance: newValue,
-                                    background: newValue,
-                                    personality: newValue,
-                                    physical: newValue
-                                  }
-                                }
-                              }))
-                            }}
+                            className="w-full justify-start font-normal"
+                            onClick={() => setSelectedContext(prev => ({ ...prev, title: !prev.title }))}
                           >
                             <input
                               type="checkbox"
-                              checked={selectedContext.characters[char.character_id]?.basic || false}
+                              checked={selectedContext.title}
                               className="mr-2"
                               onChange={() => {}}
                             />
-                            {char.name}
+                            Tên truyện
                           </Button>
-                          
-                          {selectedContext.characters[char.character_id]?.basic && (
-                            <div className="pl-4 space-y-1">
+                        )}
+                        {contextData.description && (
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start font-normal"
+                            onClick={() => setSelectedContext(prev => ({ ...prev, description: !prev.description }))}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedContext.description}
+                              className="mr-2"
+                              onChange={() => {}}
+                            />
+                            Mô tả truyện
+                          </Button>
+                        )}
+                        {contextData.category && (
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start font-normal"
+                            onClick={() => setSelectedContext(prev => ({ ...prev, category: !prev.category }))}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedContext.category}
+                              className="mr-2"
+                              onChange={() => {}}
+                            />
+                            Thể loại
+                          </Button>
+                        )}
+                        {contextData.tags && (
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start font-normal"
+                            onClick={() => setSelectedContext(prev => ({ ...prev, tags: !prev.tags }))}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedContext.tags}
+                              className="mr-2"
+                              onChange={() => {}}
+                            />
+                            Tags
+                          </Button>
+                        )}
+                      </div>
+
+                      {chapters.length > 0 && (
+                        <div className="space-y-2">
+                          <h4 className="font-medium">Danh sách chương</h4>
+                          {chapters.map((chapter) => (
+                            <div key={chapter.chapter_id} className="pl-2 space-y-1">
                               <Button
                                 variant="ghost"
-                                size="sm"
-                                className="w-full justify-start text-xs"
+                                className="w-full justify-start font-normal text-sm"
                                 onClick={() => {
+                                  setSelectedContext(prev => ({
+                                    ...prev,
+                                    [`chapter_${chapter.chapter_id}_title`]: !prev[`chapter_${chapter.chapter_id}_title`]
+                                  }))
+                                }}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={selectedContext[`chapter_${chapter.chapter_id}_title`] || false}
+                                  className="mr-2"
+                                  onChange={() => {}}
+                                />
+                                {chapter.title}
+                              </Button>
+
+                              {selectedContext[`chapter_${chapter.chapter_id}_title`] && (
+                                <div className="pl-4 space-y-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-full justify-start text-xs"
+                                    onClick={() => {
+                                      setSelectedContext(prev => ({
+                                        ...prev,
+                                        [`chapter_${chapter.chapter_id}_summary`]: !prev[`chapter_${chapter.chapter_id}_summary`]
+                                      }))
+                                    }}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedContext[`chapter_${chapter.chapter_id}_summary`] || false}
+                                      className="mr-2"
+                                      onChange={() => {}}
+                                    />
+                                    Tóm tắt chương
+                                  </Button>
+
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-full justify-start text-xs"
+                                    onClick={() => {
+                                      setSelectedContext(prev => ({
+                                        ...prev,
+                                        [`chapter_${chapter.chapter_id}_dialogues`]: !prev[`chapter_${chapter.chapter_id}_dialogues`]
+                                      }))
+                                    }}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedContext[`chapter_${chapter.chapter_id}_dialogues`] || false}
+                                      className="mr-2"
+                                      onChange={() => {}}
+                                    />
+                                    Hội thoại trong chương
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {characters.length > 0 && (
+                        <div className="space-y-2">
+                          <h4 className="font-medium">Nhân vật</h4>
+                          {characters.map((char) => (
+                            <div key={char.character_id} className="pl-2 space-y-1">
+                              <Button
+                                variant="ghost"
+                                className="w-full justify-start font-normal text-sm"
+                                onClick={() => {
+                                  const currentCharContext = selectedContext.characters[char.character_id];
+                                  const newValue = !currentCharContext?.basic;
                                   setSelectedContext(prev => ({
                                     ...prev,
                                     characters: {
                                       ...prev.characters,
                                       [char.character_id]: {
-                                        ...prev.characters[char.character_id],
-                                        basic: !prev.characters[char.character_id].basic
+                                        basic: newValue,
+                                        appearance: newValue,
+                                        background: newValue,
+                                        personality: newValue,
+                                        physical: newValue
                                       }
                                     }
                                   }))
@@ -677,21 +676,163 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
                                   className="mr-2"
                                   onChange={() => {}}
                                 />
-                                Thông tin cơ bản
+                                {char.name}
                               </Button>
+                              
+                              {selectedContext.characters[char.character_id]?.basic && (
+                                <div className="pl-4 space-y-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-full justify-start text-xs"
+                                    onClick={() => {
+                                      setSelectedContext(prev => ({
+                                        ...prev,
+                                        characters: {
+                                          ...prev.characters,
+                                          [char.character_id]: {
+                                            ...prev.characters[char.character_id],
+                                            basic: !prev.characters[char.character_id].basic
+                                          }
+                                        }
+                                      }))
+                                    }}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedContext.characters[char.character_id]?.basic || false}
+                                      className="mr-2"
+                                      onChange={() => {}}
+                                    />
+                                    Thông tin cơ bản
+                                  </Button>
 
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-full justify-start text-xs"
+                                    onClick={() => {
+                                      setSelectedContext(prev => ({
+                                        ...prev,
+                                        characters: {
+                                          ...prev.characters,
+                                          [char.character_id]: {
+                                            ...prev.characters[char.character_id],
+                                            physical: !prev.characters[char.character_id].physical
+                                          }
+                                        }
+                                      }))
+                                    }}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedContext.characters[char.character_id]?.physical || false}
+                                      className="mr-2"
+                                      onChange={() => {}}
+                                    />
+                                    Thông tin vật lý
+                                  </Button>
+
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-full justify-start text-xs"
+                                    onClick={() => {
+                                      setSelectedContext(prev => ({
+                                        ...prev,
+                                        characters: {
+                                          ...prev.characters,
+                                          [char.character_id]: {
+                                            ...prev.characters[char.character_id],
+                                            appearance: !prev.characters[char.character_id].appearance
+                                          }
+                                        }
+                                      }))
+                                    }}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedContext.characters[char.character_id]?.appearance || false}
+                                      className="mr-2"
+                                      onChange={() => {}}
+                                    />
+                                    Ngoại hình
+                                  </Button>
+
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-full justify-start text-xs"
+                                    onClick={() => {
+                                      setSelectedContext(prev => ({
+                                        ...prev,
+                                        characters: {
+                                          ...prev.characters,
+                                          [char.character_id]: {
+                                            ...prev.characters[char.character_id],
+                                            personality: !prev.characters[char.character_id].personality
+                                          }
+                                        }
+                                      }))
+                                    }}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedContext.characters[char.character_id]?.personality || false}
+                                      className="mr-2"
+                                      onChange={() => {}}
+                                    />
+                                    Tính cách
+                                  </Button>
+
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-full justify-start text-xs"
+                                    onClick={() => {
+                                      setSelectedContext(prev => ({
+                                        ...prev,
+                                        characters: {
+                                          ...prev.characters,
+                                          [char.character_id]: {
+                                            ...prev.characters[char.character_id],
+                                            background: !prev.characters[char.character_id].background
+                                          }
+                                        }
+                                      }))
+                                    }}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedContext.characters[char.character_id]?.background || false}
+                                      className="mr-2"
+                                      onChange={() => {}}
+                                    />
+                                    Tiểu sử
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {outlines.length > 0 && (
+                        <div className="space-y-2">
+                          <h4 className="font-medium">Đại cương</h4>
+                          {outlines.map((outline) => (
+                            <div key={outline.outline_id} className="pl-2 space-y-1">
                               <Button
                                 variant="ghost"
-                                size="sm"
-                                className="w-full justify-start text-xs"
+                                className="w-full justify-start font-normal text-sm"
                                 onClick={() => {
                                   setSelectedContext(prev => ({
                                     ...prev,
-                                    characters: {
-                                      ...prev.characters,
-                                      [char.character_id]: {
-                                        ...prev.characters[char.character_id],
-                                        physical: !prev.characters[char.character_id].physical
+                                    outlines: {
+                                      ...prev.outlines,
+                                      [outline.outline_id]: {
+                                        title: !prev.outlines[outline.outline_id]?.title,
+                                        description: !prev.outlines[outline.outline_id]?.description
                                       }
                                     }
                                   }))
@@ -699,148 +840,36 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
                               >
                                 <input
                                   type="checkbox"
-                                  checked={selectedContext.characters[char.character_id]?.physical || false}
+                                  checked={selectedContext.outlines[outline.outline_id]?.title || false}
                                   className="mr-2"
                                   onChange={() => {}}
                                 />
-                                Thông tin vật lý
-                              </Button>
-
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="w-full justify-start text-xs"
-                                onClick={() => {
-                                  setSelectedContext(prev => ({
-                                    ...prev,
-                                    characters: {
-                                      ...prev.characters,
-                                      [char.character_id]: {
-                                        ...prev.characters[char.character_id],
-                                        appearance: !prev.characters[char.character_id].appearance
-                                      }
-                                    }
-                                  }))
-                                }}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={selectedContext.characters[char.character_id]?.appearance || false}
-                                  className="mr-2"
-                                  onChange={() => {}}
-                                />
-                                Ngoại hình
-                              </Button>
-
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="w-full justify-start text-xs"
-                                onClick={() => {
-                                  setSelectedContext(prev => ({
-                                    ...prev,
-                                    characters: {
-                                      ...prev.characters,
-                                      [char.character_id]: {
-                                        ...prev.characters[char.character_id],
-                                        personality: !prev.characters[char.character_id].personality
-                                      }
-                                    }
-                                  }))
-                                }}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={selectedContext.characters[char.character_id]?.personality || false}
-                                  className="mr-2"
-                                  onChange={() => {}}
-                                />
-                                Tính cách
-                              </Button>
-
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="w-full justify-start text-xs"
-                                onClick={() => {
-                                  setSelectedContext(prev => ({
-                                    ...prev,
-                                    characters: {
-                                      ...prev.characters,
-                                      [char.character_id]: {
-                                        ...prev.characters[char.character_id],
-                                        background: !prev.characters[char.character_id].background
-                                      }
-                                    }
-                                  }))
-                                }}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={selectedContext.characters[char.character_id]?.background || false}
-                                  className="mr-2"
-                                  onChange={() => {}}
-                                />
-                                Tiểu sử
+                                {outline.title}
                               </Button>
                             </div>
-                          )}
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      )}
 
-                  {outlines.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="font-medium">Đại cương</h4>
-                      {outlines.map((outline) => (
-                        <div key={outline.outline_id} className="pl-2 space-y-1">
+                      {dialogues.length > 0 && (
+                        <div className="space-y-2">
+                          <h4 className="font-medium">Hội thoại trong chương</h4>
                           <Button
                             variant="ghost"
-                            className="w-full justify-start font-normal text-sm"
-                            onClick={() => {
-                              setSelectedContext(prev => ({
-                                ...prev,
-                                outlines: {
-                                  ...prev.outlines,
-                                  [outline.outline_id]: {
-                                    title: !prev.outlines[outline.outline_id]?.title,
-                                    description: !prev.outlines[outline.outline_id]?.description
-                                  }
-                                }
-                              }))
-                            }}
+                            className="w-full justify-start font-normal"
+                            onClick={() => setSelectedContext(prev => ({ ...prev, dialogues: !prev.dialogues }))}
                           >
                             <input
                               type="checkbox"
-                              checked={selectedContext.outlines[outline.outline_id]?.title || false}
+                              checked={selectedContext.dialogues}
                               className="mr-2"
                               onChange={() => {}}
                             />
-                            {outline.title}
+                            Thêm hội thoại vào ngữ cảnh
                           </Button>
                         </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {dialogues.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="font-medium">Hội thoại trong chương</h4>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start font-normal"
-                        onClick={() => setSelectedContext(prev => ({ ...prev, dialogues: !prev.dialogues }))}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedContext.dialogues}
-                          className="mr-2"
-                          onChange={() => {}}
-                        />
-                        Thêm hội thoại vào ngữ cảnh
-                      </Button>
-                    </div>
+                      )}
+                    </>
                   )}
                 </div>
               </PopoverContent>
