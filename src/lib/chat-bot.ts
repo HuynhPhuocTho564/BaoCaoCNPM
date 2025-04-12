@@ -196,6 +196,14 @@ Luôn giữ giọng điệu tích cực và khuyến khích người dùng.`;
       systemPrompt += contextString;
     }
 
+    // Thêm console.log để hiển thị thông tin
+    console.log('=== THÔNG TIN TRUYỀN CHO AI ===');
+    console.log('Message:', message);
+    console.log('History:', history);
+    console.log('System Prompt:', systemPrompt);
+    console.log('Context:', context);
+    console.log('========================');
+
     const model = genAI.getGenerativeModel({ 
       model: "gemini-2.0-flash",
       generationConfig,

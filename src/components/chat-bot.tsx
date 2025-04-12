@@ -177,10 +177,20 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
         if (!storyRes.ok) throw new Error('Không thể tải dữ liệu truyện')
         const storyData = await storyRes.json()
         
-        // Fetch characters
-        const charactersRes = await fetch(`/api/stories/${storyId}/characters`)
-        if (!charactersRes.ok) throw new Error('Không thể tải dữ liệu nhân vật')
-        const charactersData = await charactersRes.json()
+        // Fetch characters list first
+        const charactersListRes = await fetch(`/api/stories/${storyId}/characters`)
+        if (!charactersListRes.ok) throw new Error('Không thể tải danh sách nhân vật')
+        const charactersListData = await charactersListRes.json()
+        
+        // Then fetch detailed info for each character
+        const charactersDetailPromises = charactersListData.characters.map(async (char: any) => {
+          const detailRes = await fetch(`/api/stories/${storyId}/characters/${char.character_id}/get`)
+          if (!detailRes.ok) throw new Error(`Không thể tải thông tin chi tiết nhân vật ${char.name}`)
+          const detailData = await detailRes.json()
+          return detailData.character
+        })
+        
+        const charactersData = await Promise.all(charactersDetailPromises)
         
         // Fetch outlines
         const outlinesRes = await fetch(`/api/stories/${storyId}/outlines`)
@@ -210,7 +220,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
           description: storyData.story.description,
           category: storyData.story.main_category,
           tags: storyData.story.tags,
-          characters: charactersData.characters,
+          characters: charactersData,
           outlines: outlinesData.outlines,
           dialogues: dialoguesData
         }
@@ -225,7 +235,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
         }
 
         setContextData(newContextData)
-        setCharacters(charactersData.characters)
+        setCharacters(charactersData)
         setOutlines(outlinesData.outlines)
         setDialogues(dialoguesData)
       } catch (error) {
