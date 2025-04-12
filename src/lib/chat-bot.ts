@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   GoogleGenerativeAI,
@@ -84,7 +85,16 @@ interface Outline {
 interface ChapterSelection {
   title: boolean;
   summary: boolean;
-  dialogues?: boolean;
+  dialogues: boolean;
+  data: {
+    title: string;
+    summary: string;
+    dialogues?: {
+      type: 'dialogue' | 'aside';
+      content: string;
+      character_name?: string;
+    }[];
+  };
 }
 
 interface Chapter {
@@ -136,23 +146,26 @@ Luôn giữ giọng điệu tích cực và khuyến khích người dùng.`;
       if (context.tags?.length) contextString += `\n- Tags: ${context.tags.join(', ')}`;
 
       // Thông tin chương
-      if (context.chapters && context.chapterData) {
+      if (context.chapters) {
         contextString += '\n\nDanh sách chương:';
-        context.chapterData.forEach(chapter => {
-          const chapterContext = context.chapters?.[chapter.chapter_id];
-          if (chapterContext) {
-            if (chapterContext.title) {
-              contextString += `\n\nChương: ${chapter.title}`;
-              if (chapterContext.summary) {
-                contextString += `\nTóm tắt: ${chapter.summary}`;
+        Object.entries(context.chapters).forEach(([chapterId, chapterContext]) => {
+          console.log('Processing chapter:', chapterContext); // Debug log
+
+          contextString += `\n\nChương: ${chapterContext.data.title}`;
+          
+          if (chapterContext.summary) {
+            contextString += `\nTóm tắt: ${chapterContext.data.summary}`;
+          }
+          
+          if (chapterContext.dialogues && chapterContext.data.dialogues && chapterContext.data.dialogues.length > 0) {
+            contextString += '\nHội thoại trong chương:';
+            chapterContext.data.dialogues.forEach(dialogue => {
+              if (dialogue.type === 'dialogue') {
+                contextString += `\n- ${dialogue.character_name || 'Không rõ'}: "${dialogue.content}"`;
+              } else {
+                contextString += `\n- ${dialogue.content}`;
               }
-              if (chapterContext.dialogues && context.dialogueData?.[chapter.chapter_id]) {
-                contextString += '\nHội thoại trong chương:';
-                context.dialogueData[chapter.chapter_id].forEach(dialogue => {
-                  contextString += `\n- ${dialogue.type === 'dialogue' ? 'Hội thoại' : 'Độc thoại'}: ${dialogue.content}`;
-                });
-              }
-            }
+            });
           }
         });
       }
@@ -195,14 +208,6 @@ Luôn giữ giọng điệu tích cực và khuyến khích người dùng.`;
 
       systemPrompt += contextString;
     }
-
-    // Thêm console.log để hiển thị thông tin
-    console.log('=== THÔNG TIN TRUYỀN CHO AI ===');
-    console.log('Message:', message);
-    console.log('History:', history);
-    console.log('System Prompt:', systemPrompt);
-    console.log('Context:', context);
-    console.log('========================');
 
     const model = genAI.getGenerativeModel({ 
       model: "gemini-2.0-flash",

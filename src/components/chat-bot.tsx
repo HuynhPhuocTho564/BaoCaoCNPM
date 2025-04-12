@@ -68,9 +68,11 @@ interface OutlineContext {
 interface Dialogue {
   dialogue_id: number;
   chapter_id: number;
+  character_id: number | null;
   content: string;
   type: 'dialogue' | 'aside';
   created_at: string;
+  order_number: number;
 }
 
 interface SelectedContext {
@@ -89,6 +91,21 @@ interface Chapter {
   title: string;
   summary: string;
   status: string;
+}
+
+interface ChapterSelection {
+  title: boolean;
+  summary: boolean;
+  dialogues: boolean;
+  data: {
+    title: string;
+    summary: string;
+    dialogues?: {
+      type: 'dialogue' | 'aside';
+      content: string;
+      character_name?: string;
+    }[];
+  };
 }
 
 export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
@@ -172,6 +189,15 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
       if (!storyId) return
 
       try {
+        // Fetch chapters first
+        const chaptersRes = await fetch(`/api/stories/${storyId}/chapters`)
+        if (!chaptersRes.ok) throw new Error('Không thể tải danh sách chương')
+        const chaptersData = await chaptersRes.json()
+        const publishedChapters = chaptersData.chapters.filter(
+          (chapter: Chapter) => chapter.status === 'published'
+        )
+        setChapters(publishedChapters)
+
         // Fetch story data
         const storyRes = await fetch(`/api/stories/${storyId}`)
         if (!storyRes.ok) throw new Error('Không thể tải dữ liệu truyện')
@@ -198,21 +224,17 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
         const outlinesData = await outlinesRes.json()
 
         // Fetch dialogues nếu có chapterId
-        let dialoguesData = []
         if (chapterId) {
           const dialoguesRes = await fetch(`/api/stories/${storyId}/chapters/${chapterId}/dialogues`)
           if (!dialoguesRes.ok) throw new Error('Không thể tải dữ liệu hội thoại')
-          dialoguesData = (await dialoguesRes.json()).dialogues
+          const dialoguesData = await dialoguesRes.json()
+          // Thêm chapter_id vào mỗi dialogue
+          const dialoguesWithChapter = dialoguesData.dialogues.map((d: any) => ({
+            ...d,
+            chapter_id: Number(chapterId)
+          }))
+          setDialogues(dialoguesWithChapter)
         }
-
-        // Fetch chapters
-        const chaptersRes = await fetch(`/api/stories/${storyId}/chapters`)
-        if (!chaptersRes.ok) throw new Error('Không thể tải danh sách chương')
-        const chaptersData = await chaptersRes.json()
-        const publishedChapters = chaptersData.chapters.filter(
-          (chapter: Chapter) => chapter.status === 'published'
-        )
-        setChapters(publishedChapters)
 
         // Cập nhật contextData
         const newContextData: any = {
@@ -222,7 +244,10 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
           tags: storyData.story.tags,
           characters: charactersData,
           outlines: outlinesData.outlines,
-          dialogues: dialoguesData
+          dialogues: dialogues.map(d => ({
+            ...d,
+            chapter_id: Number(chapterId)
+          }))
         }
 
         if (chapterId) {
@@ -237,7 +262,6 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
         setContextData(newContextData)
         setCharacters(charactersData)
         setOutlines(outlinesData.outlines)
-        setDialogues(dialoguesData)
       } catch (error) {
         console.error('Lỗi khi tải dữ liệu:', error)
         toast.error('Không thể tải dữ liệu ngữ cảnh')
@@ -259,45 +283,46 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
     setInputMessage("")
     setIsLoading(true)
 
-    interface ChapterSelection {
-      title: boolean;
-      summary: boolean;
-    }
+    const selectedChapters: { [key: number]: ChapterSelection } = {}
+    chapters.forEach(chapter => {
+      const chapterId = chapter.chapter_id
+      if (selectedContext[`chapter_${chapterId}_title`]) {
+        
+        // Lọc dialogues cho chapter hiện tại
+        const chapterDialogues = dialogues.filter(dialogue => {
+          // Chuyển đổi string sang number nếu cần
+          const dialogueChapterId = Number(dialogue.chapter_id);
+          return dialogueChapterId === chapterId;
+        });
 
-    const selectedChapters: { [key: number]: ChapterSelection } = chapters.reduce((acc, chapter) => {
-      if (selectedContext[`chapter_${chapter.chapter_id}_title`]) {
-        acc[chapter.chapter_id] = {
+        selectedChapters[chapterId] = {
           title: true,
-          summary: selectedContext[`chapter_${chapter.chapter_id}_summary`] || false
+          summary: selectedContext[`chapter_${chapterId}_summary`] || false,
+          dialogues: selectedContext[`chapter_${chapterId}_dialogues`] || false,
+          data: {
+            title: chapter.title,
+            summary: chapter.summary,
+            dialogues: chapterDialogues // Bỏ điều kiện check selectedContext
+          }
         }
       }
-      return acc
-    }, {} as { [key: number]: ChapterSelection })
-
-    // Tổ chức lại dialogues theo chapter_id
-    const dialoguesByChapter: { [key: number]: any[] } = {}
-    dialogues.forEach(dialogue => {
-      if (!dialoguesByChapter[dialogue.chapter_id]) {
-        dialoguesByChapter[dialogue.chapter_id] = []
-      }
-      dialoguesByChapter[dialogue.chapter_id].push(dialogue)
     })
 
     const selectedContextData = {
       title: selectedContext.title ? contextData.title : undefined,
-      chapterTitle: selectedContext.chapterTitle ? contextData.chapterTitle : undefined,
       description: selectedContext.description ? contextData.description : undefined,
       category: selectedContext.category ? contextData.category : undefined,
       tags: selectedContext.tags ? contextData.tags : undefined,
-      chapterSummary: selectedContext.chapterSummary ? contextData.chapterSummary : undefined,
       characters: selectedContext.characters,
       outlines: selectedContext.outlines,
-      dialogues: selectedContext.dialogues,
       chapters: selectedChapters,
-      chapterData: chapters,
       characterData: characters,
       outlineData: outlines,
-      dialogueData: dialoguesByChapter
+      // Debug logs
+      debug: {
+        dialoguesLength: dialogues.length,
+        selectedChapters: JSON.stringify(selectedChapters, null, 2)
+      }
     }
 
     try {
@@ -858,25 +883,6 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
                               </Button>
                             </div>
                           ))}
-                        </div>
-                      )}
-
-                      {dialogues.length > 0 && (
-                        <div className="space-y-2">
-                          <h4 className="font-medium">Hội thoại trong chương</h4>
-                          <Button
-                            variant="ghost"
-                            className="w-full justify-start font-normal"
-                            onClick={() => setSelectedContext(prev => ({ ...prev, dialogues: !prev.dialogues }))}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={selectedContext.dialogues}
-                              className="mr-2"
-                              onChange={() => {}}
-                            />
-                            Thêm hội thoại vào ngữ cảnh
-                          </Button>
                         </div>
                       )}
                     </>
