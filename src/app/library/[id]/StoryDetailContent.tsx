@@ -3,10 +3,13 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { BookOpenText, Clock, Eye } from "lucide-react"
+import { BookOpenText, Clock, Eye, Heart } from "lucide-react"
 import { Card, CardHeader } from "@/components/ui/card"
 import Skeleton from "react-loading-skeleton"
 import "react-loading-skeleton/dist/skeleton.css"
+import { StoryFavoriteButton } from '@/components/story/StoryFavoriteButton';
+import { StoryComments } from '@/components/story/StoryComments';
+import { StoryBookmarkButton } from '@/components/story/StoryBookmarkButton';
 
 interface Story {
   story_id: number
@@ -17,6 +20,7 @@ interface Story {
   view_count: number
   updated_at: string
   tags: string[]
+  favorite_count: number
 }
 
 interface Chapter {
@@ -127,19 +131,29 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
 
         {/* Thông tin truyện - cột phải */}
         <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold">{story.title}</h1>
+            <div className="flex items-center gap-2">
+              <StoryBookmarkButton storyId={storyId} />
+              <StoryFavoriteButton storyId={storyId} favoriteCount={story.favorite_count} />
+            </div>
+          </div>
           <div>
-            <h1 className="text-2xl font-bold mb-2">{story.title}</h1>
             <p className="text-muted-foreground">{story.description}</p>
           </div>
           
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
               <span className="bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium">
                 {story.main_category}
               </span>
               <span className="text-sm text-muted-foreground flex items-center gap-1.5">
                 <Eye className="w-4 h-4" />
                 {story.view_count} lượt xem
+              </span>
+              <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                <Heart className="w-4 h-4" />
+                {story.favorite_count} lượt thích
               </span>
             </div>
 
@@ -186,6 +200,12 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
             ))
           )}
         </div>
+      </div>
+
+      {/* Phần bình luận */}
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">Bình luận</h2>
+        <StoryComments storyId={storyId} />
       </div>
     </div>
   )

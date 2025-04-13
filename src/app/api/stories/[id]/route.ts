@@ -27,7 +27,8 @@ export async function GET(
         s.*,
         mc.name as main_category,
         GROUP_CONCAT(DISTINCT str.tag_id) as tag_ids,
-        GROUP_CONCAT(DISTINCT st.name) as tags
+        GROUP_CONCAT(DISTINCT st.name) as tags,
+        (SELECT COUNT(*) FROM story_favorites WHERE story_id = s.story_id) as favorite_count
       FROM stories s
       LEFT JOIN main_categories mc ON s.main_category_id = mc.category_id
       LEFT JOIN story_tag_relations str ON s.story_id = str.story_id
