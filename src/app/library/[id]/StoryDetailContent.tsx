@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
+import clsx from "clsx"
 
 interface Story {
   story_id: number
@@ -29,6 +30,14 @@ interface Story {
   updated_at: string
   tags: string[]
   favorite_count: number
+  author: {
+    id: string
+    name: string
+    avatar: string
+  }
+  author_avatar: string | null
+  author_name: string
+  has_badge: boolean
 }
 
 interface Chapter {
@@ -210,13 +219,39 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
 
         {/* Thông tin truyện - cột phải */}
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">{story.title}</h1>
-            <div className="flex items-center gap-2">
-              <StoryBookmarkButton storyId={storyId} />
-              <StoryFavoriteButton storyId={storyId} favoriteCount={story.favorite_count} />
+          <div>
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold">{story.title}</h1>
+              <div className="flex items-center gap-2">
+                <StoryBookmarkButton storyId={storyId} />
+                <StoryFavoriteButton storyId={storyId} favoriteCount={story.favorite_count} />
+              </div>
+            </div>
+            <div className="mt-2 flex items-center gap-2">
+              <div className="relative">
+                {story.has_badge && (
+                  <div className={clsx(
+                    "absolute -inset-[3px] rounded-full",
+                    "bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500",
+                    "animate-gradient-xy",
+                    "opacity-90"
+                  )} />
+                )}
+                <div className="relative w-8 h-8">
+                  <Image 
+                    src={story.author_avatar || '/default-user.webp'} 
+                    alt="Author avatar"
+                    fill
+                    sizes="32px"
+                    className="rounded-full object-cover"
+                    priority
+                  />
+                </div>
+              </div>
+              <span className="text-sm text-muted-foreground">{story.author_name}</span>
             </div>
           </div>
+          
           <div>
             <p className="text-muted-foreground">{story.description}</p>
           </div>
