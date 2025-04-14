@@ -73,16 +73,23 @@ export async function POST(
         'DELETE FROM story_bookmarks WHERE user_id = ? AND story_id = ?',
         [users[0].user_id, id]
       );
-      return NextResponse.json({ message: "Đã bỏ lưu truyện" });
+      return NextResponse.json({ 
+        message: "Đã bỏ lưu truyện",
+        isBookmarked: false
+      });
     }
 
     await pool.execute(
-      'INSERT INTO story_bookmarks (user_id, story_id) VALUES (?, ?)',
+      'INSERT INTO story_bookmarks (user_id, story_id, created_at) VALUES (?, ?, NOW())',
       [users[0].user_id, id]
     );
 
-    return NextResponse.json({ message: "Đã lưu truyện" });
+    return NextResponse.json({ 
+      message: "Đã lưu truyện",
+      isBookmarked: true
+    });
   } catch (error) {
+    console.error('Lỗi khi thao tác bookmark:', error);
     return NextResponse.json(
       { error: "Đã có lỗi xảy ra" },
       { status: 500 }

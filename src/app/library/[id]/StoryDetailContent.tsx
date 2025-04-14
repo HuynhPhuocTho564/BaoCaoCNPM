@@ -299,16 +299,14 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
               <Card 
                 key={chapter.chapter_id}
                 className="cursor-pointer hover:border-primary/50 transition-colors"
+                onClick={() => router.push(`/library/${storyId}/chapters/${chapter.chapter_id}`)}
               >
                 <CardHeader className="p-4">
                   <div className="flex items-center justify-between">
-                    <h3 
-                      className="font-medium hover:text-primary"
-                      onClick={() => router.push(`/library/${storyId}/chapters/${chapter.chapter_id}`)}
-                    >
+                    <h3 className="font-medium hover:text-primary">
                       {chapter.title}
                     </h3>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                       {chapter.is_read ? (
                         <Check className="w-4 h-4 text-primary" />
                       ) : null}
