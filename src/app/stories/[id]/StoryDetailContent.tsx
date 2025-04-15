@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
-import { Plus, BookOpen, Clock, User, ChevronLeft } from "lucide-react"
+import { Plus, BookOpen, Clock, User, ChevronLeft, Eye, Heart } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
@@ -39,6 +39,8 @@ interface Story {
   main_category: string
   tags: string[]
   status: 'draft' | 'published' | 'archived'
+  view_count: number
+  favorite_count: number
 }
 
 interface Outline {
@@ -221,6 +223,17 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
                 {tag}
               </Badge>
             ))}
+          </div>
+
+          <div className="flex items-center gap-4 mb-4">
+            <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+              <Eye className="w-4 h-4" />
+              {story.view_count || 0} lượt xem
+            </span>
+            <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+              <Heart className="w-4 h-4" />
+              {story.favorite_count || 0} lượt thích
+            </span>
           </div>
 
           <p className="text-muted-foreground prose max-w-none line-clamp-3 leading-relaxed">

@@ -37,11 +37,13 @@ export async function GET() {
         s.view_count,
         s.updated_at,
         mc.name as main_category,
-        GROUP_CONCAT(DISTINCT st.name) as tags
+        GROUP_CONCAT(DISTINCT st.name) as tags,
+        COUNT(DISTINCT sf.user_id) as favorite_count
       FROM stories s
       LEFT JOIN main_categories mc ON s.main_category_id = mc.category_id
       LEFT JOIN story_tag_relations str ON s.story_id = str.story_id
       LEFT JOIN story_tags st ON str.tag_id = st.tag_id
+      LEFT JOIN story_favorites sf ON s.story_id = sf.story_id
       WHERE s.user_id = ?
       GROUP BY s.story_id
       ORDER BY s.updated_at DESC
@@ -50,7 +52,8 @@ export async function GET() {
     // Format lại dữ liệu
     const formattedStories = stories.map((story: any) => ({
       ...story,
-      tags: story.tags ? story.tags.split(',') : []
+      tags: story.tags ? story.tags.split(',') : [],
+      favorite_count: Number(story.favorite_count)
     }));
 
     return NextResponse.json({ stories: formattedStories });

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Plus, BookOpen, Clock, Archive, BookOpenText } from "lucide-react"
+import { Plus, BookOpen, Clock, Archive, BookOpenText, Eye, Heart } from "lucide-react"
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 import Image from "next/image"
@@ -19,6 +19,7 @@ interface Story {
   main_category: string
   status: 'draft' | 'published' | 'archived'
   view_count: number
+  favorite_count: number
   updated_at: string
 }
 
@@ -184,9 +185,16 @@ export default function StoriesPage() {
                         <span className="text-[10px] sm:text-xs bg-primary/20 text-primary px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-medium truncate max-w-[100px] sm:max-w-[130px]">
                           {story.main_category}
                         </span>
-                        <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0 ml-auto">
-                          {story.view_count} lượt xem
-                        </span>
+                        <div className="flex items-center gap-2 ml-auto shrink-0">
+                          <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
+                            <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                            {story.view_count}
+                          </span>
+                          <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
+                            <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                            {story.favorite_count || 0}
+                          </span>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardFooter className="flex flex-row justify-between gap-1.5 sm:gap-2 p-0 mt-auto pt-1.5 sm:pt-3">
