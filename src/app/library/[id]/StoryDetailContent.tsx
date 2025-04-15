@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import clsx from "clsx"
+import { useSession } from "next-auth/react"
 
 interface Story {
   story_id: number
@@ -49,6 +50,7 @@ interface Chapter {
 }
 
 export default function StoryDetailContent({ storyId }: { storyId: string }) {
+  const { data: session } = useSession()
   const router = useRouter()
   const [story, setStory] = useState<Story | null>(null)
   const [chapters, setChapters] = useState<Chapter[]>([])
@@ -59,11 +61,7 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
       try {
         const [storyRes, chaptersRes] = await Promise.all([
           fetch(`/api/library/${storyId}`),
-          fetch(`/api/library/${storyId}/chapters`, {
-            headers: {
-              'Cache-Control': 'no-store'
-            }
-          })
+          fetch(`/api/library/${storyId}/chapters`)
         ])
         
         const [storyData, chaptersData] = await Promise.all([
@@ -72,7 +70,13 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
         ])
 
         if (storyRes.ok) setStory(storyData.story)
-        if (chaptersRes.ok) setChapters(chaptersData.chapters)
+        if (chaptersRes.ok) {
+          const processedChapters = chaptersData.chapters.map((chapter: Chapter) => ({
+            ...chapter,
+            is_read: session ? chapter.is_read : false
+          }))
+          setChapters(processedChapters)
+        }
       } catch (error) {
         console.error('Lỗi khi tải dữ liệu:', error)
       } finally {
@@ -81,7 +85,7 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
     }
 
     fetchStoryData()
-  }, [storyId])
+  }, [storyId, session])
 
   const handleMarkAsRead = async (chapterId: number) => {
     try {
@@ -222,10 +226,12 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
           <div>
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold">{story.title}</h1>
-              <div className="flex items-center gap-2">
-                <StoryBookmarkButton storyId={storyId} />
-                <StoryFavoriteButton storyId={storyId} favoriteCount={story.favorite_count} />
-              </div>
+              {session && (
+                <div className="flex items-center gap-2">
+                  <StoryBookmarkButton storyId={storyId} />
+                  <StoryFavoriteButton storyId={storyId} favoriteCount={story.favorite_count} />
+                </div>
+              )}
             </div>
             <div className="mt-2 flex items-center gap-2">
               <div className="relative">
@@ -286,25 +292,27 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
           </div>
 
           {/* Thêm nút đọc từ đầu/đọc tiếp */}
-          <div className="flex gap-3">
-            <Button 
-              onClick={handleStartReading}
-              disabled={chapters.length === 0}
-              className="flex items-center gap-2"
-            >
-              <BookOpen className="w-4 h-4" />
-              Đọc từ đầu
-            </Button>
-            <Button 
-              onClick={handleContinueReading}
-              disabled={!chapters.some(chapter => !chapter.is_read)}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <BookOpenCheck className="w-4 h-4" />
-              Đọc tiếp
-            </Button>
-          </div>
+          {session && (
+            <div className="flex gap-3">
+              <Button 
+                onClick={handleStartReading}
+                disabled={chapters.length === 0}
+                className="flex items-center gap-2"
+              >
+                <BookOpen className="w-4 h-4" />
+                Đọc từ đầu
+              </Button>
+              <Button 
+                onClick={handleContinueReading}
+                disabled={!chapters.some(chapter => !chapter.is_read)}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <BookOpenCheck className="w-4 h-4" />
+                Đọc tiếp
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -312,15 +320,17 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
       <div className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Danh sách chương</h2>
-          <Button
-            variant="outline"
-            className="flex items-center gap-2"
-            onClick={handleMarkAllAsRead}
-            disabled={chapters.length === 0 || chapters.every(ch => ch.is_read)}
-          >
-            <BookOpenCheck className="w-4 h-4" />
-            Đánh dấu đã đọc hết
-          </Button>
+          {session && (
+            <Button
+              variant="outline"
+              className="flex items-center gap-2"
+              onClick={handleMarkAllAsRead}
+              disabled={chapters.length === 0 || chapters.every(ch => ch.is_read)}
+            >
+              <BookOpenCheck className="w-4 h-4" />
+              Đánh dấu đã đọc hết
+            </Button>
+          )}
         </div>
         
         <div className="space-y-3">
@@ -342,27 +352,29 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
                       {chapter.title}
                     </h3>
                     <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                      {chapter.is_read ? (
+                      {session && chapter.is_read ? (
                         <Check className="w-4 h-4 text-primary" />
                       ) : null}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {!chapter.is_read ? (
-                            <DropdownMenuItem onClick={() => handleMarkAsRead(chapter.chapter_id)}>
-                              Đánh dấu đã đọc
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem onClick={() => handleMarkAsUnread(chapter.chapter_id)}>
-                              Bỏ đánh dấu đã đọc
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      {session && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {!chapter.is_read ? (
+                              <DropdownMenuItem onClick={() => handleMarkAsRead(chapter.chapter_id)}>
+                                Đánh dấu đã đọc
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem onClick={() => handleMarkAsUnread(chapter.chapter_id)}>
+                                Bỏ đánh dấu đã đọc
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </div>
                   </div>
                 </CardHeader>

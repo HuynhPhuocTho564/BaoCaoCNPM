@@ -13,7 +13,8 @@ export async function GET(
     const resolvedParams = await params
     const { id } = resolvedParams
 
-    const query = `
+    // Query khác nhau tùy theo trạng thái đăng nhập
+    const query = session ? `
       SELECT 
         c.chapter_id,
         c.title,
@@ -25,12 +26,22 @@ export async function GET(
         AND r.user_id = ?
       WHERE c.story_id = ? AND c.status = 'published'
       ORDER BY c.publish_order ASC
+    ` : `
+      SELECT 
+        c.chapter_id,
+        c.title,
+        c.status,
+        c.publish_order,
+        FALSE as is_read
+      FROM story_chapters c
+      WHERE c.story_id = ? AND c.status = 'published'
+      ORDER BY c.publish_order ASC
     `
     
-    const [chapters] = await pool.execute(query, [
-      session?.user?.id,
-      id
-    ]) as any[]
+    // Thực thi query với params phù hợp
+    const [chapters] = session 
+      ? await pool.execute(query, [session.user?.id, id]) as any[]
+      : await pool.execute(query, [id]) as any[]
 
     return NextResponse.json({ chapters })
   } catch (error) {
