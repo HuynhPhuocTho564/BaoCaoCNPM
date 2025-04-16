@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client"
 
 import { useEffect, useState, useRef } from "react"
@@ -48,6 +49,7 @@ export default function ChapterContent({
   const [visibleDialogues, setVisibleDialogues] = useState<number[]>([])
   const bottomRef = useRef<HTMLDivElement>(null)
   const scrollableRef = useRef<HTMLDivElement>(null)
+  const [isMarkedAsRead, setIsMarkedAsRead] = useState(false)
 
   useEffect(() => {
     const fetchChapterData = async () => {
@@ -87,15 +89,35 @@ export default function ChapterContent({
     fetchChapterData()
   }, [storyId, chapterId])
 
+  const isChapterCompleted = chapter?.dialogues && 
+    visibleDialogues.length === chapter.dialogues.length
+
+  useEffect(() => {
+    if (isChapterCompleted && !isMarkedAsRead) {
+      markChapterAsRead()
+    }
+  }, [isChapterCompleted])
+
+  const markChapterAsRead = async () => {
+    try {
+      const response = await fetch(`/api/library/${storyId}/chapters/${chapterId}/read`, {
+        method: 'POST',
+      })
+      
+      if (response.ok) {
+        setIsMarkedAsRead(true)
+      }
+    } catch (error) {
+      console.error('Lỗi khi đánh dấu chương đã đọc:', error)
+    }
+  }
+
   const showNextDialogue = () => {
     if (chapter?.dialogues && visibleDialogues.length < chapter.dialogues.length) {
       const nextDialogue = chapter.dialogues[visibleDialogues.length]
       setVisibleDialogues(prev => [...prev, nextDialogue.dialogue_id])
     }
   }
-
-  const isChapterCompleted = chapter?.dialogues && 
-    visibleDialogues.length === chapter.dialogues.length
 
   useEffect(() => {
     if (scrollableRef.current) {

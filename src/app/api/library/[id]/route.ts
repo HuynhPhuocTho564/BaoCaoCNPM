@@ -12,19 +12,19 @@ export async function GET(
     
     const [stories] = await pool.execute(`
       SELECT 
-        s.story_id,
-        s.title,
-        s.description,
-        s.cover_image,
-        s.view_count,
-        s.updated_at,
+        s.*,
         mc.name as main_category,
-        GROUP_CONCAT(DISTINCT st.name) as tags
+        GROUP_CONCAT(DISTINCT t.name) as tags,
+        (SELECT COUNT(*) FROM story_favorites sf WHERE sf.story_id = s.story_id) as favorite_count,
+        u.username as author_name,
+        u.avatar as author_avatar,
+        u.has_badge as author_has_badge
       FROM stories s
       LEFT JOIN main_categories mc ON s.main_category_id = mc.category_id
       LEFT JOIN story_tag_relations str ON s.story_id = str.story_id
-      LEFT JOIN story_tags st ON str.tag_id = st.tag_id
-      WHERE s.story_id = ? AND s.status = 'published'
+      LEFT JOIN story_tags t ON str.tag_id = t.tag_id
+      LEFT JOIN users u ON s.user_id = u.user_id
+      WHERE s.story_id = ?
       GROUP BY s.story_id
     `, [id]) as any[]
 
@@ -35,11 +35,12 @@ export async function GET(
       )
     }
 
-    // Format lại dữ liệu
-    const story = stories[0]
-    story.tags = story.tags ? story.tags.split(',') : []
-
-    return NextResponse.json({ story })
+    return NextResponse.json({
+      story: {
+        ...stories[0],
+        tags: stories[0].tags ? stories[0].tags.split(',') : []
+      }
+    })
   } catch (error) {
     console.error("Lỗi khi lấy thông tin truyện:", error)
     return NextResponse.json(

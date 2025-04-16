@@ -3,7 +3,7 @@ import {
   HarmCategory,
   HarmBlockThreshold,
 } from "@google/generative-ai";
-import { SYSTEM_PROMPTS, createStoryPrompt, createEditStoryPrompt, createCharacterPrompt, createEditCharacterPrompt, createCoverImagePrompt, createAvatarPrompt, createDialoguePrompt } from './gemini-prompts';
+import { SYSTEM_PROMPTS, createStoryPrompt, createEditStoryPrompt, createCharacterPrompt, createEditCharacterPrompt, createCoverImagePrompt, createAvatarPrompt, createDialoguePrompt, createChapterPrompt, createEditChapterPrompt, createOutlinePrompt, createEditOutlinePrompt } from './gemini-prompts';
 
 let apiKey: string | null = null;
 
@@ -80,6 +80,31 @@ interface CoverImagePrompt {
   prompt: string;
   negativePrompt: string;
   style: string;
+}
+
+interface ChapterIdea {
+  title: string;
+  summary: string;
+}
+
+interface StoryContext {
+  title: string;
+  description: string;
+  mainCategory: string;
+  tags: string[];
+  characters?: {
+    name: string;
+    description: string;
+    gender: string;
+    personality: string;
+    appearance: string;
+    role: string;
+  }[];
+}
+
+interface OutlineIdea {
+  title: string;
+  description: string;
 }
 
 export async function generateStoryIdea(userPrompt: string, categories: string[], tags: string[]): Promise<StoryIdea> {
@@ -191,26 +216,22 @@ export async function generateCharacterIdea(
 
 export async function generateDialogueSuggestion(
   prompt: string,
-  storyContext: {
-    title: string;
-    description: string;
-    mainCategory: string;
-    tags: string[];
-    characters: {
-      name: string;
-      description: string;
-      gender: string;
-      personality: string;
-      appearance: string;
-      role: string;
-    }[];
-  },
-  count: number = 3,
+  storyContext: StoryContext,
+  numDialogues: number,
   chapterTitle?: string,
+  chapterSummary?: string,
   existingDialogues?: {
     character_name?: string;
     content: string;
     type: 'dialogue' | 'aside';
+  }[],
+  publishedChapters?: {
+    title: string;
+    summary?: string;
+  }[],
+  outlines?: {
+    title: string;
+    description: string;
   }[]
 ): Promise<DialogueItem[]> {
   try {
@@ -220,14 +241,22 @@ export async function generateDialogueSuggestion(
       model: "gemini-2.0-flash",
       safetySettings,
       generationConfig,
-      systemInstruction: SYSTEM_PROMPTS.DIALOGUE + "\n\nCHÚ Ý QUAN TRỌNG: Chỉ sử dụng tên nhân vật đã được liệt kê trong danh sách nhân vật. KHÔNG tạo ra nhân vật mới."
+      systemInstruction: SYSTEM_PROMPTS.DIALOGUE
     });
     
-    const fullPrompt = createDialoguePrompt(prompt, storyContext, chapterTitle, existingDialogues);
-    fullPrompt.parts[0].text += `\n\nHãy tạo ${count} đoạn hội thoại khác nhau. CHỈ sử dụng tên nhân vật đã được liệt kê trong danh sách nhân vật, KHÔNG tạo ra nhân vật mới.`;
-    
     const chat = model.startChat({
-      history: [fullPrompt],
+      history: [
+        createDialoguePrompt(
+          prompt, 
+          storyContext, 
+          numDialogues, 
+          chapterTitle,
+          chapterSummary,
+          existingDialogues,
+          publishedChapters,
+          outlines
+        )
+      ],
     });
 
     const result = await chat.sendMessage("");
@@ -411,5 +440,205 @@ export async function generateAvatarPrompt(
   } catch (error) {
     console.error("Lỗi khi tạo prompt avatar:", error);
     throw new Error('Có lỗi xảy ra khi tạo prompt avatar. Vui lòng thử lại sau.');
+  }
+}
+
+export async function generateChapterIdea(
+  prompt: string,
+  storyContext: StoryContext,
+  publishedChapters?: {
+    title: string;
+    summary?: string;
+  }[]
+): Promise<ChapterIdea> {
+  try {
+    const key = await getApiKey();
+    const genAI = new GoogleGenerativeAI(key!);
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash",
+      safetySettings,
+      generationConfig,
+      systemInstruction: SYSTEM_PROMPTS.CHAPTER
+    });
+    
+    const chat = model.startChat({
+      history: [
+        createChapterPrompt(storyContext, publishedChapters)
+      ],
+    });
+
+    const result = await chat.sendMessage([{ text: prompt }]);
+    const response = result.response.text();
+    
+    const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
+    const jsonString = jsonMatch ? jsonMatch[1] : response;
+    
+    let chapterIdea: ChapterIdea;
+    try {
+      chapterIdea = JSON.parse(jsonString);
+      if (!chapterIdea.title || !chapterIdea.summary) {
+        throw new Error('Dữ liệu không hợp lệ');
+      }
+    } catch (parseError) {
+      console.error("Lỗi khi parse JSON:", parseError);
+      throw new Error('Không thể xử lý phản hồi từ AI');
+    }
+    
+    return chapterIdea;
+  } catch (error) {
+    console.error("Lỗi khi tạo ý tưởng chương:", error);
+    throw error;
+  }
+}
+
+export async function generateChapterEdit(
+  prompt: string,
+  storyContext: StoryContext,
+  existingChapter: {
+    title: string;
+    summary?: string;
+  },
+  publishedChapters?: {
+    title: string;
+    summary?: string;
+  }[]
+): Promise<ChapterIdea> {
+  try {
+    const key = await getApiKey();
+    const genAI = new GoogleGenerativeAI(key!);
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash",
+      safetySettings,
+      generationConfig,
+      systemInstruction: SYSTEM_PROMPTS.EDIT_CHAPTER
+    });
+    
+    const chat = model.startChat({
+      history: [
+        createEditChapterPrompt(storyContext, existingChapter, publishedChapters)
+      ],
+    });
+
+    const result = await chat.sendMessage([{ text: prompt }]);
+    const response = result.response.text();
+    
+    const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
+    const jsonString = jsonMatch ? jsonMatch[1] : response;
+    
+    let editedChapter: ChapterIdea;
+    try {
+      editedChapter = JSON.parse(jsonString);
+      if (!editedChapter.title || !editedChapter.summary) {
+        throw new Error('Dữ liệu chỉnh sửa không hợp lệ');
+      }
+    } catch (parseError) {
+      console.error("Lỗi khi parse JSON:", parseError);
+      throw new Error('Không thể xử lý phản hồi từ AI');
+    }
+    
+    return editedChapter;
+  } catch (error) {
+    console.error("Lỗi khi chỉnh sửa chương:", error);
+    throw error;
+  }
+}
+
+export async function generateOutlineIdea(
+  prompt: string,
+  storyContext: StoryContext,
+  publishedChapters?: {
+    title: string;
+    summary?: string;
+  }[]
+): Promise<OutlineIdea> {
+  try {
+    const key = await getApiKey();
+    const genAI = new GoogleGenerativeAI(key!);
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash",
+      safetySettings,
+      generationConfig,
+      systemInstruction: SYSTEM_PROMPTS.OUTLINE
+    });
+    
+    const chat = model.startChat({
+      history: [
+        createOutlinePrompt(storyContext, publishedChapters)
+      ],
+    });
+
+    const result = await chat.sendMessage([{ text: prompt }]);
+    const response = result.response.text();
+    
+    const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
+    const jsonString = jsonMatch ? jsonMatch[1] : response;
+    
+    let outlineIdea: OutlineIdea;
+    try {
+      outlineIdea = JSON.parse(jsonString);
+      if (!outlineIdea.title || !outlineIdea.description) {
+        throw new Error('Dữ liệu không hợp lệ');
+      }
+    } catch (parseError) {
+      console.error("Lỗi khi parse JSON:", parseError);
+      throw new Error('Không thể xử lý phản hồi từ AI');
+    }
+    
+    return outlineIdea;
+  } catch (error) {
+    console.error("Lỗi khi tạo ý tưởng đại cương:", error);
+    throw error;
+  }
+}
+
+export async function generateOutlineEdit(
+  prompt: string,
+  storyContext: StoryContext,
+  existingOutline: {
+    title: string;
+    description: string;
+  },
+  publishedChapters?: {
+    title: string;
+    summary?: string;
+  }[]
+): Promise<OutlineIdea> {
+  try {
+    const key = await getApiKey();
+    const genAI = new GoogleGenerativeAI(key!);
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash",
+      safetySettings,
+      generationConfig,
+      systemInstruction: SYSTEM_PROMPTS.EDIT_OUTLINE
+    });
+    
+    const chat = model.startChat({
+      history: [
+        createEditOutlinePrompt(storyContext, existingOutline, publishedChapters)
+      ],
+    });
+
+    const result = await chat.sendMessage([{ text: prompt }]);
+    const response = result.response.text();
+    
+    const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
+    const jsonString = jsonMatch ? jsonMatch[1] : response;
+    
+    let editedOutline: OutlineIdea;
+    try {
+      editedOutline = JSON.parse(jsonString);
+      if (!editedOutline.title || !editedOutline.description) {
+        throw new Error('Dữ liệu chỉnh sửa không hợp lệ');
+      }
+    } catch (parseError) {
+      console.error("Lỗi khi parse JSON:", parseError);
+      throw new Error('Không thể xử lý phản hồi từ AI');
+    }
+    
+    return editedOutline;
+  } catch (error) {
+    console.error("Lỗi khi chỉnh sửa đại cương:", error);
+    throw error;
   }
 } 

@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react"
 import { Login } from "../login/login"
 import { UserMenu } from "./user-menu"
 import { useRouter } from "next/navigation"
+import { NotificationBell } from "../notification/NotificationBell"
 
 // Sample menu items
 const menuItems = [
@@ -91,7 +92,10 @@ const Nav = () => {
         withBorder={true}
         rightContent={
           session ? (
-            <UserMenu isDarkTheme={theme === 'dark'} />
+            <div className="flex items-center gap-2">
+              <NotificationBell />
+              <UserMenu isDarkTheme={theme === 'dark'} />
+            </div>
           ) : (
             <Login />
           )

@@ -13,6 +13,7 @@ interface Story {
   cover_image: string | null
   main_category: string
   view_count: number
+  favorite_count: number // thêm trường này
   updated_at: string
 }
 

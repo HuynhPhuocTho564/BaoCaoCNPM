@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import Skeleton from "react-loading-skeleton"
+import "react-loading-skeleton/dist/skeleton.css"
 
 interface DialogueGeneratorProps {
   storyContext: {
@@ -30,6 +32,7 @@ interface DialogueGeneratorProps {
     }[];
   };
   chapterTitle?: string;
+  chapterSummary?: string;
   existingDialogues?: {
     character_id: number | null;
     content: string;
@@ -59,11 +62,20 @@ interface DialogueGeneratorProps {
   chapterId?: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  publishedChapters?: {
+    title: string;
+    summary?: string;
+  }[];
+  outlines?: {
+    title: string;
+    description: string;
+  }[];
 }
 
 export function DialogueGenerator({ 
   storyContext, 
-  chapterTitle, 
+  chapterTitle,
+  chapterSummary,
   existingDialogues = [],
   onGenerateDialogues,
   generatedDialogues,
@@ -73,10 +85,13 @@ export function DialogueGenerator({
   storyId,
   chapterId,
   open,
-  onOpenChange
+  onOpenChange,
+  publishedChapters = [],
+  outlines = []
 }: DialogueGeneratorProps) {
   const [prompt, setPrompt] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isLoadingDialogues, setIsLoadingDialogues] = useState(false)
   const [numDialogues, setNumDialogues] = useState(3)
   const [activeTab, setActiveTab] = useState<string>("generate")
   const hasFetchedRef = useRef(false)
@@ -86,6 +101,7 @@ export function DialogueGenerator({
     // Sử dụng useRef để đảm bảo chỉ fetch một lần
     if (!hasFetchedRef.current && storyId && chapterId && open) {
       const fetchAIDialogues = async () => {
+        setIsLoadingDialogues(true);
         try {
           const response = await fetch(`/api/stories/${storyId}/chapters/${chapterId}/ai-dialogues`);
           if (response.ok) {
@@ -106,9 +122,11 @@ export function DialogueGenerator({
           }
         } catch (error) {
           console.error("Lỗi khi lấy danh sách AI dialogues:", error);
+        } finally {
+          setIsLoadingDialogues(false);
+          // Đánh dấu đã fetch xong
+          hasFetchedRef.current = true;
         }
-        // Đánh dấu đã fetch xong
-        hasFetchedRef.current = true;
       };
       
       fetchAIDialogues();
@@ -157,7 +175,10 @@ export function DialogueGenerator({
         storyContext, 
         numDialogues,
         chapterTitle,
-        formattedExistingDialogues
+        chapterSummary,
+        formattedExistingDialogues,
+        publishedChapters,
+        outlines
       );
       
       const newDialogues = dialogues.map(d => ({...d, added: false}));
@@ -295,7 +316,15 @@ export function DialogueGenerator({
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="generate">Tạo hội thoại</TabsTrigger>
-            <TabsTrigger value="results">Kết quả ({generatedDialogues.length})</TabsTrigger>
+            <TabsTrigger value="results">
+              Kết quả {isLoadingDialogues ? (
+                <span className="ml-1">
+                  <Loader2 className="h-3 w-3 animate-spin inline-block" />
+                </span>
+              ) : (
+                `(${generatedDialogues.length})`
+              )}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="generate" className="mt-0">
@@ -351,7 +380,23 @@ export function DialogueGenerator({
                   ref={scrollContainerRef}
                   className="max-h-[400px] overflow-y-auto"
                 >
-                  {generatedDialogues.length === 0 ? (
+                  {isLoadingDialogues ? (
+                    <div className="p-4 space-y-4">
+                      {Array(3).fill(0).map((_, index) => (
+                        <div key={index} className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Skeleton width={80} height={24} />
+                            <Skeleton width={120} height={16} />
+                          </div>
+                          <Skeleton count={2} />
+                          <div className="flex justify-end gap-2">
+                            <Skeleton width={100} height={28} />
+                            <Skeleton width={40} height={28} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : generatedDialogues.length === 0 ? (
                     <div className="p-4 text-center text-muted-foreground text-sm">
                       Chưa có hội thoại AI nào được tạo
                     </div>

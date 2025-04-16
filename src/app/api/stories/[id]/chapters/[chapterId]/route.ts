@@ -25,6 +25,7 @@ export async function GET(
         sc.chapter_id,
         sc.title,
         sc.status,
+        sc.summary,
         (SELECT COUNT(*) FROM chapter_dialogues WHERE chapter_id = sc.chapter_id) as dialogue_count
       FROM story_chapters sc
       WHERE sc.chapter_id = ?
@@ -64,11 +65,10 @@ export async function PUT(
       )
     }
 
-    const body = await request.json()
-    const { title, status } = body
+    const { title, summary, status: newStatus } = await request.json()
 
     // Kiểm tra nội dung chương nếu muốn xuất bản
-    if (status === 'published') {
+    if (newStatus === 'published') {
       const [dialogues] = await pool.execute(
         `SELECT COUNT(*) as count FROM chapter_dialogues WHERE chapter_id = ?`,
         [chapterId]
@@ -95,39 +95,78 @@ export async function PUT(
       )
     }
 
-    if (status === 'published') {
-      let publishOrder = currentChapter[0].publish_order
+    // Sử dụng status mới nếu được cung cấp, ngược lại giữ nguyên status cũ
+    const status = newStatus || currentChapter[0].status
 
-      if (!publishOrder) {
-        const [result] = await pool.execute(
-          `SELECT MAX(publish_order) as max_order 
-           FROM story_chapters 
-           WHERE story_id = ? AND status = 'published'`,
-          [storyId]
-        ) as any[]
+    let publishOrder = currentChapter[0].publish_order
 
-        publishOrder = (result[0].max_order || 0) + 1
-      }
+    if (status === 'published' && !publishOrder) {
+      const [result] = await pool.execute(
+        `SELECT MAX(publish_order) as max_order 
+         FROM story_chapters 
+         WHERE story_id = ? AND status = 'published'`,
+        [storyId]
+      ) as any[]
+
+      publishOrder = (result[0].max_order || 0) + 1
 
       await pool.execute(
         `UPDATE story_chapters 
          SET title = ?, 
+             summary = ?,
              status = ?,
              publish_order = ?
          WHERE chapter_id = ?`,
-        [title, status, publishOrder, chapterId]
+        [title, summary, status, publishOrder, chapterId]
       )
+
+      // Chỉ tạo thông báo khi chương được xuất bản lần đầu
+      const [followers] = await pool.execute(
+        "SELECT user_id FROM story_bookmarks WHERE story_id = ?",
+        [storyId]
+      ) as any[]
+
+      if (followers.length > 0) {
+        const [storyInfo] = await pool.execute(
+          "SELECT title FROM stories WHERE story_id = ?",
+          [storyId]
+        ) as any[]
+
+        const notifications = followers.map((follower: any) => [
+          follower.user_id,
+          storyId,
+          chapterId,
+          `Chương mới: ${title}`,
+          `Truyện "${storyInfo[0].title}" vừa cập nhật chương mới`
+        ])
+
+        await pool.query(`
+          INSERT INTO notifications 
+          (user_id, story_id, chapter_id, title, message)
+          VALUES ?
+        `, [notifications])
+      }
     } else {
       await pool.execute(
         `UPDATE story_chapters 
          SET title = ?, 
+             summary = ?,
              status = ?
          WHERE chapter_id = ?`,
-        [title, status, chapterId]
+        [title, summary, status, chapterId]
       )
     }
 
-    return NextResponse.json({ message: "Cập nhật chương thành công" })
+    // Trả về chapter đã cập nhật
+    return NextResponse.json({ 
+      message: "Cập nhật chương thành công",
+      chapter: {
+        chapter_id: parseInt(chapterId),
+        title,
+        summary,
+        status
+      }
+    })
   } catch (error) {
     console.error("Lỗi khi cập nhật chương:", error)
     return NextResponse.json(

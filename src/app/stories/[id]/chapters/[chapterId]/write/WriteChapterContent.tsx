@@ -52,6 +52,7 @@ interface Chapter {
   chapter_id: number
   title: string
   status: 'draft' | 'published'
+  summary?: string
 }
 
 interface Story {
@@ -90,6 +91,14 @@ export default function WriteChapterContent({
   }>>([])
   const [isAIDialogOpen, setIsAIDialogOpen] = useState(false)
   const [isLoadingData, setIsLoadingData] = useState(true)
+  const [publishedChapters, setPublishedChapters] = useState<{
+    title: string;
+    summary?: string;
+  }[]>([])
+  const [outlines, setOutlines] = useState<{
+    title: string;
+    description: string;
+  }[]>([])
 
   const mainCharacters = characters.filter(c => c.role === 'main')
   const supportingCharacters = characters.filter(c => c.role === 'supporting')
@@ -121,6 +130,21 @@ export default function WriteChapterContent({
         if (dialoguesRes.ok) {
           setDialogues(dialoguesData.dialogues)
         }
+
+        // Fetch published chapters
+        const publishedChaptersRes = await fetch(`/api/stories/${storyId}/chapters?status=published`)
+        const publishedChaptersData = await publishedChaptersRes.json()
+        if (publishedChaptersRes.ok) {
+          setPublishedChapters(publishedChaptersData.chapters)
+        }
+
+        // Fetch outlines
+        const outlinesRes = await fetch(`/api/stories/${storyId}/outlines`)
+        const outlinesData = await outlinesRes.json()
+        if (outlinesRes.ok) {
+          setOutlines(outlinesData.outlines)
+        }
+
       } catch (error) {
         toast.error('Không thể tải dữ liệu')
       } finally {
@@ -738,6 +762,9 @@ export default function WriteChapterContent({
         chapterId={parseInt(chapterId)}
         open={isAIDialogOpen}
         onOpenChange={setIsAIDialogOpen}
+        publishedChapters={publishedChapters}
+        outlines={outlines}
+        chapterSummary={chapter?.summary}
       />
 
       <AlertDialog 

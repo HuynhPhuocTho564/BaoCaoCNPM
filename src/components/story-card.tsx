@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpenText } from "lucide-react"
+import { BookOpenText, Eye, Heart } from "lucide-react"
+import { useState, useEffect } from "react"
 
 interface StoryCardProps {
   story: {
@@ -11,12 +13,28 @@ interface StoryCardProps {
     cover_image: string | null
     main_category: string
     view_count: number
+    favorite_count: number
     updated_at: string
   }
 }
 
 export function StoryCard({ story }: StoryCardProps) {
   const router = useRouter()
+  const [favoriteCount, setFavoriteCount] = useState(story.favorite_count)
+
+  useEffect(() => {
+    fetchFavoriteCount()
+  }, [story.story_id])
+
+  const fetchFavoriteCount = async () => {
+    try {
+      const res = await fetch(`/api/stories/${story.story_id}/favorites/count`)
+      const data = await res.json()
+      setFavoriteCount(data.count)
+    } catch (error) {
+      console.error('Lỗi khi lấy số lượt thích:', error)
+    }
+  }
 
   const handleClick = async () => {
     try {
@@ -63,13 +81,20 @@ export function StoryCard({ story }: StoryCardProps) {
       </CardHeader>
 
       <CardFooter className="p-4 pt-0 mt-auto">
-        <div className="flex items-center justify-between w-full text-sm">
-          <span className="bg-primary/20 text-primary px-2.5 py-1 rounded-full">
+        <div className="flex items-center justify-between w-full">
+          <span className="bg-primary/20 text-primary px-2.5 py-1 rounded-full text-sm">
             {story.main_category}
           </span>
-          <span className="text-muted-foreground">
-            {story.view_count} lượt xem
-          </span>
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <Eye className="w-4 h-4" />
+              <span>{story.view_count}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Heart className="w-4 h-4" />
+              <span>{favoriteCount}</span>
+            </div>
+          </div>
         </div>
       </CardFooter>
     </Card>
