@@ -8,10 +8,17 @@ export async function GET(request: Request) {
     const query = searchParams.get('q')
     const category = searchParams.get('category')
     const tags = searchParams.get('tags')?.split(',')
-
-    if (!query && !category && !tags?.length) {
-      return NextResponse.json({ stories: [] })
-    }
+    
+    // Các bộ lọc thời gian
+    const timeRange = searchParams.get('timeRange') // today, week, month, year, all
+    const fromDate = searchParams.get('fromDate')
+    const toDate = searchParams.get('toDate')
+    
+    // Các bộ lọc số liệu
+    const sortBy = searchParams.get('sortBy') // updated, views, favorites, views_today, favorites_today
+    const sortOrder = searchParams.get('sortOrder') || 'desc'
+    const minViews = searchParams.get('minViews')
+    const minFavorites = searchParams.get('minFavorites')
 
     let sql = `
       SELECT DISTINCT
@@ -24,6 +31,12 @@ export async function GET(request: Request) {
         mc.name as main_category,
         GROUP_CONCAT(DISTINCT t.name) as tags,
         (SELECT COUNT(*) FROM story_favorites sf WHERE sf.story_id = s.story_id) as favorite_count,
+        (SELECT COUNT(*) FROM story_views sv WHERE sv.story_id = s.story_id AND DATE(sv.created_at) = CURDATE()) as views_today,
+        (SELECT COUNT(*) FROM story_favorites sf WHERE sf.story_id = s.story_id AND DATE(sf.created_at) = CURDATE()) as favorites_today,
+        (SELECT COUNT(*) FROM story_views sv WHERE sv.story_id = s.story_id AND sv.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)) as views_week,
+        (SELECT COUNT(*) FROM story_favorites sf WHERE sf.story_id = s.story_id AND sf.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)) as favorites_week,
+        (SELECT COUNT(*) FROM story_views sv WHERE sv.story_id = s.story_id AND sv.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)) as views_month,
+        (SELECT COUNT(*) FROM story_favorites sf WHERE sf.story_id = s.story_id AND sf.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)) as favorites_month,
         u.username as author_name,
         u.avatar as author_avatar,
         u.has_badge as author_has_badge
@@ -37,6 +50,7 @@ export async function GET(request: Request) {
 
     const params: any[] = []
 
+    // Điều kiện tìm kiếm cơ bản
     if (query) {
       sql += ` AND (s.title LIKE ? OR s.description LIKE ?)`
       params.push(`%${query}%`, `%${query}%`)
@@ -52,7 +66,78 @@ export async function GET(request: Request) {
       params.push(...tags)
     }
 
-    sql += ` GROUP BY s.story_id ORDER BY s.updated_at DESC LIMIT 20`
+    // Điều kiện thời gian
+    if (timeRange) {
+      switch (timeRange) {
+        case 'today':
+          sql += ` AND DATE(s.updated_at) = CURDATE()`
+          break
+        case 'week':
+          sql += ` AND s.updated_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)`
+          break
+        case 'month':
+          sql += ` AND s.updated_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)`
+          break
+        case 'year':
+          sql += ` AND s.updated_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR)`
+          break
+      }
+    }
+
+    if (fromDate) {
+      sql += ` AND DATE(s.updated_at) >= ?`
+      params.push(fromDate)
+    }
+
+    if (toDate) {
+      sql += ` AND DATE(s.updated_at) <= ?`
+      params.push(toDate)
+    }
+
+    // Điều kiện số liệu
+    if (minViews) {
+      sql += ` AND s.view_count >= ?`
+      params.push(parseInt(minViews))
+    }
+
+    if (minFavorites) {
+      sql += ` AND (SELECT COUNT(*) FROM story_favorites sf WHERE sf.story_id = s.story_id) >= ?`
+      params.push(parseInt(minFavorites))
+    }
+
+    sql += ` GROUP BY s.story_id`
+
+    // Sắp xếp
+    sql += ` ORDER BY `
+    switch (sortBy) {
+      case 'views':
+        sql += `s.view_count`
+        break
+      case 'favorites':
+        sql += `favorite_count`
+        break
+      case 'views_today':
+        sql += `views_today`
+        break
+      case 'favorites_today':
+        sql += `favorites_today`
+        break
+      case 'views_week':
+        sql += `views_week`
+        break
+      case 'favorites_week':
+        sql += `favorites_week`
+        break
+      case 'views_month':
+        sql += `views_month`
+        break
+      case 'favorites_month':
+        sql += `favorites_month`
+        break
+      default:
+        sql += `s.updated_at`
+    }
+    sql += ` ${sortOrder.toUpperCase()} LIMIT 20`
 
     const [stories] = await pool.execute(sql, params) as any[]
 

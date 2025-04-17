@@ -9,6 +9,20 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Skeleton from "react-loading-skeleton"
 import "react-loading-skeleton/dist/skeleton.css"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { DatePicker } from "@/components/ui/date-picker"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 interface Story {
   story_id: number
@@ -47,6 +61,17 @@ export default function SearchPage() {
   const [selectedTags, setSelectedTags] = useState<string[]>(
     searchParams.get("tags")?.split(",").filter(Boolean) || []
   )
+  const [timeRange, setTimeRange] = useState<string>(searchParams.get("timeRange") || "all")
+  const [fromDate, setFromDate] = useState<Date | undefined>(
+    searchParams.get("fromDate") ? new Date(searchParams.get("fromDate")!) : undefined
+  )
+  const [toDate, setToDate] = useState<Date | undefined>(
+    searchParams.get("toDate") ? new Date(searchParams.get("toDate")!) : undefined
+  )
+  const [sortBy, setSortBy] = useState(searchParams.get("sortBy") || "updated")
+  const [sortOrder, setSortOrder] = useState(searchParams.get("sortOrder") || "desc")
+  const [minViews, setMinViews] = useState(searchParams.get("minViews") || "")
+  const [minFavorites, setMinFavorites] = useState(searchParams.get("minFavorites") || "")
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -72,6 +97,14 @@ export default function SearchPage() {
       if (searchQuery) params.set("q", searchQuery)
       if (selectedCategory) params.set("category", selectedCategory)
       if (selectedTags.length > 0) params.set("tags", selectedTags.join(","))
+      
+      if (timeRange !== "all") params.set("timeRange", timeRange)
+      if (fromDate) params.set("fromDate", fromDate.toISOString().split('T')[0])
+      if (toDate) params.set("toDate", toDate.toISOString().split('T')[0])
+      if (sortBy !== "updated") params.set("sortBy", sortBy)
+      if (sortOrder !== "desc") params.set("sortOrder", sortOrder)
+      if (minViews) params.set("minViews", minViews)
+      if (minFavorites) params.set("minFavorites", minFavorites)
       
       const response = await fetch(`/api/library/search?${params.toString()}`)
       const data = await response.json()
@@ -99,52 +132,158 @@ export default function SearchPage() {
       <h1 className="text-3xl font-bold mb-8">Tìm Kiếm Nâng Cao</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <div className="lg:col-span-1 space-y-6">
-          <div className="space-y-4">
-            <h3 className="font-medium">Tìm kiếm</h3>
-            <Input
-              placeholder="Nhập từ khóa..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
+        <div className="lg:col-span-1">
+          <Accordion type="single" collapsible className="space-y-4">
+            <AccordionItem value="basic">
+              <AccordionTrigger>Tìm kiếm cơ bản</AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <h3 className="font-medium">Từ khóa</h3>
+                    <Input
+                      placeholder="Nhập từ khóa..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
 
-          <div className="space-y-4">
-            <h3 className="font-medium">Thể loại</h3>
-            <div className="flex flex-wrap gap-2">
-              {mainCategories.map((category) => (
-                <Badge
-                  key={category.id}
-                  variant={selectedCategory === category.name ? "default" : "outline"}
-                  className="cursor-pointer"
-                  onClick={() => setSelectedCategory(
-                    selectedCategory === category.name ? null : category.name
-                  )}
-                >
-                  {category.name}
-                </Badge>
-              ))}
-            </div>
-          </div>
+                  <div className="space-y-2">
+                    <h3 className="font-medium">Thể loại</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {mainCategories.map((category) => (
+                        <Badge
+                          key={category.id}
+                          variant={selectedCategory === category.name ? "default" : "outline"}
+                          className="cursor-pointer"
+                          onClick={() => setSelectedCategory(
+                            selectedCategory === category.name ? null : category.name
+                          )}
+                        >
+                          {category.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
 
-          <div className="space-y-4">
-            <h3 className="font-medium">Tags</h3>
-            <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => (
-                <Badge
-                  key={tag.id}
-                  variant={selectedTags.includes(tag.name) ? "default" : "outline"}
-                  className="cursor-pointer"
-                  onClick={() => toggleTag(tag.name)}
-                >
-                  {tag.name}
-                </Badge>
-              ))}
-            </div>
-          </div>
+                  <div className="space-y-2">
+                    <h3 className="font-medium">Tags</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {tags.map((tag) => (
+                        <Badge
+                          key={tag.id}
+                          variant={selectedTags.includes(tag.name) ? "default" : "outline"}
+                          className="cursor-pointer"
+                          onClick={() => toggleTag(tag.name)}
+                        >
+                          {tag.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="time">
+              <AccordionTrigger>Thời gian</AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <h3 className="font-medium">Khoảng thời gian</h3>
+                    <Select value={timeRange} onValueChange={setTimeRange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn khoảng thời gian" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Tất cả</SelectItem>
+                        <SelectItem value="today">Hôm nay</SelectItem>
+                        <SelectItem value="week">Tuần này</SelectItem>
+                        <SelectItem value="month">Tháng này</SelectItem>
+                        <SelectItem value="year">Năm nay</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="font-medium">Hoặc chọn khoảng ngày</h3>
+                    <div className="flex gap-2">
+                      <DatePicker
+                        value={fromDate}
+                        onChange={setFromDate}
+                        placeholder="Từ ngày"
+                      />
+                      <DatePicker
+                        value={toDate}
+                        onChange={setToDate}
+                        placeholder="Đến ngày"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="stats">
+              <AccordionTrigger>Thống kê</AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <h3 className="font-medium">Sắp xếp theo</h3>
+                    <Select value={sortBy} onValueChange={setSortBy}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn tiêu chí sắp xếp" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="updated">Mới cập nhật</SelectItem>
+                        <SelectItem value="views">Lượt xem</SelectItem>
+                        <SelectItem value="favorites">Lượt thích</SelectItem>
+                        <SelectItem value="views_today">Lượt xem hôm nay</SelectItem>
+                        <SelectItem value="favorites_today">Lượt thích hôm nay</SelectItem>
+                        <SelectItem value="views_week">Lượt xem tuần này</SelectItem>
+                        <SelectItem value="favorites_week">Lượt thích tuần này</SelectItem>
+                        <SelectItem value="views_month">Lượt xem tháng này</SelectItem>
+                        <SelectItem value="favorites_month">Lượt thích tháng này</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="font-medium">Thứ tự</h3>
+                    <Select value={sortOrder} onValueChange={setSortOrder}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn thứ tự sắp xếp" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="desc">Giảm dần</SelectItem>
+                        <SelectItem value="asc">Tăng dần</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="font-medium">Lọc số liệu</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        type="number"
+                        placeholder="Tối thiểu lượt xem"
+                        value={minViews}
+                        onChange={(e) => setMinViews(e.target.value)}
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Tối thiểu lượt thích"
+                        value={minFavorites}
+                        onChange={(e) => setMinFavorites(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
 
           <Button 
-            className="w-full"
+            className="w-full mt-6"
             onClick={handleSearch}
           >
             <Search className="w-4 h-4 mr-2" />
