@@ -5,9 +5,12 @@ import pool from "@/lib/db"
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const resolvedParams = await params
+    const { id } = resolvedParams
+    
     const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
       return NextResponse.json(
@@ -18,7 +21,7 @@ export async function PUT(
 
     await pool.execute(
       "UPDATE notifications SET is_read = 1 WHERE notification_id = ? AND user_id = ?",
-      [params.id, session.user.id]
+      [id, session.user.id]
     )
 
     return NextResponse.json({ message: "Đã đánh dấu đã đọc" })

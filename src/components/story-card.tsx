@@ -16,9 +16,11 @@ interface StoryCardProps {
     favorite_count: number
     updated_at: string
   }
+  onClick?: () => void
+  variant?: 'default' | 'search'
 }
 
-export function StoryCard({ story }: StoryCardProps) {
+export function StoryCard({ story, onClick, variant = 'default' }: StoryCardProps) {
   const router = useRouter()
   const [favoriteCount, setFavoriteCount] = useState(story.favorite_count)
 
@@ -37,6 +39,10 @@ export function StoryCard({ story }: StoryCardProps) {
   }
 
   const handleClick = async () => {
+    if (onClick) {
+      onClick()
+      return
+    }
     try {
       // Gọi API để tăng lượt xem
       await fetch(`/api/library/${story.story_id}/view`, {
@@ -50,6 +56,44 @@ export function StoryCard({ story }: StoryCardProps) {
       // Vẫn chuyển hướng ngay cả khi không cập nhật được lượt xem
       router.push(`/library/${story.story_id}`)
     }
+  }
+
+  if (variant === 'search') {
+    return (
+      <div 
+        onClick={handleClick}
+        className="flex gap-3 p-2 hover:bg-muted/50 rounded-lg cursor-pointer"
+      >
+        <div className="relative aspect-[3/4] w-[80px] rounded-md overflow-hidden">
+          {story.cover_image ? (
+            <Image
+              src={story.cover_image}
+              alt={story.title}
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-muted flex items-center justify-center">
+              <BookOpenText className="w-6 h-6 text-muted-foreground/30" />
+            </div>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-medium truncate">{story.title}</h3>
+          <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{story.description}</p>
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <Eye className="w-4 h-4" />
+              <span>{story.view_count}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Heart className="w-4 h-4" />
+              <span>{story.favorite_count}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

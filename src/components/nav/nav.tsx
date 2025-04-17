@@ -7,6 +7,9 @@ import { Login } from "../login/login"
 import { UserMenu } from "./user-menu"
 import { useRouter } from "next/navigation"
 import { NotificationBell } from "../notification/NotificationBell"
+import { Button } from "@/components/ui/button"
+import { Search } from "lucide-react"
+import { SearchDialog } from "../search/search-dialog"
 
 // Sample menu items
 const menuItems = [
@@ -26,6 +29,11 @@ const menuItems = [
         text: "Phổ biến",
         description: "Những truyện được yêu thích nhất",
         to: "/library/popular",
+      },
+      {
+        text: "Tìm kiếm",
+        description: "Tìm kiếm nâng cao",
+        to: "/library/search",
       }
     ]
   },
@@ -55,6 +63,7 @@ const Nav = () => {
   const { data: session } = useSession()
   const router = useRouter()
   const [theme, setTheme] = React.useState<'light' | 'dark'>('light')
+  const [searchOpen, setSearchOpen] = React.useState(false)
   
   React.useEffect(() => {
     // Get initial theme from localStorage or system preference
@@ -75,33 +84,45 @@ const Nav = () => {
   }
   
   return (
-    <div className={`w-full ${theme === 'dark' ? 'dark bg-[#0B0C0F]' : 'bg-white'}`}>
-      <Header
-        theme={theme}
-        logo={
-          <button 
-            onClick={handleLogoClick}
-            className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-black'}`}
-          >
-            ChatStoryAI
-          </button>
-        }
-        menuItems={menuItems}
-        onThemeChange={toggleTheme}
-        isSticky={true}
-        withBorder={true}
-        rightContent={
-          session ? (
+    <>
+      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
+      <div className={`w-full ${theme === 'dark' ? 'dark bg-[#0B0C0F]' : 'bg-white'}`}>
+        <Header
+          theme={theme}
+          logo={
+            <button 
+              onClick={handleLogoClick}
+              className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-black'}`}
+            >
+              ChatStoryAI
+            </button>
+          }
+          menuItems={menuItems}
+          onThemeChange={toggleTheme}
+          isSticky={true}
+          withBorder={true}
+          rightContent={
             <div className="flex items-center gap-2">
-              <NotificationBell />
-              <UserMenu isDarkTheme={theme === 'dark'} />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSearchOpen(true)}
+              >
+                <Search className="w-5 h-5" />
+              </Button>
+              {session ? (
+                <>
+                  <NotificationBell />
+                  <UserMenu isDarkTheme={theme === 'dark'} />
+                </>
+              ) : (
+                <Login />
+              )}
             </div>
-          ) : (
-            <Login />
-          )
-        }
-      />
-    </div>
+          }
+        />
+      </div>
+    </>
   )
 }
 
