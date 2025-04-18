@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useEffect, useState } from "react"
@@ -23,6 +24,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { searchStoriesWithAI } from '@/lib/gemini'
 
 interface Story {
   story_id: number
@@ -72,6 +76,7 @@ export default function SearchPage() {
   const [sortOrder, setSortOrder] = useState(searchParams.get("sortOrder") || "desc")
   const [minViews, setMinViews] = useState(searchParams.get("minViews") || "")
   const [minFavorites, setMinFavorites] = useState(searchParams.get("minFavorites") || "")
+  const [useAI, setUseAI] = useState(false)
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -105,12 +110,50 @@ export default function SearchPage() {
       if (sortOrder !== "desc") params.set("sortOrder", sortOrder)
       if (minViews) params.set("minViews", minViews)
       if (minFavorites) params.set("minFavorites", minFavorites)
+      if (useAI) params.set("useAI", "true")
       
       const response = await fetch(`/api/library/search?${params.toString()}`)
       const data = await response.json()
       
-      if (response.ok) {
-        setStories(data.stories)
+      if (useAI && searchQuery) {
+        const storiesForAI = data.stories.map((story: any) => ({
+          story_id: story.story_id,
+          title: story.title,
+          description: story.description,
+          main_category: story.main_category,
+          tags: typeof story.tags === 'string' 
+            ? story.tags.split(',').filter(Boolean)
+            : Array.isArray(story.tags) 
+              ? story.tags 
+              : []
+        }))
+
+        const aiResults = await searchStoriesWithAI(searchQuery, storiesForAI)
+        
+        const storiesWithAI = data.stories.map((story: any) => {
+          const aiResult = aiResults.find(r => r.story_id === story.story_id)
+          return {
+            ...story,
+            relevance_score: aiResult?.relevance_score || 0,
+            match_reason: aiResult?.reason || '',
+            tags: typeof story.tags === 'string' 
+              ? story.tags.split(',').filter(Boolean)
+              : Array.isArray(story.tags) 
+                ? story.tags 
+                : []
+          }
+        }).sort((a: any, b: any) => b.relevance_score - a.relevance_score)
+
+        setStories(storiesWithAI)
+      } else {
+        setStories(data.stories.map((story: any) => ({
+          ...story,
+          tags: typeof story.tags === 'string' 
+            ? story.tags.split(',').filter(Boolean)
+            : Array.isArray(story.tags) 
+              ? story.tags 
+              : []
+        })))
       }
     } catch (error) {
       console.error('Lỗi khi tìm kiếm:', error)
@@ -134,14 +177,14 @@ export default function SearchPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-1">
           <Accordion type="single" collapsible className="space-y-4">
-            <AccordionItem value="basic">
-              <AccordionTrigger>Tìm kiếm cơ bản</AccordionTrigger>
+            <AccordionItem value="search">
+              <AccordionTrigger>Tìm kiếm</AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <h3 className="font-medium">Từ khóa</h3>
                     <Input
-                      placeholder="Nhập từ khóa..."
+                      placeholder="Nhập từ khóa tìm kiếm..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -179,6 +222,17 @@ export default function SearchPage() {
                         </Badge>
                       ))}
                     </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="useAI"
+                      checked={useAI}
+                      onCheckedChange={setUseAI}
+                    />
+                    <Label htmlFor="useAI" className="text-sm">
+                      Tìm kiếm thông minh với AI
+                    </Label>
                   </div>
                 </div>
               </AccordionContent>
@@ -313,7 +367,11 @@ export default function SearchPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {stories.map((story) => (
-                <StoryCard key={story.story_id} story={story} />
+                <StoryCard 
+                  key={story.story_id} 
+                  story={story}
+                  showRelevance={useAI} 
+                />
               ))}
             </div>
           )}

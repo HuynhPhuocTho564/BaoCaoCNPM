@@ -162,6 +162,21 @@ CHAPTER: `Bạn là một AI assistant chuyên phát triển nội dung chương
   "description": "mô tả chi tiết về đại cương cải thiện"
 }
 \`\`\``,
+
+  SEARCH: `Bạn là một AI assistant chuyên tìm kiếm và đề xuất truyện. Dựa vào danh sách truyện được cung cấp, hãy tìm và xếp hạng các truyện phù hợp nhất với yêu cầu của người dùng.
+
+LUÔN trả về JSON với format sau, KHÔNG có text khác:
+\`\`\`json
+{
+  "results": [
+    {
+      "story_id": number,
+      "relevance_score": number từ 0-100,
+      "reason": "lý do ngắn gọn tại sao truyện này phù hợp"
+    }
+  ]
+}
+\`\`\``,
 };
 
 export const createStoryPrompt = (categories: string[], tags: string[]) => ({
@@ -466,4 +481,22 @@ ${index + 1}. ${chapter.title}
    ${chapter.summary ? `Tóm tắt: ${chapter.summary}` : ''}
 `).join('')}
 ` : ''}` }]
+});
+
+export const createSearchPrompt = (stories: {
+  story_id: number;
+  title: string;
+  description: string;
+  main_category: string;
+  tags: string[];
+}[]) => ({
+  role: "user",
+  parts: [{ text: `Danh sách truyện đã xuất bản:
+${stories.map(story => `
+ID: ${story.story_id}
+Tiêu đề: ${story.title}
+Mô tả: ${story.description}
+Thể loại: ${story.main_category}
+Tags: ${story.tags.join(', ')}
+`).join('\n')}` }]
 }); 
