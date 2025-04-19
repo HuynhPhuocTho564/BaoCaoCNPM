@@ -327,7 +327,11 @@ export default function CreateStoryPage() {
                       <Badge
                         key={category.id}
                         variant={selectedMainCategory === category.id ? "default" : "outline"}
-                        className="cursor-pointer text-sm px-3 py-1 hover:bg-primary/10 hover:text-primary transition-colors"
+                        className={`cursor-pointer text-sm px-3 py-1 transition-colors ${
+                          selectedMainCategory === category.id 
+                            ? "hover:bg-primary/90" 
+                            : "hover:bg-primary/10 hover:text-primary"
+                        }`}
                         onClick={() => setSelectedMainCategory(category.id)}
                       >
                         {category.name}
@@ -346,7 +350,11 @@ export default function CreateStoryPage() {
                       <Badge
                         key={tag.id}
                         variant={selectedTags.includes(tag.id) ? "default" : "outline"}
-                        className="cursor-pointer text-sm px-3 py-1 hover:bg-primary/10 hover:text-primary transition-colors"
+                        className={`cursor-pointer text-sm px-3 py-1 transition-colors ${
+                          selectedTags.includes(tag.id)
+                            ? "hover:bg-primary/90"
+                            : "hover:bg-primary/10 hover:text-primary"
+                        }`}
                         onClick={() => toggleTag(tag.id)}
                       >
                         {tag.name}
