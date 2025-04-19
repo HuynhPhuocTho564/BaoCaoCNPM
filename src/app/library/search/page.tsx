@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { StoryCard } from "@/components/story-card"
 import { BookOpenText, Search } from "lucide-react"
@@ -52,7 +52,7 @@ interface Tag {
   description: string
 }
 
-export default function SearchPage() {
+function SearchContent() {
   const searchParams = useSearchParams()
   
   const [stories, setStories] = useState<Story[]>([])
@@ -76,7 +76,7 @@ export default function SearchPage() {
   const [sortOrder, setSortOrder] = useState(searchParams.get("sortOrder") || "desc")
   const [minViews, setMinViews] = useState(searchParams.get("minViews") || "")
   const [minFavorites, setMinFavorites] = useState(searchParams.get("minFavorites") || "")
-  const [useAI, setUseAI] = useState(false)
+  const [useAI, setUseAI] = useState(searchParams.get('useAI') === 'true')
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -378,5 +378,34 @@ export default function SearchPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="container py-8">
+        <div className="grid lg:grid-cols-4 gap-6">
+          <div className="space-y-6">
+            <div className="h-[400px] animate-pulse bg-gray-100 rounded-lg" />
+          </div>
+          <div className="lg:col-span-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array(6).fill(0).map((_, index) => (
+                <div key={index} className="flex flex-col">
+                  <div className="relative aspect-[3/4] w-full rounded-lg overflow-hidden mb-3">
+                    <div className="w-full h-full bg-gray-100 animate-pulse" />
+                  </div>
+                  <div className="h-6 bg-gray-100 animate-pulse mb-2 w-3/4" />
+                  <div className="h-4 bg-gray-100 animate-pulse w-1/2" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <SearchContent />
+    </Suspense>
   )
 }
