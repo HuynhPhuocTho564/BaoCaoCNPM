@@ -12,6 +12,7 @@ import TextareaAutosize from 'react-textarea-autosize'
 import { OutlineIdeaGenerator } from "@/components/outline/OutlineIdeaGenerator"
 import Skeleton from "react-loading-skeleton"
 import "react-loading-skeleton/dist/skeleton.css"
+import { useLoading } from "@/providers/loading-provider"
 
 interface Story {
   title: string
@@ -34,6 +35,7 @@ export default function CreateOutlineContent({
   storyId: string 
 }) {
   const router = useRouter()
+  const { startLoading } = useLoading()
   const [isLoading, setIsLoading] = useState(false)
   const [showIdeaGenerator, setShowIdeaGenerator] = useState(false)
   const [storyData, setStoryData] = useState<Story | null>(null)
@@ -89,6 +91,7 @@ export default function CreateOutlineContent({
       }
 
       toast.success('Tạo đại cương mới thành công!')
+      startLoading()
       router.push(`/stories/${storyId}?tab=outlines`)
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
@@ -98,6 +101,7 @@ export default function CreateOutlineContent({
   }
 
   const handleCancel = () => {
+    startLoading()
     router.push(`/stories/${storyId}?tab=outlines`)
   }
 

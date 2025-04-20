@@ -13,10 +13,12 @@ import Skeleton from "react-loading-skeleton"
 import "react-loading-skeleton/dist/skeleton.css"
 import { IdeaGenerator } from "@/components/character/IdeaGenerator"
 import { AvatarImagePrompt } from "@/components/character/AvatarImagePrompt"
+import { useLoading } from "@/providers/loading-provider"
 
 export default function CreateCharacterContent({ storyId }: { storyId: string }) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { startLoading } = useLoading()
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [previewImage, setPreviewImage] = useState<string>("")
@@ -119,6 +121,7 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
       }
 
       toast.success('Tạo nhân vật thành công!')
+      startLoading()
       router.push(`/stories/${storyId}?tab=characters`)
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
@@ -441,7 +444,10 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
               <Button 
                 type="button" 
                 variant="outline"
-                onClick={() => router.push(`/stories/${storyId}?tab=characters`)}
+                onClick={() => {
+                  startLoading()
+                  router.push(`/stories/${storyId}?tab=characters`)
+                }}
                 className="min-w-[120px]"
               >
                 Hủy

@@ -6,6 +6,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const query = searchParams.get('q')
+    const useAI = searchParams.get('useAI') === 'true'
     const category = searchParams.get('category')
     const tags = searchParams.get('tags')?.split(',')
     
@@ -20,6 +21,34 @@ export async function GET(request: Request) {
     const minViews = searchParams.get('minViews')
     const minFavorites = searchParams.get('minFavorites')
 
+    // Nếu dùng AI, chỉ trả về danh sách truyện để xử lý trên client
+    if (useAI) {
+      const [publishedStories] = (await pool.execute(
+        `SELECT 
+          s.story_id,
+          s.title,
+          s.description,
+          s.cover_image,
+          s.view_count,
+          s.updated_at,
+          mc.name as main_category,
+          GROUP_CONCAT(DISTINCT t.name) as tags,
+          COUNT(DISTINCT sf.user_id) as favorite_count,
+          COUNT(DISTINCT CASE WHEN DATE(sf.created_at) = CURDATE() THEN sf.user_id END) as favorites_today,
+          COUNT(DISTINCT CASE WHEN sf.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN sf.user_id END) as favorites_week
+        FROM stories s
+        LEFT JOIN main_categories mc ON s.main_category_id = mc.category_id
+        LEFT JOIN story_tag_relations str ON s.story_id = str.story_id
+        LEFT JOIN story_tags t ON str.tag_id = t.tag_id
+        LEFT JOIN story_favorites sf ON s.story_id = sf.story_id
+        WHERE s.status = 'published'
+        GROUP BY s.story_id`
+      )) as any[];
+
+      return NextResponse.json({ stories: publishedStories });
+    }
+
+    // Tìm kiếm thông thường nếu không dùng AI
     let sql = `
       SELECT DISTINCT
         s.story_id,

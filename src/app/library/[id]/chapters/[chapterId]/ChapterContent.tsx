@@ -11,6 +11,7 @@ import Skeleton from "react-loading-skeleton"
 import "react-loading-skeleton/dist/skeleton.css"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import clsx from "clsx"
+import { useLoading } from "@/providers/loading-provider"
 
 interface Character {
   character_id: number
@@ -44,6 +45,7 @@ export default function ChapterContent({
   chapterId: string 
 }) {
   const router = useRouter()
+  const { startLoading } = useLoading()
   const [chapter, setChapter] = useState<Chapter | null>(null)
   const [nextChapter, setNextChapter] = useState<Chapter | null>(null)
   const [prevChapter, setPrevChapter] = useState<Chapter | null>(null)
@@ -206,7 +208,10 @@ export default function ChapterContent({
             {allChapters.map((c) => (
               <button
                 key={c.chapter_id}
-                onClick={() => router.push(`/library/${storyId}/chapters/${c.chapter_id}`)}
+                onClick={() => {
+                  startLoading()
+                  router.push(`/library/${storyId}/chapters/${c.chapter_id}`)
+                }}
                 className={clsx(
                   "w-full text-left px-3 py-2 rounded-lg hover:bg-muted transition-colors",
                   Number(chapterId) === c.chapter_id && "bg-primary text-primary-foreground"
@@ -241,6 +246,7 @@ export default function ChapterContent({
                 <button
                   key={c.chapter_id}
                   onClick={() => {
+                    startLoading()
                     router.push(`/library/${storyId}/chapters/${c.chapter_id}`)
                     setIsSidebarOpen(false)
                   }}
@@ -272,7 +278,10 @@ export default function ChapterContent({
         >
           <Button
             variant="outline"
-            onClick={() => router.push(`/library/${storyId}`)}
+            onClick={() => {
+              startLoading()
+              router.push(`/library/${storyId}`)
+            }}
             className="mb-8"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
@@ -380,7 +389,10 @@ export default function ChapterContent({
           <div className="flex justify-between items-center mt-12 gap-4">
             {prevChapter ? (
               <Button
-                onClick={() => router.push(`/library/${storyId}/chapters/${prevChapter.chapter_id}`)}
+                onClick={() => {
+                  startLoading()
+                  router.push(`/library/${storyId}/chapters/${prevChapter.chapter_id}`)
+                }}
                 className="flex items-center"
               >
                 <ChevronLeft className="w-4 h-4 mr-2" />
@@ -392,7 +404,10 @@ export default function ChapterContent({
 
             {nextChapter ? (
               <Button
-                onClick={() => router.push(`/library/${storyId}/chapters/${nextChapter.chapter_id}`)}
+                onClick={() => {
+                  startLoading()
+                  router.push(`/library/${storyId}/chapters/${nextChapter.chapter_id}`)
+                }}
                 className="flex items-center"
               >
                 Chương sau

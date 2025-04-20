@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { IdeaGenerator } from "@/components/character/IdeaGenerator"
 import { AvatarImagePrompt } from "@/components/character/AvatarImagePrompt"
+import { useLoading } from "@/providers/loading-provider"
 
 interface Character {
   character_id: number
@@ -50,6 +51,7 @@ export default function EditCharacterContent({
   characterId: string 
 }) {
   const router = useRouter()
+  const { startLoading } = useLoading()
   const { data: session } = useSession()
   const [character, setCharacter] = useState<Character | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -164,6 +166,7 @@ export default function EditCharacterContent({
       }
 
       toast.success('Cập nhật nhân vật thành công!')
+      startLoading()
       router.push(`/stories/${storyId}?tab=characters`)
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
@@ -183,6 +186,7 @@ export default function EditCharacterContent({
       }
 
       toast.success('Xóa nhân vật thành công!')
+      startLoading()
       router.push(`/stories/${storyId}?tab=characters`)
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
@@ -513,7 +517,10 @@ export default function EditCharacterContent({
           <Button 
             type="button" 
             variant="outline"
-            onClick={() => router.push(`/stories/${storyId}?tab=characters`)}
+            onClick={() => {
+              startLoading()
+              router.push(`/stories/${storyId}?tab=characters`)
+            }}
             className="w-full sm:w-auto sm:min-w-[120px]"
           >
             Hủy

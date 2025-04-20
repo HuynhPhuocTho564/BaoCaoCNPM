@@ -14,6 +14,7 @@ import { IdeaGenerator } from "@/components/story/IdeaGenerator"
 import { CoverImagePrompt } from "@/components/story/CoverImagePrompt"
 import Skeleton from "react-loading-skeleton"
 import "react-loading-skeleton/dist/skeleton.css"
+import { useLoading } from "@/providers/loading-provider"
 
 interface MainCategory {
   id: number
@@ -36,6 +37,7 @@ interface GeneratedIdea {
 
 export default function CreateStoryPage() {
   const router = useRouter()
+  const { startLoading } = useLoading()
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [mainCategories, setMainCategories] = useState<MainCategory[]>([])
@@ -139,6 +141,7 @@ export default function CreateStoryPage() {
       }
 
       toast.success('Tạo truyện mới thành công!')
+      startLoading()
       router.push('/stories')
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
@@ -327,7 +330,11 @@ export default function CreateStoryPage() {
                       <Badge
                         key={category.id}
                         variant={selectedMainCategory === category.id ? "default" : "outline"}
-                        className="cursor-pointer text-sm px-3 py-1 hover:bg-primary/10 hover:text-primary transition-colors"
+                        className={`cursor-pointer text-sm px-3 py-1 transition-colors ${
+                          selectedMainCategory === category.id 
+                            ? "hover:bg-primary/90" 
+                            : "hover:bg-primary/10 hover:text-primary"
+                        }`}
                         onClick={() => setSelectedMainCategory(category.id)}
                       >
                         {category.name}
@@ -346,7 +353,11 @@ export default function CreateStoryPage() {
                       <Badge
                         key={tag.id}
                         variant={selectedTags.includes(tag.id) ? "default" : "outline"}
-                        className="cursor-pointer text-sm px-3 py-1 hover:bg-primary/10 hover:text-primary transition-colors"
+                        className={`cursor-pointer text-sm px-3 py-1 transition-colors ${
+                          selectedTags.includes(tag.id)
+                            ? "hover:bg-primary/90"
+                            : "hover:bg-primary/10 hover:text-primary"
+                        }`}
                         onClick={() => toggleTag(tag.id)}
                       >
                         {tag.name}

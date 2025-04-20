@@ -10,10 +10,12 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { useLoading } from "@/providers/loading-provider"
 
 export function NotificationBell() {
   const { data: session } = useSession()
   const router = useRouter()
+  const { startLoading } = useLoading()
   const [notifications, setNotifications] = useState<any[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
 
@@ -68,6 +70,7 @@ export function NotificationBell() {
 
   const handleClick = (notification: any) => {
     handleMarkAsRead(notification.notification_id)
+    startLoading()
     router.push(`/library/${notification.story_id}/chapters/${notification.chapter_id}`)
   }
 

@@ -12,6 +12,7 @@ import {
 import { ChevronDown, LogOut, User, BookOpen, Settings } from 'lucide-react'
 import clsx from 'clsx'
 import { UserAvatar } from "@/components/user/user-avatar"
+import { useLoading } from "@/providers/loading-provider"
 
 interface UserMenuProps {
   isDarkTheme?: boolean;
@@ -23,10 +24,12 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
   const router = useRouter()
   const { data: session } = useSession()
   const [isOpen, setIsOpen] = React.useState(false)
+  const { startLoading } = useLoading()
 
   if (!session) return null
 
   const handleNavigation = (path: string) => {
+    startLoading()
     router.push(path)
     if (isMobile && onMobileMenuClose) {
       onMobileMenuClose()
@@ -34,6 +37,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
   }
 
   const handleSignOut = () => {
+    startLoading()
     if (isMobile && onMobileMenuClose) {
       onMobileMenuClose()
     }
@@ -116,7 +120,10 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
         className="w-56 p-1 border border-gray-200 dark:border-gray-700"
       >
         <DropdownMenuItem
-          onClick={() => router.push('/account')}
+          onClick={() => {
+            startLoading()
+            router.push('/account')
+          }}
           className="flex items-center px-3 py-2 cursor-pointer rounded hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           <User className="mr-2 h-4 w-4" />
@@ -124,7 +131,10 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
         </DropdownMenuItem>
         
         <DropdownMenuItem
-          onClick={() => router.push('/stories')}
+          onClick={() => {
+            startLoading()
+            router.push('/stories')
+          }}
           className="flex items-center px-3 py-2 cursor-pointer rounded hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           <BookOpen className="mr-2 h-4 w-4" />
@@ -132,7 +142,10 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
         </DropdownMenuItem>
 
         <DropdownMenuItem
-          onClick={() => router.push('/settings')}
+          onClick={() => {
+            startLoading()
+            router.push('/settings')
+          }}
           className="flex items-center px-3 py-2 cursor-pointer rounded hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           <Settings className="mr-2 h-4 w-4" />
@@ -142,7 +155,10 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
         <div className="my-1 h-px bg-gray-200 dark:bg-gray-700" />
 
         <DropdownMenuItem
-          onClick={() => signOut({ callbackUrl: '/' })}
+          onClick={() => {
+            startLoading()
+            signOut({ callbackUrl: '/' })
+          }}
           className="flex items-center px-3 py-2 text-red-600 dark:text-red-400 cursor-pointer rounded hover:bg-red-50 dark:hover:bg-red-900/10"
         >
           <LogOut className="mr-2 h-4 w-4" />

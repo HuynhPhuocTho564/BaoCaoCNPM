@@ -11,6 +11,7 @@ import { toast } from "sonner"
 import Image from "next/image"
 import Skeleton from "react-loading-skeleton"
 import "react-loading-skeleton/dist/skeleton.css"
+import { useLoading } from "@/providers/loading-provider"
 
 interface Story {
   story_id: number
@@ -26,6 +27,7 @@ interface Story {
 export default function StoriesPage() {
   const router = useRouter()
   const { data: session, status } = useSession()
+  const { startLoading } = useLoading()
   const [stories, setStories] = useState<Story[]>([])
   const [isLoadingStories, setIsLoadingStories] = useState(true)
 
@@ -87,7 +89,10 @@ export default function StoriesPage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-8 sm:mb-12">
             <h1 className="text-2xl sm:text-3xl font-bold">Truyện của tôi</h1>
             {session?.user && (
-              <Button onClick={() => router.push('/stories/create')} className="px-6">
+              <Button onClick={() => {
+                startLoading()
+                router.push('/stories/create')
+              }} className="px-6">
                 <Plus className="w-4 h-4 mr-3" />
                 Tạo truyện mới
               </Button>
@@ -202,7 +207,10 @@ export default function StoriesPage() {
                         variant="outline" 
                         size="sm"
                         className="flex-1 text-[10px] sm:text-xs h-6 sm:h-8 px-1.5 sm:px-3"
-                        onClick={() => router.push(`/stories/${story.story_id}/edit`)}
+                        onClick={() => {
+                          startLoading()
+                          router.push(`/stories/${story.story_id}/edit`)
+                        }}
                       >
                         Chỉnh sửa
                       </Button>
@@ -210,7 +218,10 @@ export default function StoriesPage() {
                         variant="outline"
                         size="sm"
                         className="flex-1 text-[10px] sm:text-xs h-6 sm:h-8 px-1.5 sm:px-3"
-                        onClick={() => router.push(`/stories/${story.story_id}`)}
+                        onClick={() => {
+                          startLoading()
+                          router.push(`/stories/${story.story_id}`)
+                        }}
                       >
                         Xem truyện
                       </Button>

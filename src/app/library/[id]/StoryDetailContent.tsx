@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import clsx from "clsx"
 import { useSession } from "next-auth/react"
+import { useLoading } from "@/providers/loading-provider"
 
 interface Story {
   story_id: number
@@ -55,6 +56,7 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
   const [story, setStory] = useState<Story | null>(null)
   const [chapters, setChapters] = useState<Chapter[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const { startLoading } = useLoading()
 
   useEffect(() => {
     const fetchStoryData = async () => {
@@ -120,6 +122,7 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
   const handleContinueReading = () => {
     const firstUnreadChapter = chapters.find(chapter => !chapter.is_read)
     if (firstUnreadChapter) {
+      startLoading()
       router.push(`/library/${storyId}/chapters/${firstUnreadChapter.chapter_id}`)
     }
   }
@@ -127,6 +130,7 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
   const handleStartReading = () => {
     const firstChapter = chapters[0]
     if (firstChapter) {
+      startLoading()
       router.push(`/library/${storyId}/chapters/${firstChapter.chapter_id}`)
     }
   }
@@ -344,7 +348,10 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
               <Card 
                 key={chapter.chapter_id}
                 className="cursor-pointer hover:border-primary/50 transition-colors"
-                onClick={() => router.push(`/library/${storyId}/chapters/${chapter.chapter_id}`)}
+                onClick={() => {
+                  startLoading()
+                  router.push(`/library/${storyId}/chapters/${chapter.chapter_id}`)
+                }}
               >
                 <CardHeader className="p-4">
                   <div className="flex items-center justify-between">

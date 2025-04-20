@@ -12,6 +12,7 @@ import Skeleton from "react-loading-skeleton"
 import "react-loading-skeleton/dist/skeleton.css"
 import { ChapterIdeaGenerator } from "@/components/chapter/ChapterIdeaGenerator"
 import { ChevronLeft, Sparkles } from "lucide-react"
+import { useLoading } from "@/providers/loading-provider"
 
 export default function CreateChapterContent({ 
   storyId 
@@ -19,6 +20,7 @@ export default function CreateChapterContent({
   storyId: string 
 }) {
   const router = useRouter()
+  const { startLoading } = useLoading()
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [storyTitle, setStoryTitle] = useState("")
@@ -120,6 +122,7 @@ export default function CreateChapterContent({
 
       toast.success('Tạo chương mới thành công!')
       // Chuyển hướng về đúng tab dựa vào status
+      startLoading()
       router.push(`/stories/${storyId}?tab=chapters&status=${status}`)
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
@@ -130,6 +133,7 @@ export default function CreateChapterContent({
 
   const handleCancel = () => {
     // Quay về tab chapters với status mặc định là draft
+    startLoading()
     router.push(`/stories/${storyId}?tab=chapters&status=draft`)
   }
 

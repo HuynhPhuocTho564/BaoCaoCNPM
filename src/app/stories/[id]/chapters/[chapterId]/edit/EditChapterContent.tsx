@@ -29,6 +29,7 @@ import Skeleton from "react-loading-skeleton"
 import "react-loading-skeleton/dist/skeleton.css"
 import { ChapterIdeaGenerator } from "@/components/chapter/ChapterIdeaGenerator"
 import { ChevronLeft, Sparkles } from "lucide-react"
+import { useLoading } from "@/providers/loading-provider"
 
 interface Chapter {
   chapter_id: number
@@ -49,6 +50,7 @@ export default function EditChapterContent({
   const [chapter, setChapter] = useState<Chapter | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingData, setIsLoadingData] = useState(true)
+  const { startLoading } = useLoading()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showIdeaGenerator, setShowIdeaGenerator] = useState(false)
   const [storyContext, setStoryContext] = useState<{
@@ -141,6 +143,7 @@ export default function EditChapterContent({
       }
 
       toast.success('Cập nhật chương thành công!')
+      startLoading()
       router.push(`/stories/${storyId}?tab=chapters&status=${data.chapter.status}`)
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
@@ -151,8 +154,10 @@ export default function EditChapterContent({
 
   const handleCancel = () => {
     if (chapter) {
+      startLoading()
       router.push(`/stories/${storyId}?tab=chapters&status=${chapter.status}`)
     } else {
+      startLoading()
       router.push(`/stories/${storyId}?tab=chapters`)
     }
   }
@@ -169,6 +174,7 @@ export default function EditChapterContent({
       }
 
       toast.success('Xóa chương thành công!')
+      startLoading()
       router.push(`/stories/${storyId}?tab=chapters&status=${chapter?.status}`)
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')

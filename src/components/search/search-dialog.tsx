@@ -6,6 +6,7 @@ import { Search, Loader2, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { StoryCard } from "../story-card"
 import { useDebounce } from "@/hooks/use-debounce"
+import { useLoading } from "@/providers/loading-provider"
 
 interface SearchDialogProps {
   open: boolean
@@ -14,6 +15,7 @@ interface SearchDialogProps {
 
 export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const router = useRouter()
+  const { startLoading } = useLoading()
   const [searchQuery, setSearchQuery] = React.useState("")
   const [stories, setStories] = React.useState([])
   const [isLoading, setIsLoading] = React.useState(false)
@@ -79,6 +81,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                   story={story}
                   variant="search"
                   onClick={() => {
+                    startLoading()
                     router.push(`/library/${story.story_id}`)
                     onOpenChange(false)
                   }}

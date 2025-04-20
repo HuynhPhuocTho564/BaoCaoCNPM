@@ -30,6 +30,7 @@ import { Suspense } from "react"
 import { ChevronLeft } from "lucide-react"
 import { IdeaGenerator } from "@/components/story/IdeaGenerator"
 import { CoverImagePrompt } from "@/components/story/CoverImagePrompt"
+import { useLoading } from "@/providers/loading-provider"
 
 interface MainCategory {
   id: number
@@ -63,6 +64,7 @@ interface GeneratedIdea {
 function EditStoryContent({ storyId }: { storyId: string }) {
   const router = useRouter()
   const { data: session } = useSession()
+  const { startLoading } = useLoading()
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [mainCategories, setMainCategories] = useState<MainCategory[]>([])
@@ -167,6 +169,7 @@ function EditStoryContent({ storyId }: { storyId: string }) {
       
       router.refresh()
       
+      startLoading()
       router.push('/stories')
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
@@ -188,6 +191,7 @@ function EditStoryContent({ storyId }: { storyId: string }) {
       }
 
       toast.success('Xóa truyện thành công')
+      startLoading()
       router.push('/stories')
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
@@ -520,7 +524,11 @@ function EditStoryContent({ storyId }: { storyId: string }) {
                       <Badge
                         key={category.id}
                         variant={selectedMainCategory === category.id ? "default" : "outline"}
-                        className="cursor-pointer text-sm px-3 py-1 hover:bg-primary/10 hover:text-primary transition-colors"
+                        className={`cursor-pointer text-sm px-3 py-1 transition-colors ${
+                          selectedMainCategory === category.id 
+                            ? "hover:bg-primary/90" 
+                            : "hover:bg-primary/10 hover:text-primary"
+                        }`}
                         onClick={() => setSelectedMainCategory(category.id)}
                       >
                         {category.name}
@@ -539,7 +547,11 @@ function EditStoryContent({ storyId }: { storyId: string }) {
                       <Badge
                         key={tag.id}
                         variant={selectedTags.includes(tag.id) ? "default" : "outline"}
-                        className="cursor-pointer text-sm px-3 py-1 hover:bg-primary/10 hover:text-primary transition-colors"
+                        className={`cursor-pointer text-sm px-3 py-1 transition-colors ${
+                          selectedTags.includes(tag.id)
+                            ? "hover:bg-primary/90"
+                            : "hover:bg-primary/10 hover:text-primary"
+                        }`}
                         onClick={() => toggleTag(tag.id)}
                       >
                         {tag.name}

@@ -23,6 +23,7 @@ import "react-loading-skeleton/dist/skeleton.css"
 import { ChevronLeft, Sparkles } from "lucide-react"
 import TextareaAutosize from 'react-textarea-autosize'
 import { OutlineIdeaGenerator } from "@/components/outline/OutlineIdeaGenerator"
+import { useLoading } from "@/providers/loading-provider"
 
 interface Story {
   title: string
@@ -53,6 +54,7 @@ export default function EditOutlineContent({
   outlineId: string 
 }) {
   const router = useRouter()
+  const { startLoading } = useLoading()
   const [outline, setOutline] = useState<Outline | null>(null)
   const [storyData, setStoryData] = useState<Story | null>(null)
   const [publishedChapters, setPublishedChapters] = useState<{
@@ -132,6 +134,7 @@ export default function EditOutlineContent({
       }
 
       toast.success('Cập nhật đại cương thành công!')
+      startLoading()
       router.push(`/stories/${storyId}?tab=outlines`)
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
@@ -141,6 +144,7 @@ export default function EditOutlineContent({
   }
 
   const handleCancel = () => {
+    startLoading()
     router.push(`/stories/${storyId}?tab=outlines`)
   }
 
@@ -156,6 +160,7 @@ export default function EditOutlineContent({
       }
 
       toast.success('Xóa đại cương thành công!')
+      startLoading()
       router.push(`/stories/${storyId}?tab=outlines`)
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')

@@ -28,6 +28,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { DialogueGenerator } from "@/components/ai/DialogueGenerator"
+import { useLoading } from "@/providers/loading-provider"
 
 interface Character {
   character_id: number
@@ -70,6 +71,7 @@ export default function WriteChapterContent({
   chapterId: string
 }) {
   const router = useRouter()
+  const { startLoading } = useLoading()
   const [characters, setCharacters] = useState<Character[]>([])
   const [dialogues, setDialogues] = useState<Dialogue[]>([])
   const [selectedCharacter, setSelectedCharacter] = useState<number | null>(null)
@@ -307,7 +309,10 @@ export default function WriteChapterContent({
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
           <Button
             variant="outline"
-            onClick={() => router.push(`/stories/${storyId}?tab=chapters`)}
+            onClick={() => {
+              startLoading()
+              router.push(`/stories/${storyId}?tab=chapters`)
+            }}
             className="flex items-center gap-2 w-full sm:w-auto"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -315,7 +320,10 @@ export default function WriteChapterContent({
           </Button>
           <Button
             variant="outline" 
-            onClick={() => router.push(`/stories/${storyId}?tab=characters`)}
+            onClick={() => {
+              startLoading()
+              router.push(`/stories/${storyId}?tab=characters`)
+            }}
             className="flex items-center gap-2 w-full sm:w-auto"
           >
             <Users className="w-4 h-4" />

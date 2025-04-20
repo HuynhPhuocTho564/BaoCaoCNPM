@@ -207,39 +207,77 @@ export async function DELETE(
         await GoogleDriveService.deleteFile(stories[0].cover_file_id);
       }
 
-      // Tiếp tục xóa các dữ liệu trong database
+      // Xóa theo thứ tự để tránh vi phạm ràng buộc khóa ngoại
+      
       // 1. Xóa lịch sử xem
       await connection.execute(
         'DELETE FROM view_history WHERE story_id = ?',
         [storyId]
       );
 
-      // 2. Xóa các đoạn hội thoại trong chương
+      // 2. Xóa thông báo
+      await connection.execute(
+        'DELETE FROM notifications WHERE story_id = ?',
+        [storyId]
+      );
+
+      // 3. Xóa bookmark
+      await connection.execute(
+        'DELETE FROM story_bookmarks WHERE story_id = ?',
+        [storyId]
+      );
+
+      // 4. Xóa yêu thích
+      await connection.execute(
+        'DELETE FROM story_favorites WHERE story_id = ?',
+        [storyId]
+      );
+
+      // 5. Xóa outline
+      await connection.execute(
+        'DELETE FROM story_outlines WHERE story_id = ?',
+        [storyId]
+      );
+
+      // 6. Xóa AI generated dialogues
+      await connection.execute(
+        'DELETE FROM ai_generated_dialogues WHERE story_id = ?',
+        [storyId]
+      );
+
+      // 7. Xóa các đoạn hội thoại trong chương
       await connection.execute(`
         DELETE cd FROM chapter_dialogues cd
         INNER JOIN story_chapters sc ON cd.chapter_id = sc.chapter_id
         WHERE sc.story_id = ?
       `, [storyId]);
 
-      // 3. Xóa các chương
+      // 8. Xóa chapter_reads
+      await connection.execute(`
+        DELETE cr FROM chapter_reads cr
+        INNER JOIN story_chapters sc ON cr.chapter_id = sc.chapter_id
+        WHERE sc.story_id = ?
+      `, [storyId]);
+
+      // 9. Xóa các chương
       await connection.execute(
         'DELETE FROM story_chapters WHERE story_id = ?',
         [storyId]
       );
 
-      // 4. Xóa các nhân vật
+      // 10. Xóa các nhân vật
       await connection.execute(
         'DELETE FROM story_characters WHERE story_id = ?',
         [storyId]
       );
 
-      // 5. Xóa quan hệ với tags
+      // 11. Xóa quan hệ với tags
       await connection.execute(
         'DELETE FROM story_tag_relations WHERE story_id = ?',
         [storyId]
       );
 
-      // 6. Cuối cùng xóa truyện
+      // 12. Cuối cùng xóa truyện
       await connection.execute(
         'DELETE FROM stories WHERE story_id = ?',
         [storyId]

@@ -7,6 +7,7 @@ import { ScrollToTop } from "@/components/scroll-to-top"
 import { Nav } from "@/components/nav/nav";
 import { Footer } from "@/components/footer";
 import { ChatBot } from "@/components/chat-bot";
+import { LoadingProvider } from "@/providers/loading-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,12 +35,14 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <Nav />
-          {children}
-          <Footer />
-          <Toaster richColors position="top-center" />
-          <ScrollToTop />
-          <ChatBot />
+          <LoadingProvider>
+            <Nav />
+            {children}
+            <Footer />
+            <Toaster richColors position="top-center" />
+            <ScrollToTop />
+            <ChatBot />
+          </LoadingProvider>
         </AuthProvider>
       </body>
     </html>

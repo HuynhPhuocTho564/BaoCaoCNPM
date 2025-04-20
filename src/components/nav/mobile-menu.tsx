@@ -15,6 +15,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { useRouter } from 'next/navigation'
+import { useLoading } from "@/providers/loading-provider"
 
 interface MobileMenuProps {
   items?: NavItem[];
@@ -30,9 +31,11 @@ const MobileMenuItem: React.FC<{
 }> = ({ item, isDarkTheme, onClose }) => {
   const router = useRouter()
   const [isOpen, setIsOpen] = React.useState(item.items && item.items.length > 0)
+  const { startLoading } = useLoading()
 
   const handleNavigation = (to?: string) => {
     if (to) {
+      startLoading()
       router.push(to)
       onClose?.()
     }

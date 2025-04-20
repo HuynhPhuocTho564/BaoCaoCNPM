@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { AuthClient } from '@/services/auth.client';
+import { useLoading } from '@/providers/loading-provider';
 
 function PaymentCallbackContent() {
   const searchParams = useSearchParams();
@@ -16,7 +17,7 @@ function PaymentCallbackContent() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'failed'>('loading');
   const [message, setMessage] = useState('Đang xử lý thanh toán...');
   const hasProcessed = useRef(false);
-
+  const { startLoading } = useLoading()
   useEffect(() => {
     const verifyPayment = async () => {
       if (hasProcessed.current) return;
@@ -110,7 +111,10 @@ function PaymentCallbackContent() {
           <div className="flex flex-col gap-2">
             <Button 
               className="w-full" 
-              onClick={() => router.push('/')}
+              onClick={() => {
+                startLoading()
+                router.push('/')
+              }}
               variant={status === 'success' ? 'default' : 'secondary'}
             >
               Về trang chủ

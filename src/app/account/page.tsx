@@ -8,6 +8,7 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import Skeleton from "react-loading-skeleton"
 import "react-loading-skeleton/dist/skeleton.css"
+import { useLoading } from "@/providers/loading-provider"
 
 interface ViewHistory {
   story_id: number
@@ -31,6 +32,7 @@ export default function AccountPage() {
   const [viewHistory, setViewHistory] = useState<ViewHistory[]>([])
   const [bookmarkedStories, setBookmarkedStories] = useState<BookmarkedStory[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const { startLoading } = useLoading()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -124,7 +126,10 @@ export default function AccountPage() {
               <Card 
                 key={story.story_id}
                 className="cursor-pointer hover:border-primary/50 transition-all"
-                onClick={() => router.push(`/library/${story.story_id}`)}
+                onClick={() => {
+                  startLoading()
+                  router.push(`/library/${story.story_id}`)
+                }}
               >
                 <div className="flex gap-4 p-4">
                   <div className="relative w-[80px] aspect-[3/4]">
@@ -180,7 +185,10 @@ export default function AccountPage() {
               <Card 
                 key={`${item.story_id}-${item.view_date}`}
                 className="cursor-pointer hover:border-primary/50 transition-all"
-                onClick={() => router.push(`/library/${item.story_id}`)}
+                onClick={() => {
+                  startLoading()
+                  router.push(`/library/${item.story_id}`)
+                }}
               >
                 <div className="flex gap-4 p-4">
                   <div className="relative w-[80px] aspect-[3/4]">

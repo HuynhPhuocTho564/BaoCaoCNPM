@@ -2,6 +2,7 @@ import * as React from "react"
 import clsx from 'clsx'
 import { NavItem } from "./types"
 import { useRouter } from 'next/navigation'
+import { useLoading } from "@/providers/loading-provider"
 
 const ChevronIcon = () => (
   <svg
@@ -18,9 +19,11 @@ const ChevronIcon = () => (
 
 export const Navigation: React.FC<{ isDarkTheme?: boolean; items: NavItem[] }> = ({ isDarkTheme, items }) => {
   const router = useRouter()
+  const { startLoading } = useLoading()
 
   const handleNavigation = (to?: string) => {
     if (to) {
+      startLoading()
       router.push(to)
     }
   }

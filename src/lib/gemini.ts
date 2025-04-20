@@ -3,11 +3,12 @@ import {
   HarmCategory,
   HarmBlockThreshold,
 } from "@google/generative-ai";
-import { SYSTEM_PROMPTS, createStoryPrompt, createEditStoryPrompt, createCharacterPrompt, createEditCharacterPrompt, createCoverImagePrompt, createAvatarPrompt, createDialoguePrompt, createChapterPrompt, createEditChapterPrompt, createOutlinePrompt, createEditOutlinePrompt } from './gemini-prompts';
+import { SYSTEM_PROMPTS, createStoryPrompt, createEditStoryPrompt, createCharacterPrompt, createEditCharacterPrompt, createCoverImagePrompt, createAvatarPrompt, createDialoguePrompt, createChapterPrompt, createEditChapterPrompt, createOutlinePrompt, createEditOutlinePrompt, createSearchPrompt } from './gemini-prompts';
 
 let apiKey: string | null = null;
 
 async function getApiKey() {
+  // Nếu chạy trên client, gọi API để lấy key
   if (!apiKey) {
     const response = await fetch('/api/ai/gemini');
     if (!response.ok) {
@@ -105,6 +106,16 @@ interface StoryContext {
 interface OutlineIdea {
   title: string;
   description: string;
+}
+
+interface SearchResult {
+  story_id: number;
+  relevance_score: number;
+  reason: string;
+}
+
+interface SearchResponse {
+  results: SearchResult[];
 }
 
 export async function generateStoryIdea(userPrompt: string, categories: string[], tags: string[]): Promise<StoryIdea> {
@@ -639,6 +650,56 @@ export async function generateOutlineEdit(
     return editedOutline;
   } catch (error) {
     console.error("Lỗi khi chỉnh sửa đại cương:", error);
+    throw error;
+  }
+}
+
+export async function searchStoriesWithAI(
+  query: string,
+  stories: {
+    story_id: number;
+    title: string;
+    description: string;
+    main_category: string;
+    tags: string[];
+  }[]
+): Promise<SearchResult[]> {
+  try {
+    const key = await getApiKey();
+    const genAI = new GoogleGenerativeAI(key!);
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash",
+      safetySettings,
+      generationConfig,
+      systemInstruction: SYSTEM_PROMPTS.SEARCH
+    });
+    
+    const chat = model.startChat({
+      history: [
+        createSearchPrompt(stories)
+      ],
+    });
+
+    const result = await chat.sendMessage([{ text: query }]);
+    const response = result.response.text();
+    
+    const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
+    const jsonString = jsonMatch ? jsonMatch[1] : response;
+    
+    let searchResults: SearchResponse;
+    try {
+      searchResults = JSON.parse(jsonString);
+      if (!Array.isArray(searchResults.results)) {
+        throw new Error('Dữ liệu không hợp lệ');
+      }
+    } catch (parseError) {
+      console.error("Lỗi khi parse JSON:", parseError);
+      throw new Error('Không thể xử lý phản hồi từ AI');
+    }
+    
+    return searchResults.results;
+  } catch (error) {
+    console.error("Lỗi khi tìm kiếm:", error);
     throw error;
   }
 } 

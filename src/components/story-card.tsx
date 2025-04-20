@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { BookOpenText, Eye, Heart } from "lucide-react"
 import { useState, useEffect } from "react"
+import { useLoading } from "@/providers/loading-provider"
 
 interface StoryCardProps {
   story: {
@@ -15,13 +16,18 @@ interface StoryCardProps {
     view_count: number
     favorite_count: number
     updated_at: string
+    relevance_score?: number
+    match_reason?: string
+    tags?: string[]
   }
   onClick?: () => void
   variant?: 'default' | 'search'
+  showRelevance?: boolean
 }
 
-export function StoryCard({ story, onClick, variant = 'default' }: StoryCardProps) {
+export function StoryCard({ story, onClick, variant = 'default', showRelevance = false }: StoryCardProps) {
   const router = useRouter()
+  const { startLoading } = useLoading()
   const [favoriteCount, setFavoriteCount] = useState(story.favorite_count)
 
   useEffect(() => {
@@ -48,12 +54,13 @@ export function StoryCard({ story, onClick, variant = 'default' }: StoryCardProp
       await fetch(`/api/library/${story.story_id}/view`, {
         method: 'POST',
       })
-      
+      startLoading()
       // Chuyển hướng đến trang chi tiết
       router.push(`/library/${story.story_id}`)
     } catch (error) {
       console.error('Lỗi khi cập nhật lượt xem:', error)
       // Vẫn chuyển hướng ngay cả khi không cập nhật được lượt xem
+      startLoading()
       router.push(`/library/${story.story_id}`)
     }
   }
@@ -141,6 +148,35 @@ export function StoryCard({ story, onClick, variant = 'default' }: StoryCardProp
           </div>
         </div>
       </CardFooter>
+
+      {showRelevance && story.relevance_score !== undefined && (
+        <div className="p-4 pt-0 mt-auto">
+          <div className="flex items-center justify-between w-full">
+            <span className="text-sm text-gray-600">
+              Độ phù hợp:
+            </span>
+            <span className="font-medium">{story.relevance_score}%</span>
+          </div>
+          {story.match_reason && (
+            <p className="text-sm text-gray-600 italic">
+              &quot;{story.match_reason}&quot;
+            </p>
+          )}
+        </div>
+      )}
+
+      <div className="p-4 pt-0 mt-auto">
+        <div className="flex flex-wrap gap-1">
+          {story.tags?.map((tag: string) => (
+            <span
+              key={tag}
+              className="px-2 py-1 text-xs bg-gray-100 rounded-full"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
     </Card>
   )
 } 

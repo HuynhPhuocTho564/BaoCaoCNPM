@@ -10,6 +10,7 @@ import { NotificationBell } from "../notification/NotificationBell"
 import { Button } from "@/components/ui/button"
 import { Search } from "lucide-react"
 import { SearchDialog } from "../search/search-dialog"
+import { useLoading } from "@/providers/loading-provider"
 
 // Sample menu items
 const menuItems = [
@@ -64,7 +65,8 @@ const Nav = () => {
   const router = useRouter()
   const [theme, setTheme] = React.useState<'light' | 'dark'>('light')
   const [searchOpen, setSearchOpen] = React.useState(false)
-  
+  const { startLoading } = useLoading()
+
   React.useEffect(() => {
     // Get initial theme from localStorage or system preference
     const savedTheme = localStorage.getItem('theme') || 'light'
@@ -80,6 +82,7 @@ const Nav = () => {
   }
 
   const handleLogoClick = () => {
+    startLoading()
     router.push('/')
   }
   

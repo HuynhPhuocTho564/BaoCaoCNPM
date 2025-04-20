@@ -13,6 +13,7 @@ import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import Skeleton from "react-loading-skeleton"
 import "react-loading-skeleton/dist/skeleton.css"
+import { useLoading } from "@/providers/loading-provider"
 
 interface Character {
   character_id: number
@@ -53,6 +54,7 @@ interface Outline {
 export default function StoryDetailContent({ storyId }: { storyId: string }) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { startLoading } = useLoading()
   const { data: session } = useSession()
   const [story, setStory] = useState<Story | null>(null)
   const [chapters, setChapters] = useState<Chapter[]>([])
@@ -161,7 +163,10 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
       <div className="flex items-center gap-4 mb-8">
         <Button
           variant="outline"
-          onClick={() => router.push('/stories')}
+          onClick={() => {
+            startLoading()
+            router.push('/stories')
+          }}
           className="flex items-center gap-2"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -188,7 +193,10 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
             )}
           </div>
           <Button 
-            onClick={() => router.push(`/stories/${storyId}/edit`)}
+            onClick={() => {
+              startLoading()
+              router.push(`/stories/${storyId}/edit`)
+            }}
             className="w-full"
           >
             Chỉnh sửa truyện
@@ -245,8 +253,10 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
       <Tabs defaultValue={currentTab} className="w-full" onValueChange={(value) => {
         // Khi chuyển tab, giữ nguyên status nếu đang ở tab chapters
         if (value === 'chapters') {
+          startLoading()
           router.push(`/stories/${storyId}?tab=${value}&status=${currentStatus}`, { scroll: false })
         } else {
+          startLoading()
           router.push(`/stories/${storyId}?tab=${value}`, { scroll: false })
         }
       }}>
@@ -258,11 +268,15 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
 
         <TabsContent value="chapters">
           <Tabs defaultValue={currentStatus} className="w-full" onValueChange={(value) => {
+            startLoading()
             router.push(`/stories/${storyId}?tab=chapters&status=${value}`, { scroll: false })
           }}>
             <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
               <h2 className="text-xl sm:text-2xl font-semibold">Các chương truyện</h2>
-              <Button onClick={() => router.push(`/stories/${storyId}/chapters/create`)}>
+              <Button onClick={() => {
+                startLoading()
+                router.push(`/stories/${storyId}/chapters/create`)
+              }}>
                 <Plus className="w-4 h-4 mr-2" />
                 Thêm chương mới
               </Button>
@@ -303,14 +317,20 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
                           <Button 
                             variant="outline" 
                             className="flex-1 text-xs sm:text-sm h-8 sm:h-9"
-                            onClick={() => router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}/edit`)}
+                            onClick={() => {
+                              startLoading()
+                              router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}/edit`)
+                            }}
                           >
                             Chỉnh sửa
                           </Button>
                           <Button
                             variant="default"
                             className="flex-1 text-xs sm:text-sm h-8 sm:h-9"
-                            onClick={() => router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}/write`)}
+                            onClick={() => {
+                              startLoading()
+                              router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}/write`)
+                            }}
                           >
                             Viết truyện
                           </Button>
@@ -351,14 +371,20 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
                           <Button 
                             variant="outline" 
                             className="w-full"
-                            onClick={() => router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}/edit`)}
+                            onClick={() => {
+                              startLoading()
+                              router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}/edit`)
+                            }}
                           >
                             Chỉnh sửa
                           </Button>
                           <Button
                             variant="default"
                             className="w-full" 
-                            onClick={() => router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}/write`)}
+                            onClick={() => {
+                              startLoading()
+                              router.push(`/stories/${storyId}/chapters/${chapter.chapter_id}/write`)
+                            }}
                           >
                             Viết truyện
                           </Button>
@@ -377,7 +403,10 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
               <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
                 <h2 className="text-xl sm:text-2xl font-semibold">Nhân vật chính</h2>
                 {!characters.some(c => c.role === 'main') && (
-                  <Button onClick={() => router.push(`/stories/${storyId}/characters/create?role=main`)}>
+                  <Button onClick={() => {
+                    startLoading()
+                    router.push(`/stories/${storyId}/characters/create?role=main`)
+                  }}>
                     <Plus className="w-4 h-4 mr-2" />
                     Thêm nhân vật chính
                   </Button>
@@ -414,7 +443,10 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
                       <Button 
                         variant="outline" 
                         className="w-full sm:w-auto mt-3 sm:mt-0 sm:ml-4 text-xs sm:text-sm h-8 sm:h-9"
-                        onClick={() => router.push(`/stories/${storyId}/characters/${character.character_id}/edit`)}
+                        onClick={() => {
+                          startLoading()
+                          router.push(`/stories/${storyId}/characters/${character.character_id}/edit`)
+                        }}
                       >
                         Chỉnh sửa
                       </Button>
@@ -427,7 +459,10 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
             <div>
               <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
                 <h2 className="text-xl sm:text-2xl font-semibold">Nhân vật phụ</h2>
-                <Button onClick={() => router.push(`/stories/${storyId}/characters/create?role=supporting`)}>
+                <Button onClick={() => {
+                  startLoading()
+                  router.push(`/stories/${storyId}/characters/create?role=supporting`)
+                }}>
                   <Plus className="w-4 h-4 mr-2" />
                   Thêm nhân vật phụ
                 </Button>
@@ -466,7 +501,10 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
                         <Button 
                           variant="outline" 
                           className="w-full text-xs sm:text-sm h-8 sm:h-9"
-                          onClick={() => router.push(`/stories/${storyId}/characters/${character.character_id}/edit`)}
+                          onClick={() => {
+                            startLoading()
+                            router.push(`/stories/${storyId}/characters/${character.character_id}/edit`)
+                          }}
                         >
                           Chỉnh sửa
                         </Button>
@@ -483,7 +521,10 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
           <div className="space-y-6">
             <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
               <h2 className="text-xl sm:text-2xl font-semibold">Đại cương truyện</h2>
-              <Button onClick={() => router.push(`/stories/${storyId}/outlines/create`)}>
+              <Button onClick={() => {
+                startLoading()
+                router.push(`/stories/${storyId}/outlines/create`)
+              }}>
                 <Plus className="w-4 h-4 mr-2" />
                 Thêm đại cương
               </Button>
@@ -507,7 +548,10 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
                       <Button 
                         variant="outline" 
                         className="w-full"
-                        onClick={() => router.push(`/stories/${storyId}/outlines/${outline.outline_id}/edit`)}
+                        onClick={() => {
+                          startLoading()
+                          router.push(`/stories/${storyId}/outlines/${outline.outline_id}/edit`)
+                        }}
                       >
                         Chỉnh sửa
                       </Button>
