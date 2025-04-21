@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react"
+import { createContext, useContext, useState, useEffect, useCallback, useRef, Suspense } from "react"
 import { usePathname, useSearchParams } from "next/navigation"
 import LoadingPage from "@/components/loading-page"
 
@@ -17,7 +17,7 @@ const LoadingContext = createContext<LoadingContextType>({
   stopLoading: () => {},
 })
 
-export function LoadingProvider({ children }: { children: React.ReactNode }) {
+function LoadingProviderContent({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false)
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -64,6 +64,14 @@ export function LoadingProvider({ children }: { children: React.ReactNode }) {
       {isLoading && <LoadingPage />}
       {children}
     </LoadingContext.Provider>
+  )
+}
+
+export function LoadingProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense>
+      <LoadingProviderContent>{children}</LoadingProviderContent>
+    </Suspense>
   )
 }
 
