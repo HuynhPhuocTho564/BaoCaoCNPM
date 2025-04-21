@@ -122,7 +122,7 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
   const handleContinueReading = () => {
     const firstUnreadChapter = chapters.find(chapter => !chapter.is_read)
     if (firstUnreadChapter) {
-      startLoading()
+      startLoading(`/library/${storyId}/chapters/${firstUnreadChapter.chapter_id}`)
       router.push(`/library/${storyId}/chapters/${firstUnreadChapter.chapter_id}`)
     }
   }
@@ -130,7 +130,7 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
   const handleStartReading = () => {
     const firstChapter = chapters[0]
     if (firstChapter) {
-      startLoading()
+      startLoading(`/library/${storyId}/chapters/${firstChapter.chapter_id}`)
       router.push(`/library/${storyId}/chapters/${firstChapter.chapter_id}`)
     }
   }
@@ -349,7 +349,7 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
                 key={chapter.chapter_id}
                 className="cursor-pointer hover:border-primary/50 transition-colors"
                 onClick={() => {
-                  startLoading()
+                  startLoading(`/library/${storyId}/chapters/${chapter.chapter_id}`)
                   router.push(`/library/${storyId}/chapters/${chapter.chapter_id}`)
                 }}
               >

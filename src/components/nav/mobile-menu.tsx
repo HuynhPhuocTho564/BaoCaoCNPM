@@ -35,7 +35,7 @@ const MobileMenuItem: React.FC<{
 
   const handleNavigation = (to?: string) => {
     if (to) {
-      startLoading()
+      startLoading(to)
       router.push(to)
       onClose?.()
     }

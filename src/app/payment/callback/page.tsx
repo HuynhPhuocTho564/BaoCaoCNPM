@@ -112,7 +112,7 @@ function PaymentCallbackContent() {
             <Button 
               className="w-full" 
               onClick={() => {
-                startLoading()
+                startLoading('/')
                 router.push('/')
               }}
               variant={status === 'success' ? 'default' : 'secondary'}

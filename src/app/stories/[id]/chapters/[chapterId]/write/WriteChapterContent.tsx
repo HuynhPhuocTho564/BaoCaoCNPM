@@ -310,7 +310,7 @@ export default function WriteChapterContent({
           <Button
             variant="outline"
             onClick={() => {
-              startLoading()
+              startLoading(`/stories/${storyId}?tab=chapters`)
               router.push(`/stories/${storyId}?tab=chapters`)
             }}
             className="flex items-center gap-2 w-full sm:w-auto"
@@ -321,7 +321,7 @@ export default function WriteChapterContent({
           <Button
             variant="outline" 
             onClick={() => {
-              startLoading()
+              startLoading(`/stories/${storyId}?tab=characters`)
               router.push(`/stories/${storyId}?tab=characters`)
             }}
             className="flex items-center gap-2 w-full sm:w-auto"

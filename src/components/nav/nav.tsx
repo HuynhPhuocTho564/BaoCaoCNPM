@@ -82,7 +82,7 @@ const Nav = () => {
   }
 
   const handleLogoClick = () => {
-    startLoading()
+    startLoading('/')
     router.push('/')
   }
   

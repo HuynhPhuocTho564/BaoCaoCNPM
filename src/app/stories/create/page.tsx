@@ -141,7 +141,7 @@ export default function CreateStoryPage() {
       }
 
       toast.success('Tạo truyện mới thành công!')
-      startLoading()
+      startLoading('/stories')
       router.push('/stories')
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')

@@ -121,7 +121,7 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
       }
 
       toast.success('Tạo nhân vật thành công!')
-      startLoading()
+      startLoading(`/stories/${storyId}?tab=characters`)
       router.push(`/stories/${storyId}?tab=characters`)
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
@@ -445,7 +445,7 @@ export default function CreateCharacterContent({ storyId }: { storyId: string })
                 type="button" 
                 variant="outline"
                 onClick={() => {
-                  startLoading()
+                  startLoading(`/stories/${storyId}?tab=characters`)
                   router.push(`/stories/${storyId}?tab=characters`)
                 }}
                 className="min-w-[120px]"

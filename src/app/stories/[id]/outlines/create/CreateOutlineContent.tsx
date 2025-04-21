@@ -91,7 +91,7 @@ export default function CreateOutlineContent({
       }
 
       toast.success('Tạo đại cương mới thành công!')
-      startLoading()
+      startLoading(`/stories/${storyId}?tab=outlines`)
       router.push(`/stories/${storyId}?tab=outlines`)
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
@@ -101,7 +101,7 @@ export default function CreateOutlineContent({
   }
 
   const handleCancel = () => {
-    startLoading()
+    startLoading(`/stories/${storyId}?tab=outlines`)
     router.push(`/stories/${storyId}?tab=outlines`)
   }
 

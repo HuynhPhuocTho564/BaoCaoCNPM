@@ -29,7 +29,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
   if (!session) return null
 
   const handleNavigation = (path: string) => {
-    startLoading()
+    startLoading(path)
     router.push(path)
     if (isMobile && onMobileMenuClose) {
       onMobileMenuClose()
@@ -37,7 +37,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
   }
 
   const handleSignOut = () => {
-    startLoading()
+    startLoading('/')
     if (isMobile && onMobileMenuClose) {
       onMobileMenuClose()
     }
@@ -121,7 +121,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
       >
         <DropdownMenuItem
           onClick={() => {
-            startLoading()
+            startLoading('/account')
             router.push('/account')
           }}
           className="flex items-center px-3 py-2 cursor-pointer rounded hover:bg-gray-50 dark:hover:bg-gray-800"
@@ -132,7 +132,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
         
         <DropdownMenuItem
           onClick={() => {
-            startLoading()
+            startLoading('/stories')
             router.push('/stories')
           }}
           className="flex items-center px-3 py-2 cursor-pointer rounded hover:bg-gray-50 dark:hover:bg-gray-800"
@@ -143,7 +143,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
 
         <DropdownMenuItem
           onClick={() => {
-            startLoading()
+            startLoading('/settings')
             router.push('/settings')
           }}
           className="flex items-center px-3 py-2 cursor-pointer rounded hover:bg-gray-50 dark:hover:bg-gray-800"
@@ -156,7 +156,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
 
         <DropdownMenuItem
           onClick={() => {
-            startLoading()
+            startLoading('/')
             signOut({ callbackUrl: '/' })
           }}
           className="flex items-center px-3 py-2 text-red-600 dark:text-red-400 cursor-pointer rounded hover:bg-red-50 dark:hover:bg-red-900/10"

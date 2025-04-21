@@ -90,7 +90,7 @@ export default function StoriesPage() {
             <h1 className="text-2xl sm:text-3xl font-bold">Truyện của tôi</h1>
             {session?.user && (
               <Button onClick={() => {
-                startLoading()
+                startLoading('/stories/create')
                 router.push('/stories/create')
               }} className="px-6">
                 <Plus className="w-4 h-4 mr-3" />
@@ -208,7 +208,7 @@ export default function StoriesPage() {
                         size="sm"
                         className="flex-1 text-[10px] sm:text-xs h-6 sm:h-8 px-1.5 sm:px-3"
                         onClick={() => {
-                          startLoading()
+                          startLoading(`/stories/${story.story_id}/edit`)
                           router.push(`/stories/${story.story_id}/edit`)
                         }}
                       >
@@ -219,7 +219,7 @@ export default function StoriesPage() {
                         size="sm"
                         className="flex-1 text-[10px] sm:text-xs h-6 sm:h-8 px-1.5 sm:px-3"
                         onClick={() => {
-                          startLoading()
+                          startLoading(`/stories/${story.story_id}`)
                           router.push(`/stories/${story.story_id}`)
                         }}
                       >

@@ -70,7 +70,7 @@ export function NotificationBell() {
 
   const handleClick = (notification: any) => {
     handleMarkAsRead(notification.notification_id)
-    startLoading()
+    startLoading(`/library/${notification.story_id}/chapters/${notification.chapter_id}`)
     router.push(`/library/${notification.story_id}/chapters/${notification.chapter_id}`)
   }
 

@@ -81,7 +81,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                   story={story}
                   variant="search"
                   onClick={() => {
-                    startLoading()
+                    startLoading(`/library/${story.story_id}`)
                     router.push(`/library/${story.story_id}`)
                     onOpenChange(false)
                   }}

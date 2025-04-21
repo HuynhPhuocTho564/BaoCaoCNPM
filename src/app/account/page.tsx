@@ -127,7 +127,7 @@ export default function AccountPage() {
                 key={story.story_id}
                 className="cursor-pointer hover:border-primary/50 transition-all"
                 onClick={() => {
-                  startLoading()
+                  startLoading(`/library/${story.story_id}`)
                   router.push(`/library/${story.story_id}`)
                 }}
               >
@@ -186,7 +186,7 @@ export default function AccountPage() {
                 key={`${item.story_id}-${item.view_date}`}
                 className="cursor-pointer hover:border-primary/50 transition-all"
                 onClick={() => {
-                  startLoading()
+                  startLoading(`/library/${item.story_id}`)
                   router.push(`/library/${item.story_id}`)
                 }}
               >

@@ -169,7 +169,7 @@ function EditStoryContent({ storyId }: { storyId: string }) {
       
       router.refresh()
       
-      startLoading()
+      startLoading('/stories')
       router.push('/stories')
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
@@ -191,7 +191,7 @@ function EditStoryContent({ storyId }: { storyId: string }) {
       }
 
       toast.success('Xóa truyện thành công')
-      startLoading()
+      startLoading('/stories')
       router.push('/stories')
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')

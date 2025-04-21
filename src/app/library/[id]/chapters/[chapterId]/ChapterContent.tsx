@@ -209,7 +209,7 @@ export default function ChapterContent({
               <button
                 key={c.chapter_id}
                 onClick={() => {
-                  startLoading()
+                  startLoading(`/library/${storyId}/chapters/${c.chapter_id}`)
                   router.push(`/library/${storyId}/chapters/${c.chapter_id}`)
                 }}
                 className={clsx(
@@ -246,7 +246,7 @@ export default function ChapterContent({
                 <button
                   key={c.chapter_id}
                   onClick={() => {
-                    startLoading()
+                    startLoading(`/library/${storyId}/chapters/${c.chapter_id}`)
                     router.push(`/library/${storyId}/chapters/${c.chapter_id}`)
                     setIsSidebarOpen(false)
                   }}
@@ -279,7 +279,7 @@ export default function ChapterContent({
           <Button
             variant="outline"
             onClick={() => {
-              startLoading()
+              startLoading(`/library/${storyId}`)
               router.push(`/library/${storyId}`)
             }}
             className="mb-8"
@@ -390,7 +390,7 @@ export default function ChapterContent({
             {prevChapter ? (
               <Button
                 onClick={() => {
-                  startLoading()
+                  startLoading(`/library/${storyId}/chapters/${prevChapter.chapter_id}`)
                   router.push(`/library/${storyId}/chapters/${prevChapter.chapter_id}`)
                 }}
                 className="flex items-center"
@@ -405,7 +405,7 @@ export default function ChapterContent({
             {nextChapter ? (
               <Button
                 onClick={() => {
-                  startLoading()
+                  startLoading(`/library/${storyId}/chapters/${nextChapter.chapter_id}`)
                   router.push(`/library/${storyId}/chapters/${nextChapter.chapter_id}`)
                 }}
                 className="flex items-center"

@@ -143,7 +143,7 @@ export default function EditChapterContent({
       }
 
       toast.success('Cập nhật chương thành công!')
-      startLoading()
+      startLoading(`/stories/${storyId}?tab=chapters&status=${data.chapter.status}`)
       router.push(`/stories/${storyId}?tab=chapters&status=${data.chapter.status}`)
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
@@ -154,10 +154,10 @@ export default function EditChapterContent({
 
   const handleCancel = () => {
     if (chapter) {
-      startLoading()
+      startLoading(`/stories/${storyId}?tab=chapters&status=${chapter.status}`)
       router.push(`/stories/${storyId}?tab=chapters&status=${chapter.status}`)
     } else {
-      startLoading()
+      startLoading(`/stories/${storyId}?tab=chapters`)
       router.push(`/stories/${storyId}?tab=chapters`)
     }
   }
@@ -174,7 +174,7 @@ export default function EditChapterContent({
       }
 
       toast.success('Xóa chương thành công!')
-      startLoading()
+      startLoading(`/stories/${storyId}?tab=chapters&status=${chapter?.status}`)
       router.push(`/stories/${storyId}?tab=chapters&status=${chapter?.status}`)
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')

@@ -134,7 +134,7 @@ export default function EditOutlineContent({
       }
 
       toast.success('Cập nhật đại cương thành công!')
-      startLoading()
+      startLoading(`/stories/${storyId}?tab=outlines`)
       router.push(`/stories/${storyId}?tab=outlines`)
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
@@ -144,7 +144,7 @@ export default function EditOutlineContent({
   }
 
   const handleCancel = () => {
-    startLoading()
+    startLoading(`/stories/${storyId}?tab=outlines`)
     router.push(`/stories/${storyId}?tab=outlines`)
   }
 
@@ -160,7 +160,7 @@ export default function EditOutlineContent({
       }
 
       toast.success('Xóa đại cương thành công!')
-      startLoading()
+      startLoading(`/stories/${storyId}?tab=outlines`)
       router.push(`/stories/${storyId}?tab=outlines`)
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')

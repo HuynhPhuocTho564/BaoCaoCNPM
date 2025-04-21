@@ -54,13 +54,13 @@ export function StoryCard({ story, onClick, variant = 'default', showRelevance =
       await fetch(`/api/library/${story.story_id}/view`, {
         method: 'POST',
       })
-      startLoading()
+      startLoading(`/library/${story.story_id}`)
       // Chuyển hướng đến trang chi tiết
       router.push(`/library/${story.story_id}`)
     } catch (error) {
       console.error('Lỗi khi cập nhật lượt xem:', error)
       // Vẫn chuyển hướng ngay cả khi không cập nhật được lượt xem
-      startLoading()
+      startLoading(`/library/${story.story_id}`)
       router.push(`/library/${story.story_id}`)
     }
   }

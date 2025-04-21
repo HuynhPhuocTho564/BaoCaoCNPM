@@ -23,7 +23,7 @@ export const Navigation: React.FC<{ isDarkTheme?: boolean; items: NavItem[] }> =
 
   const handleNavigation = (to?: string) => {
     if (to) {
-      startLoading()
+      startLoading(to)
       router.push(to)
     }
   }

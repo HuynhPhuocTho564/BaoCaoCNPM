@@ -122,7 +122,7 @@ export default function CreateChapterContent({
 
       toast.success('Tạo chương mới thành công!')
       // Chuyển hướng về đúng tab dựa vào status
-      startLoading()
+      startLoading(`/stories/${storyId}?tab=chapters&status=${status}`)
       router.push(`/stories/${storyId}?tab=chapters&status=${status}`)
     } catch (error: any) {
       toast.error(error.message || 'Đã có lỗi xảy ra')
@@ -133,7 +133,7 @@ export default function CreateChapterContent({
 
   const handleCancel = () => {
     // Quay về tab chapters với status mặc định là draft
-    startLoading()
+    startLoading(`/stories/${storyId}?tab=chapters&status=draft`)
     router.push(`/stories/${storyId}?tab=chapters&status=draft`)
   }
 
