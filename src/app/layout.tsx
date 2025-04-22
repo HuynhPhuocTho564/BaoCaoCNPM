@@ -8,6 +8,7 @@ import { Nav } from "@/components/nav/nav";
 import { Footer } from "@/components/footer";
 import { ChatBot } from "@/components/chat-bot";
 import { LoadingProvider } from "@/providers/loading-provider";
+import { CustomCursor } from '@/components/custom-cursor'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,7 @@ export default function RootLayout({
             <Toaster richColors position="top-center" />
             <ScrollToTop />
             <ChatBot />
+            <CustomCursor />
           </LoadingProvider>
         </AuthProvider>
       </body>

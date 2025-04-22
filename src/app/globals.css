@@ -66,6 +66,7 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    cursor: none;
   }
   body {
     @apply bg-background text-foreground;
@@ -144,4 +145,24 @@
 
 .animate-gradient-xy {
   animation: gradient-xy 3s ease infinite;
+}
+
+/* Ẩn con trỏ mặc định cho tất cả phần tử */
+*, 
+*:hover {
+  cursor: none !important;
+}
+
+.cursor-dot {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.cursor-dot.hover {
+  transform: rotate(-45deg) scale(1.2);
 }
