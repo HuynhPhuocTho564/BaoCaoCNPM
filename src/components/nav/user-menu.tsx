@@ -66,7 +66,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
           <div className="mt-1 bg-gray-50 dark:bg-[#1C1D21] rounded-lg">
             <button
               onClick={() => handleNavigation('/account')}
-              className="flex w-full items-center px-6 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+              className="flex w-full items-center px-6 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer"
             >
               <User className="mr-2 h-4 w-4" />
               <span>Tài khoản của tôi</span>
@@ -74,7 +74,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
 
             <button
               onClick={() => handleNavigation('/stories')}
-              className="flex w-full items-center px-6 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+              className="flex w-full items-center px-6 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer"
             >
               <BookOpen className="mr-2 h-4 w-4" />
               <span>Truyện của tôi</span>
@@ -82,7 +82,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
 
             <button
               onClick={() => handleNavigation('/settings')}
-              className="flex w-full items-center px-6 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+              className="flex w-full items-center px-6 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer"
             >
               <Settings className="mr-2 h-4 w-4" />
               <span>Cài đặt</span>
@@ -92,7 +92,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
 
             <button
               onClick={handleSignOut}
-              className="flex w-full items-center px-6 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg"
+              className="flex w-full items-center px-6 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg cursor-pointer"
             >
               <LogOut className="mr-2 h-4 w-4" />
               <span>Đăng xuất</span>
@@ -106,7 +106,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger className={clsx(
-        "flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800",
+        "flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800",
         isDarkTheme ? 'text-white' : 'text-gray-900'
       )}>
         <UserAvatar />
@@ -124,7 +124,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
             startLoading('/account')
             router.push('/account')
           }}
-          className="flex items-center px-3 py-2 cursor-pointer rounded hover:bg-gray-50 dark:hover:bg-gray-800"
+          className="flex items-center px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
         >
           <User className="mr-2 h-4 w-4" />
           <span>Tài khoản của tôi</span>
@@ -135,7 +135,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
             startLoading('/stories')
             router.push('/stories')
           }}
-          className="flex items-center px-3 py-2 cursor-pointer rounded hover:bg-gray-50 dark:hover:bg-gray-800"
+          className="flex items-center px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
         >
           <BookOpen className="mr-2 h-4 w-4" />
           <span>Truyện của tôi</span>
@@ -146,7 +146,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
             startLoading('/settings')
             router.push('/settings')
           }}
-          className="flex items-center px-3 py-2 cursor-pointer rounded hover:bg-gray-50 dark:hover:bg-gray-800"
+          className="flex items-center px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
         >
           <Settings className="mr-2 h-4 w-4" />
           <span>Cài đặt</span>
@@ -159,7 +159,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ isDarkTheme, isMobile, onMob
             startLoading('/')
             signOut({ callbackUrl: '/' })
           }}
-          className="flex items-center px-3 py-2 text-red-600 dark:text-red-400 cursor-pointer rounded hover:bg-red-50 dark:hover:bg-red-900/10"
+          className="flex items-center px-3 py-2 text-red-600 dark:text-red-400 rounded hover:bg-red-50 dark:hover:bg-red-900/10 cursor-pointer"
         >
           <LogOut className="mr-2 h-4 w-4" />
           <span>Đăng xuất</span>

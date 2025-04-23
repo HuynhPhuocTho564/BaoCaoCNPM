@@ -61,13 +61,37 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%
   }
-}
-
-@layer base {
   * {
     @apply border-border outline-ring/50;
-    cursor: none;
+    cursor: url("/bubble-svgrepo-com.svg"), auto !important;
   }
+
+  /* Chỉ áp dụng cursor hover cho các phần tử tương tác */
+  button:hover,
+  input:hover,
+  a:hover,
+  [role="button"]:hover,
+  select:hover,
+  textarea:hover,
+  .cursor-pointer:hover {
+    cursor: url("/pen-clip-svgrepo-com.svg"), pointer !important;
+  }
+
+  /* Dark mode */
+  .dark * {
+    cursor: url("/bubble-svgrepo-com_dark.svg"), auto !important;
+  }
+
+  .dark button:hover,
+  .dark input:hover,
+  .dark a:hover,
+  .dark [role="button"]:hover,
+  .dark select:hover,
+  .dark textarea:hover,
+  .dark .cursor-pointer:hover {
+    cursor: url("/pen-clip-svgrepo-com_dark.svg"), pointer !important;
+  }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -145,24 +169,4 @@
 
 .animate-gradient-xy {
   animation: gradient-xy 3s ease infinite;
-}
-
-/* Ẩn con trỏ mặc định cho tất cả phần tử */
-*, 
-*:hover {
-  cursor: none !important;
-}
-
-.cursor-dot {
-  position: fixed;
-  pointer-events: none;
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s;
-}
-
-.cursor-dot.hover {
-  transform: rotate(-45deg) scale(1.2);
 }
