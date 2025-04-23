@@ -6,10 +6,13 @@ import { Label } from "@/components/ui/label"
 import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
-import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useLoading } from "@/providers/loading-provider"
 
 function Footer() {
+  const router = useRouter()
   const currentYear = new Date().getFullYear()
+  const { startLoading } = useLoading()
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
@@ -54,56 +57,63 @@ function Footer() {
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex flex-col items-center">
           <nav className="mb-8 flex flex-wrap justify-center gap-6">
-            <Link href="/" className="hover:text-primary">Trang chủ</Link>
-            <Link href="/about" className="hover:text-primary">Giới thiệu</Link>
-            <Link href="/services" className="hover:text-primary">Dịch vụ</Link>
-            <Link href="/products" className="hover:text-primary">Sản phẩm</Link>
-            <Link href="/contact" className="hover:text-primary">Liên hệ</Link>
+            <button onClick={() => {
+              startLoading("/")
+              router.push("/")
+            }} className="hover:text-primary">Trang chủ</button>
+            <button onClick={() => {
+              startLoading("/about")
+              router.push("/about")
+            }} className="hover:text-primary">Giới thiệu</button>
+            <button onClick={() => {
+              startLoading("/services")
+              router.push("/services")
+            }} className="hover:text-primary">Dịch vụ</button>
+            <button onClick={() => {
+              startLoading("/products")
+              router.push("/products")
+            }} className="hover:text-primary">Sản phẩm</button>
+            <button onClick={() => {
+              startLoading("/contact")
+              router.push("/contact")
+            }} className="hover:text-primary">Liên hệ</button>
           </nav>
           <div className="mb-8 flex space-x-4">
             <Button 
               variant="outline" 
               size="icon" 
               className="rounded-full"
-              asChild
+              onClick={() => window.open("https://www.facebook.com/", "_blank")}
             >
-              <Link href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer">
-                <Facebook className="h-4 w-4" />
-                <span className="sr-only">Facebook</span>
-              </Link>
+              <Facebook className="h-4 w-4" />
+              <span className="sr-only">Facebook</span>
             </Button>
             <Button 
               variant="outline" 
               size="icon" 
               className="rounded-full"
-              asChild
+              onClick={() => window.open("https://twitter.com/", "_blank")}
             >
-              <Link href="https://twitter.com/" target="_blank" rel="noopener noreferrer">
-                <Twitter className="h-4 w-4" />
-                <span className="sr-only">Twitter</span>
-              </Link>
+              <Twitter className="h-4 w-4" />
+              <span className="sr-only">Twitter</span>
             </Button>
             <Button 
               variant="outline" 
               size="icon" 
               className="rounded-full"
-              asChild
+              onClick={() => window.open("https://www.instagram.com/", "_blank")}
             >
-              <Link href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">
-                <Instagram className="h-4 w-4" />
-                <span className="sr-only">Instagram</span>
-              </Link>
+              <Instagram className="h-4 w-4" />
+              <span className="sr-only">Instagram</span>
             </Button>
             <Button 
               variant="outline" 
               size="icon" 
               className="rounded-full"
-              asChild
+              onClick={() => window.open("https://www.linkedin.com/", "_blank")}
             >
-              <Link href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer">
-                <Linkedin className="h-4 w-4" />
-                <span className="sr-only">LinkedIn</span>
-              </Link>
+              <Linkedin className="h-4 w-4" />
+              <span className="sr-only">LinkedIn</span>
             </Button>
           </div>
           <div className="mb-8 w-full max-w-md">

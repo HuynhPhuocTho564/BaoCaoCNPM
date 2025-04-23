@@ -20,7 +20,8 @@ export function CustomCursor() {
         target.tagName.toLowerCase() === 'input' ||
         target.closest('button') !== null ||
         target.closest('a') !== null ||
-        target.closest('input') !== null
+        target.closest('input') !== null ||
+        target.closest('[role="menuitem"]') !== null
       )
       setIsHovering(isClickable)
     }
