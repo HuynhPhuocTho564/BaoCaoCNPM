@@ -380,7 +380,10 @@ export async function generateCoverImagePrompt(
       ],
     });
 
-    const result = await chat.sendMessage("");
+    const result = await chat.sendMessage([{ 
+      text: "Hãy tạo prompt cho ảnh bìa dựa trên thông tin truyện đã cung cấp" 
+    }]);
+    
     const response = result.response.text();
     
     const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
@@ -430,7 +433,10 @@ export async function generateAvatarPrompt(
       ],
     });
 
-    const result = await chat.sendMessage("");
+    const result = await chat.sendMessage([{
+      text: "Hãy tạo prompt cho ảnh avatar dựa trên thông tin nhân vật đã cung cấp"
+    }]);
+
     const response = result.response.text();
     
     const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
