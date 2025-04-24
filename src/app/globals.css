@@ -63,7 +63,7 @@
   }
   * {
     @apply border-border outline-ring/50;
-    cursor: url("/bubble-svgrepo-com.svg"), auto !important;
+    cursor: url("/bubble-svgrepo-com.svg") 15 15, auto !important;
   }
 
   /* Chỉ áp dụng cursor hover cho các phần tử tương tác */
@@ -74,12 +74,12 @@
   select:hover,
   textarea:hover,
   .cursor-pointer:hover {
-    cursor: url("/pen-clip-svgrepo-com.svg"), pointer !important;
+    cursor: url("/pen-clip-svgrepo-com.svg") 0 15, pointer !important;
   }
 
   /* Dark mode */
   .dark * {
-    cursor: url("/bubble-svgrepo-com_dark.svg"), auto !important;
+    cursor: url("/bubble-svgrepo-com_dark.svg") 15 15, auto !important;
   }
 
   .dark button:hover,
@@ -89,7 +89,7 @@
   .dark select:hover,
   .dark textarea:hover,
   .dark .cursor-pointer:hover {
-    cursor: url("/pen-clip-svgrepo-com_dark.svg"), pointer !important;
+    cursor: url("/pen-clip-svgrepo-com_dark.svg") 0 15, pointer !important;
   }
 
   body {

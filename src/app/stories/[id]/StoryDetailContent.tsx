@@ -253,10 +253,10 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
       <Tabs defaultValue={currentTab} className="w-full" onValueChange={(value) => {
         // Khi chuyển tab, giữ nguyên status nếu đang ở tab chapters
         if (value === 'chapters') {
-          startLoading(`/stories/${storyId}?tab=${value}&status=${currentStatus}`)
+          //startLoading(`/stories/${storyId}?tab=${value}&status=${currentStatus}`)
           router.push(`/stories/${storyId}?tab=${value}&status=${currentStatus}`, { scroll: false })
         } else {
-          startLoading(`/stories/${storyId}?tab=${value}`)
+          //startLoading(`/stories/${storyId}?tab=${value}`)
           router.push(`/stories/${storyId}?tab=${value}`, { scroll: false })
         }
       }}>
@@ -268,7 +268,7 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
 
         <TabsContent value="chapters">
           <Tabs defaultValue={currentStatus} className="w-full" onValueChange={(value) => {
-            startLoading(`/stories/${storyId}?tab=chapters&status=${value}`)
+            //startLoading(`/stories/${storyId}?tab=chapters&status=${value}`)
             router.push(`/stories/${storyId}?tab=chapters&status=${value}`, { scroll: false })
           }}>
             <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
