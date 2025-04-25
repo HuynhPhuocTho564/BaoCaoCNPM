@@ -270,7 +270,7 @@ export async function generateDialogueSuggestion(
       ],
     });
 
-    const result = await chat.sendMessage("");
+    const result = await chat.sendMessage(prompt || "Hãy tạo một số đoạn đối thoại phù hợp");
     const response = result.response.text();
     
     console.log("Raw response:", response);
