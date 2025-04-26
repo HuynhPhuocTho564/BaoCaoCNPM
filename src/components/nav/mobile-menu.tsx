@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
 import * as React from "react"
 import clsx from 'clsx'
-import { Sun, Moon, ChevronRight } from 'lucide-react'
+import { Sun, Moon, ChevronRight, Search } from 'lucide-react'
 import { NavItem } from "./types"
 import { useSession } from "next-auth/react"
 import { Login } from "../login/login"
@@ -16,6 +17,8 @@ import {
 } from "@/components/ui/sheet"
 import { useRouter } from 'next/navigation'
 import { useLoading } from "@/providers/loading-provider"
+import { NotificationBell } from "@/components/notification/NotificationBell"
+import { SearchDialog } from "@/components/search/search-dialog"
 
 interface MobileMenuProps {
   items?: NavItem[];
@@ -121,89 +124,114 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
 }) => {
   const { data: session } = useSession()
   const [open, setOpen] = React.useState(false)
+  const [searchOpen, setSearchOpen] = React.useState(false)
 
   const handleCloseMenu = () => {
     setOpen(false)
   }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <button
+    <>
+      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger asChild>
+          <button
+            className={clsx(
+              "lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md",
+              isDarkTheme ? 'text-white' : 'text-gray-900'
+            )}
+          >
+            <span className="sr-only">Open menu</span>
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </SheetTrigger>
+        <SheetContent 
+          side="right" 
           className={clsx(
-            "lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md",
-            isDarkTheme ? 'text-white' : 'text-gray-900'
+            "w-full max-w-sm p-0 flex flex-col",
+            isDarkTheme ? 'bg-[#0B0C0F]' : 'bg-white'
           )}
         >
-          <span className="sr-only">Open menu</span>
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      </SheetTrigger>
-      <SheetContent 
-        side="right" 
-        className={clsx(
-          "w-full max-w-sm p-0 flex flex-col",
-          isDarkTheme ? 'bg-[#0B0C0F]' : 'bg-white'
-        )}
-      >
-        <SheetHeader className="p-6 border-b border-gray-200 dark:border-gray-800">
-          <SheetTitle className="text-xl font-bold tracking-tight">
-            {logo}
-          </SheetTitle>
-        </SheetHeader>
-        
-        <div className="flex-1 overflow-y-auto">
-          <div className="py-2">
-            {items.map((item: NavItem, index: number) => (
-              <MobileMenuItem 
-                key={index} 
-                item={item} 
-                isDarkTheme={isDarkTheme}
-                onClose={handleCloseMenu}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="border-t border-gray-200 dark:border-gray-800 p-6 space-y-4">
-          {session ? (
-            <UserMenu 
-              isDarkTheme={isDarkTheme} 
-              isMobile={true} 
-              onMobileMenuClose={handleCloseMenu} 
-            />
-          ) : (
-            <Login />
-          )}
-          {onThemeChange && (
-            <button
-              className={clsx(
-                "flex w-full items-center justify-between px-4 py-3 rounded-lg",
-                "text-base font-semibold tracking-tight",
-                "hover:bg-gray-100 dark:hover:bg-[#1C1D21]",
-                isDarkTheme ? 'text-white' : 'text-gray-900'
-              )}
-              onClick={onThemeChange}
-            >
-              <span>
-                {isDarkTheme ? 'Chế độ sáng' : 'Chế độ tối'}
-              </span>
-              <div className="relative w-5 h-5">
-                <Sun className={clsx(
-                  "h-5 w-5 absolute transition-transform duration-100",
-                  isDarkTheme ? 'opacity-100 rotate-0' : 'opacity-0 rotate-90'
-                )} />
-                <Moon className={clsx(
-                  "h-5 w-5 absolute transition-transform duration-100",
-                  isDarkTheme ? 'opacity-0 -rotate-90' : 'opacity-100 rotate-0'
-                )} />
+          <SheetHeader className="p-6 border-b border-gray-200 dark:border-gray-800">
+            <SheetTitle className="text-xl font-bold tracking-tight">
+              {logo}
+            </SheetTitle>
+          </SheetHeader>
+          
+          <div className="flex-1 overflow-y-auto">
+            {session && (
+              <div className="flex items-center gap-2 p-4 border-b border-gray-200 dark:border-gray-800">
+                <button
+                  onClick={() => {
+                    setSearchOpen(true)
+                    handleCloseMenu()
+                  }}
+                  className={clsx(
+                    "flex items-center justify-between px-4 py-3 rounded-lg flex-1",
+                    "text-base font-semibold tracking-tight",
+                    "hover:bg-gray-100 dark:hover:bg-[#1C1D21]",
+                    isDarkTheme ? 'text-white' : 'text-gray-900'
+                  )}
+                >
+                  <span>Tìm kiếm</span>
+                  <Search className="h-5 w-5" />
+                </button>
+                <NotificationBell />
               </div>
-            </button>
-          )}
-        </div>
-      </SheetContent>
-    </Sheet>
+            )}
+
+            <div className="py-2">
+              {items.map((item: NavItem, index: number) => (
+                <MobileMenuItem 
+                  key={index} 
+                  item={item} 
+                  isDarkTheme={isDarkTheme}
+                  onClose={handleCloseMenu}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="border-t border-gray-200 dark:border-gray-800 p-6 space-y-4">
+            {session ? (
+              <UserMenu 
+                isDarkTheme={isDarkTheme} 
+                isMobile={true} 
+                onMobileMenuClose={handleCloseMenu} 
+              />
+            ) : (
+              <Login />
+            )}
+            {onThemeChange && (
+              <button
+                className={clsx(
+                  "flex w-full items-center justify-between px-4 py-3 rounded-lg",
+                  "text-base font-semibold tracking-tight",
+                  "hover:bg-gray-100 dark:hover:bg-[#1C1D21]",
+                  isDarkTheme ? 'text-white' : 'text-gray-900'
+                )}
+                onClick={onThemeChange}
+              >
+                <span>
+                  {isDarkTheme ? 'Chế độ sáng' : 'Chế độ tối'}
+                </span>
+                <div className="relative w-5 h-5">
+                  <Sun className={clsx(
+                    "h-5 w-5 absolute transition-transform duration-100",
+                    isDarkTheme ? 'opacity-100 rotate-0' : 'opacity-0 rotate-90'
+                  )} />
+                  <Moon className={clsx(
+                    "h-5 w-5 absolute transition-transform duration-100",
+                    isDarkTheme ? 'opacity-0 -rotate-90' : 'opacity-100 rotate-0'
+                  )} />
+                </div>
+              </button>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
   )
 } 
