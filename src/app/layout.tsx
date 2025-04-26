@@ -8,6 +8,7 @@ import { Nav } from "@/components/nav/nav";
 import { Footer } from "@/components/footer";
 import { ChatBot } from "@/components/chat-bot";
 import { LoadingProvider } from "@/providers/loading-provider";
+import { InitialLoading } from "@/components/initial-loading";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <LoadingProvider>
+            <InitialLoading />
             <Nav />
             {children}
             <Footer />
