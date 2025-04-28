@@ -63,7 +63,7 @@
   }
   * {
     @apply border-border outline-ring/50;
-    cursor: url("/bubble-svgrepo-com.svg") 15 15, auto !important;
+    cursor: url("/bubble-svgrepo-com.svg") 15 30, auto !important;
   }
 
   /* Chỉ áp dụng cursor hover cho các phần tử tương tác */
@@ -74,12 +74,12 @@
   select:hover,
   textarea:hover,
   .cursor-pointer:hover {
-    cursor: url("/pen-clip-svgrepo-com.svg") 0 15, pointer !important;
+    cursor: url("/pen-clip-svgrepo-com.svg") 0 30, pointer !important;
   }
 
   /* Dark mode */
   .dark * {
-    cursor: url("/bubble-svgrepo-com_dark.svg") 15 15, auto !important;
+    cursor: url("/bubble-svgrepo-com_dark.svg") 15 30, auto !important;
   }
 
   .dark button:hover,
@@ -89,7 +89,7 @@
   .dark select:hover,
   .dark textarea:hover,
   .dark .cursor-pointer:hover {
-    cursor: url("/pen-clip-svgrepo-com_dark.svg") 0 15, pointer !important;
+    cursor: url("/pen-clip-svgrepo-com_dark.svg") 0 30, pointer !important;
   }
 
   body {
@@ -169,4 +169,31 @@
 
 .animate-gradient-xy {
   animation: gradient-xy 3s ease infinite;
+}
+
+@keyframes floatParticle {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(-100px) scale(1.5);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-200px) scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(20px, 20px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
 }

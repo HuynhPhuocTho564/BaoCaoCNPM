@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { 
   Brain, // For AI intelligence
@@ -16,128 +17,160 @@ interface FeatureCardProps {
 }
 
 function FeatureCard({ icon, title, description }: FeatureCardProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
-  const animationRef = useRef<gsap.core.Tween | null>(null);
   
   useEffect(() => {
-    if (contentRef.current) {
-      // Kill any existing animations
-      if (animationRef.current) {
-        animationRef.current.kill();
-      }
+    const card = cardRef.current;
+    const content = contentRef.current;
+    
+    if (!card || !content) return;
 
-      // Create new animation
-      const animation = gsap.to(contentRef.current, {
-        height: isHovered ? "auto" : 0,
-        opacity: isHovered ? 1 : 0,
+    gsap.set(content, {
+      height: 0,
+      opacity: 0
+    });
+
+    const handleMouseEnter = () => {
+      gsap.to(content, {
+        height: "auto",
+        opacity: 1,
         duration: 0.3,
-        ease: "power2.inOut",
-        onComplete: () => {
-          if (!isHovered && contentRef.current) {
-            contentRef.current.style.height = "0px";
-            contentRef.current.style.opacity = "0";
-          }
-        }
+        ease: "power2.out"
       });
+      gsap.to(card, {
+        rotationY: 5,
+        duration: 0.5,
+        ease: "power2.out"
+      });
+    };
 
-      // Store the animation reference
-      animationRef.current = animation;
+    const handleMouseLeave = () => {
+      gsap.to(content, {
+        height: 0,
+        opacity: 0,
+        duration: 0.3,
+        ease: "power2.in"
+      });
+      gsap.to(card, {
+        rotationY: 0,
+        duration: 0.5,
+        ease: "power2.in"
+      });
+    };
 
-      // Cleanup
-      return () => {
-        animation.kill();
-      };
-    }
-  }, [isHovered]);
+    card.addEventListener("mouseenter", handleMouseEnter);
+    card.addEventListener("mouseleave", handleMouseLeave);
+
+    return () => {
+      card.removeEventListener("mouseenter", handleMouseEnter);
+      card.removeEventListener("mouseleave", handleMouseLeave);
+    };
+  }, []);
 
   return (
     <div 
-      className={`
-        flex flex-col rounded-xl border border-border/40
-        bg-gradient-to-br from-background/80 to-background
-        hover:shadow-2xl hover:shadow-primary/20
-        hover:border-primary/40 hover:from-primary/5 hover:to-background
-        transition-all duration-300
-        backdrop-blur-sm
-        ${isHovered ? 'ring-2 ring-primary/40 shadow-xl shadow-primary/20' : ''}
-      `}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      ref={cardRef}
+      className="flex flex-col rounded-xl border-2 border-primary/20 
+        bg-gradient-to-br from-background/80 to-background/40
+        transition-all duration-300 backdrop-blur-sm
+        relative cursor-pointer overflow-hidden
+        before:absolute before:inset-0 before:rounded-xl
+        before:bg-[linear-gradient(0deg,transparent_1px,rgba(255,255,255,0.1)_1px),linear-gradient(90deg,transparent_1px,rgba(255,255,255,0.1)_1px)]
+        before:bg-[length:20px_20px] before:opacity-100
+        hover:scale-[1.02]"
     >
-      <div className="flex items-center gap-4 p-8">
-        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 
-          flex items-center justify-center shadow-lg shadow-primary/10
-          group-hover:shadow-primary/30 transition-all duration-300">
-          {icon}
+      <div className="flex items-center gap-6 p-10 relative z-10">
+        <div className="w-20 h-20 rounded-xl bg-primary/10 
+          flex items-center justify-center">
+          {React.cloneElement(icon as React.ReactElement<any>, { 
+            className: "w-10 h-10 text-primary"
+          })}
         </div>
-        <h3 className="font-semibold text-2xl text-foreground tracking-tight">{title}</h3>
+        <h3 className="font-bold text-3xl">{title}</h3>
       </div>
       <div 
         ref={contentRef} 
-        className="overflow-hidden"
-        style={{ height: 0, opacity: 0 }}
+        className="overflow-hidden relative z-10"
       >
-        <div className="px-8 pb-8 pt-0">
-          <p className="text-muted-foreground/80 leading-relaxed text-lg">{description}</p>
-        </div>
+        <p className="px-10 pb-10 text-muted-foreground text-xl leading-relaxed">{description}</p>
       </div>
     </div>
   );
 }
 
 function Features() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const features = [
     {
-      icon: <Brain className="w-7 h-7 text-primary" />,
+      icon: <Brain className="w-6 h-6 text-primary" />,
       title: "AI Thông Minh",
-      description: "Trải nghiệm công nghệ AI tiên tiến với khả năng hiểu và tương tác tự nhiên. Hệ thống của chúng tôi được trang bị các mô hình ngôn ngữ tiên tiến, có thể hiểu ngữ cảnh phức tạp và tạo ra những câu chuyện sáng tạo, độc đáo. AI không chỉ là công cụ hỗ trợ mà còn là người bạn đồng hành trong hành trình sáng tạo của bạn."
+      description: "Trải nghiệm công nghệ AI tiên tiến với khả năng hiểu và tương tác tự nhiên."
     },
     {
-      icon: <BookOpenCheck className="w-7 h-7 text-primary" />,
+      icon: <BookOpenCheck className="w-6 h-6 text-primary" />,
       title: "Thư Viện Phong Phú",
-      description: "Khám phá kho tàng tri thức với hàng nghìn tác phẩm đa dạng từ nhiều thể loại khác nhau. Từ truyện ngắn đến tiểu thuyết, từ khoa học viễn tưởng đến lãng mạn, thư viện của chúng tôi liên tục được cập nhật với những nội dung mới mẻ và hấp dẫn. Mỗi tác phẩm đều được tuyển chọn kỹ lưỡng để đảm bảo chất lượng tốt nhất."
+      description: "Khám phá kho tàng tri thức với hàng nghìn tác phẩm đa dạng từ nhiều thể loại khác nhau."
     },
     {
-      icon: <Wand2 className="w-7 h-7 text-primary" />,
+      icon: <Wand2 className="w-6 h-6 text-primary" />,
       title: "Sáng Tạo Không Giới Hạn",
-      description: "Phá vỡ mọi rào cản sáng tạo với công cụ viết truyện thông minh. Tự do phát triển ý tưởng của bạn với sự hỗ trợ của AI, tạo ra những cốt truyện độc đáo, nhân vật sống động và những tình huống bất ngờ. Hệ thống gợi ý thông minh sẽ giúp bạn vượt qua những lúc bế tắc và duy trì nguồn cảm hứng sáng tạo."
+      description: "Phá vỡ mọi rào cản sáng tạo với công cụ viết truyện thông minh."
     },
     {
-      icon: <Users2 className="w-7 h-7 text-primary" />,
+      icon: <Users2 className="w-6 h-6 text-primary" />,
       title: "Cộng Đồng Năng Động",
-      description: "Tham gia vào cộng đồng sôi động của những người yêu thích sáng tạo và AI. Chia sẻ tác phẩm của bạn, nhận phản hồi từ độc giả, tham gia các thảo luận thú vị và kết nối với những người có cùng đam mê. Cộng đồng của chúng tôi là nơi bạn có thể học hỏi, phát triển và tìm thấy nguồn cảm hứng mới mỗi ngày."
+      description: "Tham gia vào cộng đồng sôi động của những người yêu thích sáng tạo và AI."
     }
   ];
 
+  useEffect(() => {
+    const cards = containerRef.current?.querySelectorAll('.feature-card');
+    if (!cards) return;
+
+    gsap.set(cards, {
+      rotationY: 90,
+      opacity: 0,
+      transformPerspective: 1000,
+      transformOrigin: "center center -200"
+    });
+
+    gsap.to(cards, {
+      duration: 1,
+      rotationY: 0,
+      opacity: 1,
+      stagger: 0.2,
+      ease: "power3.out",
+      scrollTrigger: {
+        trigger: containerRef.current,
+        start: "top center+=100",
+      }
+    });
+  }, []);
+
   return (
-    <section className="w-full py-12">
-      <div className="container px-4 mx-auto">
-        <div className="text-center space-y-4 mb-16">
-          <h2 className="text-4xl md:text-5xl font-semibold tracking-tighter text-foreground">
-            Tính Năng Nổi Bật
-          </h2>
-          <p className="text-lg text-muted-foreground/80 max-w-[600px] mx-auto">
-            Khám phá những tính năng độc đáo giúp bạn tạo ra và thưởng thức những câu chuyện tuyệt vời
-          </p>
-        </div>
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="flex-1">
-              <FeatureCard {...features[0]} />
+    <section className="w-full py-32">
+      <div className="container px-4 mx-auto max-w-8xl">
+        <h2 className="text-5xl font-bold text-center mb-20">
+          Tính Năng Nổi Bật
+        </h2>
+        <div 
+          ref={containerRef}
+          className="grid md:grid-cols-2 gap-10 p-10 rounded-3xl border-2 border-primary/20 
+            bg-gradient-to-br from-background/60 to-background/20 backdrop-blur-md
+            relative overflow-hidden
+            before:absolute before:inset-0 before:rounded-3xl
+            before:bg-[linear-gradient(0deg,transparent_1px,rgba(255,255,255,0.1)_1px),linear-gradient(90deg,transparent_1px,rgba(255,255,255,0.1)_1px)]
+            before:bg-[length:30px_30px] before:opacity-100"
+        >
+          {features.map((feature, index) => (
+            <div 
+              key={index} 
+              className="feature-card [transform-style:preserve-3d]"
+            >
+              <FeatureCard {...feature} />
             </div>
-            <div className="flex-1 md:mt-12">
-              <FeatureCard {...features[1]} />
-            </div>
-          </div>
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="flex-1 md:mt-12">
-              <FeatureCard {...features[2]} />
-            </div>
-            <div className="flex-1 md:mt-24">
-              <FeatureCard {...features[3]} />
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>
