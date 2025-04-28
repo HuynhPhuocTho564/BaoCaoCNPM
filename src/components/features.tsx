@@ -35,13 +35,8 @@ function FeatureCard({ icon, title, description }: FeatureCardProps) {
       gsap.to(content, {
         height: "auto",
         opacity: 1,
-        duration: 0.3,
-        ease: "power2.out"
-      });
-      gsap.to(card, {
-        rotationY: 5,
-        duration: 0.5,
-        ease: "power2.out"
+        duration: 0.2,
+        ease: "power1.out"
       });
     };
 
@@ -49,13 +44,8 @@ function FeatureCard({ icon, title, description }: FeatureCardProps) {
       gsap.to(content, {
         height: 0,
         opacity: 0,
-        duration: 0.3,
-        ease: "power2.in"
-      });
-      gsap.to(card, {
-        rotationY: 0,
-        duration: 0.5,
-        ease: "power2.in"
+        duration: 0.2,
+        ease: "power1.in"
       });
     };
 
@@ -72,13 +62,10 @@ function FeatureCard({ icon, title, description }: FeatureCardProps) {
     <div 
       ref={cardRef}
       className="flex flex-col rounded-xl border-2 border-primary/20 
-        bg-gradient-to-br from-background/80 to-background/40
-        transition-all duration-300 backdrop-blur-sm
+        bg-gradient-to-br from-white/80 to-white/40 dark:from-background/80 dark:to-background/40
+        transition-transform duration-200 ease-out backdrop-blur-sm
         relative cursor-pointer overflow-hidden
-        before:absolute before:inset-0 before:rounded-xl
-        before:bg-[linear-gradient(0deg,transparent_1px,rgba(255,255,255,0.1)_1px),linear-gradient(90deg,transparent_1px,rgba(255,255,255,0.1)_1px)]
-        before:bg-[length:20px_20px] before:opacity-100
-        hover:scale-[1.02]"
+        hover:scale-[1.01] hover:[transform:perspective(1000px)_rotateY(2deg)]"
     >
       <div className="flex items-center gap-6 p-10 relative z-10">
         <div className="w-20 h-20 rounded-xl bg-primary/10 
@@ -129,18 +116,17 @@ function Features() {
     if (!cards) return;
 
     gsap.set(cards, {
-      rotationY: 90,
+      rotationY: 45,
       opacity: 0,
       transformPerspective: 1000,
-      transformOrigin: "center center -200"
     });
 
     gsap.to(cards, {
-      duration: 1,
+      duration: 0.8,
       rotationY: 0,
       opacity: 1,
-      stagger: 0.2,
-      ease: "power3.out",
+      stagger: 0.15,
+      ease: "power2.out",
       scrollTrigger: {
         trigger: containerRef.current,
         start: "top center+=100",
@@ -156,12 +142,10 @@ function Features() {
         </h2>
         <div 
           ref={containerRef}
-          className="grid md:grid-cols-2 gap-10 p-10 rounded-3xl border-2 border-primary/20 
-            bg-gradient-to-br from-background/60 to-background/20 backdrop-blur-md
-            relative overflow-hidden
-            before:absolute before:inset-0 before:rounded-3xl
-            before:bg-[linear-gradient(0deg,transparent_1px,rgba(255,255,255,0.1)_1px),linear-gradient(90deg,transparent_1px,rgba(255,255,255,0.1)_1px)]
-            before:bg-[length:30px_30px] before:opacity-100"
+          className="grid md:grid-cols-2 gap-10 p-10 rounded-3xl border-2 border-primary/10 
+            bg-gradient-to-br from-slate-100/50 to-white/30 
+            dark:from-zinc-950/50 dark:to-background/30 
+            backdrop-blur-md relative overflow-hidden"
         >
           {features.map((feature, index) => (
             <div 
