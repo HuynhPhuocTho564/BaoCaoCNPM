@@ -198,7 +198,7 @@ export default function GeminiInfo() {
   ]
 
   return (
-    <div className="relative overflow-x-hidden">
+    <div className="relative overflow-hidden">
       <div 
         ref={containerRef}
         className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white 

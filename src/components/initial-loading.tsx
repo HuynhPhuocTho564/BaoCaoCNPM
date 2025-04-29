@@ -20,6 +20,14 @@ export function InitialLoading() {
   useEffect(() => {
     if (!isFirstVisit) return
 
+    // Lưu vị trí cuộn hiện tại
+    const scrollPosition = window.scrollY
+    
+    // Khóa cuộn và giữ nguyên vị trí
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollPosition}px`
+    document.body.style.width = '100%'
+
     // Animation cho các tin nhắn
     messageRefs.current.forEach((msg, index) => {
       gsap.fromTo(msg,
@@ -83,7 +91,14 @@ export function InitialLoading() {
         gsap.to('.initial-loading', {
           opacity: 0,
           duration: 0.5,
-          onComplete: () => setIsFirstVisit(false)
+          onComplete: () => {
+            setIsFirstVisit(false)
+            // Khôi phục cuộn
+            document.body.style.position = ''
+            document.body.style.top = ''
+            document.body.style.width = ''
+            window.scrollTo(0, scrollPosition)
+          }
         })
 
       } catch (error) {
@@ -93,13 +108,21 @@ export function InitialLoading() {
     }
 
     preloadAPIs()
+
+    // Cleanup function
+    return () => {
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.width = ''
+      window.scrollTo(0, scrollPosition)
+    }
   }, [])
 
   if (!isFirstVisit) return null
 
   return (
-    <div className="fixed inset-0 bg-background z-50 initial-loading">
-      <div className="h-full flex flex-col items-center justify-center">
+    <div className="fixed inset-0 bg-background z-[10001] initial-loading overflow-hidden min-h-screen w-full">
+      <div className="h-full flex flex-col items-center justify-center overflow-hidden">
         <div className="w-full max-w-md space-y-8 p-4">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-primary mb-2">ChatStoryAI</h1>

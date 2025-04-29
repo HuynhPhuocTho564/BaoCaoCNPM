@@ -84,10 +84,7 @@ const InfiniteSlider = ({ direction = 1 }: { direction?: number }) => {
 };
 
 function Hero() {
-  const [isLoaded, setIsLoaded] = useState(() => {
-    // Kiểm tra xem đã visit chưa ngay khi khởi tạo
-    return !!sessionStorage.getItem('hasVisited')
-  });
+  const [isLoaded, setIsLoaded] = useState(true);
   const [showScroll, setShowScroll] = useState(true);
   const contentRef = useRef<HTMLDivElement>(null);
   const titleOneRef = useRef<HTMLDivElement>(null);
@@ -99,19 +96,7 @@ function Hero() {
   const { startLoading } = useLoading()
 
   useEffect(() => {
-    // Kiểm tra trạng thái loading định kỳ
-    if (!isLoaded) {
-      const checkLoading = setInterval(() => {
-        if (sessionStorage.getItem('hasVisited')) {
-          setIsLoaded(true);
-          clearInterval(checkLoading);
-        }
-      }, 100);
-
-      return () => clearInterval(checkLoading);
-    }
-
-    // Chỉ chạy các animation khác khi đã loaded xong
+    // Xóa phần kiểm tra loading và chỉ giữ lại phần animation
     if (!isLoaded) return;
 
     // Scroll indicator handling
@@ -173,9 +158,6 @@ function Hero() {
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
     };
   }, [isLoaded]);
-
-  // Không render gì nếu chưa load xong
-  if (!isLoaded) return null;
 
   return (
     <div className="w-full overflow-hidden">
