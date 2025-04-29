@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
+import { useRouter } from "next/navigation"
+import { useLoading } from "@/providers/loading-provider"
 
 // Đăng ký ScrollTrigger plugin
 gsap.registerPlugin(ScrollTrigger);
@@ -54,9 +56,9 @@ const InfiniteSlider = ({ direction = 1 }: { direction?: number }) => {
   }, [direction]);
 
   return (
-    <div className="relative w-full h-[320px] overflow-hidden">
+    <div className="relative w-full h-[200px] sm:h-[320px] overflow-hidden">
       <div 
-        className="flex gap-4 absolute left-0 top-0"
+        className="flex gap-2 sm:gap-4 absolute left-0 top-0"
         style={{ 
           width: "fit-content",
           transform: `translateX(${position}%)`,
@@ -66,12 +68,12 @@ const InfiniteSlider = ({ direction = 1 }: { direction?: number }) => {
         {IMAGES.concat(IMAGES).concat(IMAGES).map((src, index) => (
           <div 
             key={index} 
-            className="w-[200px] inline-block flex-shrink-0"
+            className="w-[140px] sm:w-[200px] inline-block flex-shrink-0"
           >
             <img 
               src={src}
               alt={`Story ${index + 1}`}
-              className="w-full h-[300px] object-cover rounded-md shadow-lg"
+              className="w-full h-[180px] sm:h-[300px] object-cover rounded-md shadow-lg"
               loading="eager"
             />
           </div>
@@ -93,6 +95,8 @@ function Hero() {
   const descriptionRef = useRef<HTMLDivElement>(null);
   const buttonsRef = useRef<HTMLDivElement>(null);
   const scrollIndicatorRef = useRef<HTMLDivElement>(null);
+  const router = useRouter()
+  const { startLoading } = useLoading()
 
   useEffect(() => {
     // Kiểm tra trạng thái loading định kỳ
@@ -176,44 +180,60 @@ function Hero() {
   return (
     <div className="w-full overflow-hidden">
       {/* Top Slider */}
-      <div className="w-full py-8 bg-muted">
+      <div className="w-full py-4 sm:py-8 bg-muted">
         <InfiniteSlider direction={1} />
       </div>
 
       {/* Center Content */}
-      <div className="container mx-auto px-4 py-16 min-h-[60vh] relative" ref={contentRef}>
+      <div className="container mx-auto px-4 py-8 sm:py-16 min-h-[50vh] sm:min-h-[60vh] relative" ref={contentRef}>
         <div className="max-w-7xl mx-auto">
-          <Badge variant="outline" className="text-sm font-medium uppercase tracking-wider">Beta</Badge>
+          <Badge variant="outline" className="text-xs sm:text-sm font-medium uppercase tracking-wider">Beta</Badge>
           
           {/* Title Section - Staggered Layout */}
-          <div className="mt-8">
+          <div className="mt-4 sm:mt-8">
             <div className="w-full md:w-2/3" ref={titleOneRef}>
-              <h1 className="text-6xl md:text-8xl font-bold tracking-tight leading-[1.1]">
+              <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold tracking-tight leading-[1.1]">
                 Sáng Tạo
               </h1>
             </div>
             <div className="w-full md:w-3/4 ml-auto" ref={titleTwoRef}>
-              <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.1]">
+              <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.1]">
                 Truyện Cùng AI
               </h1>
             </div>
           </div>
 
           {/* Description - Further Right */}
-          <div className="mt-12 w-full md:w-3/5 ml-auto" ref={descriptionRef}>
-            <p className="text-2xl text-muted-foreground">
+          <div className="mt-6 sm:mt-12 w-full md:w-3/5 ml-auto" ref={descriptionRef}>
+            <p className="text-xl sm:text-2xl text-muted-foreground">
               Biến ý tưởng thành câu chuyện trong tích tắc
             </p>
           </div>
           
           {/* Buttons - Most Right */}
-          <div className="mt-12 w-full md:w-1/2 ml-auto" ref={buttonsRef}>
-            <div className="flex flex-col sm:flex-row gap-6">
-              <Button size="lg" variant="default" className="gap-2 text-lg flex-1">
-                Viết Ngay <MoveRight className="w-6 h-6" />
+          <div className="mt-8 sm:mt-12 w-full md:w-1/2 ml-auto" ref={buttonsRef}>
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+              <Button 
+                size="lg" 
+                variant="default" 
+                className="gap-2 text-base sm:text-lg flex-1"
+                onClick={() => {
+                  startLoading('/stories')
+                  router.push('/stories')
+                }}
+              >
+                Viết Ngay <MoveRight className="w-5 h-5 sm:w-6 sm:h-6" />
               </Button>
-              <Button size="lg" variant="outline" className="gap-2 text-lg flex-1">
-                Khám Phá <MoveRight className="w-6 h-6" />
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="gap-2 text-base sm:text-lg flex-1"
+                onClick={() => {
+                  startLoading('/library/new')
+                  router.push('/library/new')
+                }}
+              >
+                Khám Phá <MoveRight className="w-5 h-5 sm:w-6 sm:h-6" />
               </Button>
             </div>
           </div>
@@ -221,18 +241,18 @@ function Hero() {
           {/* Scroll Indicator */}
           <div 
             ref={scrollIndicatorRef}
-            className={`fixed left-1/2 bottom-12 transform -translate-x-1/2 transition-opacity duration-500 z-50 ${
+            className={`fixed left-1/2 bottom-8 sm:bottom-12 transform -translate-x-1/2 transition-opacity duration-500 z-50 ${
               showScroll ? 'opacity-100' : 'opacity-0'
             }`}
           >
-            <div className="flex flex-col items-center gap-2 text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
-              <span className="text-sm font-medium">Cuộn xuống</span>
-              <ChevronDown className="w-8 h-8" />
+            <div className="flex flex-col items-center gap-1 sm:gap-2 text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+              <span className="text-xs sm:text-sm font-medium">Cuộn xuống</span>
+              <ChevronDown className="w-6 h-6 sm:w-8 sm:h-8" />
             </div>
           </div>
 
           {/* Team Members */}
-          <div className="absolute bottom-4 left-4 text-sm text-muted-foreground space-y-1">
+          <div className="absolute bottom-2 sm:bottom-4 left-4 text-xs sm:text-sm text-muted-foreground space-y-0.5 sm:space-y-1">
             <p>Nguyễn Huỳnh Phú Vinh</p>
             <p>Nguyễn Phú Vinh</p>
             <p>Huỳnh Phước Thọ</p>
@@ -241,7 +261,7 @@ function Hero() {
       </div>
 
       {/* Bottom Slider */}
-      <div className="w-full py-8 bg-muted">
+      <div className="w-full py-4 sm:py-8 bg-muted">
         <InfiniteSlider direction={-1} />
       </div>
     </div>

@@ -67,20 +67,20 @@ function FeatureCard({ icon, title, description }: FeatureCardProps) {
         relative cursor-pointer overflow-hidden
         hover:scale-[1.01] hover:[transform:perspective(1000px)_rotateY(2deg)]"
     >
-      <div className="flex items-center gap-6 p-10 relative z-10">
-        <div className="w-20 h-20 rounded-xl bg-primary/10 
+      <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 p-6 sm:p-10 relative z-10">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-primary/10 
           flex items-center justify-center">
           {React.cloneElement(icon as React.ReactElement<any>, { 
-            className: "w-10 h-10 text-primary"
+            className: "w-8 h-8 sm:w-10 sm:h-10 text-primary"
           })}
         </div>
-        <h3 className="font-bold text-3xl">{title}</h3>
+        <h3 className="font-bold text-2xl sm:text-3xl text-center sm:text-left">{title}</h3>
       </div>
       <div 
         ref={contentRef} 
         className="overflow-hidden relative z-10"
       >
-        <p className="px-10 pb-10 text-muted-foreground text-xl leading-relaxed">{description}</p>
+        <p className="px-6 sm:px-10 pb-6 sm:pb-10 text-muted-foreground text-lg sm:text-xl leading-relaxed">{description}</p>
       </div>
     </div>
   );
@@ -135,14 +135,15 @@ function Features() {
   }, []);
 
   return (
-    <section className="w-full py-32">
+    <section className="w-full py-16 sm:py-32">
       <div className="container px-4 mx-auto max-w-8xl">
-        <h2 className="text-5xl font-bold text-center mb-20">
+        <h2 className="text-3xl sm:text-5xl font-bold text-center mb-10 sm:mb-20">
           Tính Năng Nổi Bật
         </h2>
         <div 
           ref={containerRef}
-          className="grid md:grid-cols-2 gap-10 p-10 rounded-3xl border-2 border-primary/10 
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 p-6 sm:p-10 
+            rounded-2xl sm:rounded-3xl border-2 border-primary/10 
             bg-gradient-to-br from-slate-100/50 to-white/30 
             dark:from-zinc-950/50 dark:to-background/30 
             backdrop-blur-md relative overflow-hidden"

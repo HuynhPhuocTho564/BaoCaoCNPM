@@ -1,10 +1,19 @@
 "use client"
+import React from 'react'
 import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import ScrollTrigger from 'gsap/ScrollTrigger'
-import { Brain, Wand2, MessageSquare, BookOpen, Users2, Image } from "lucide-react"
+import { Brain, Wand2, MessageSquare, BookOpen, Users2, Image, LucideIcon, ExternalLink } from "lucide-react"
+import { useRouter } from 'next/navigation'
+import { useLoading } from "@/providers/loading-provider"
 
 gsap.registerPlugin(ScrollTrigger)
+
+interface Feature {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+}
 
 export default function GeminiInfo() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -14,6 +23,8 @@ export default function GeminiInfo() {
   const featuresRef = useRef<(HTMLDivElement | null)[]>([])
   const descriptionsRef = useRef<(HTMLDivElement | null)[]>([])
   const finalSectionRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
+  const { startLoading } = useLoading()
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -153,47 +164,49 @@ export default function GeminiInfo() {
     };
   }, []);
 
-  const features = [
+  const features: Feature[] = [
     {
-      icon: <Brain className="w-12 h-12 text-primary" />,
+      icon: Brain,
       title: "Tạo Ý Tưởng Truyện",
       description: "AI giúp bạn phát triển ý tưởng truyện độc đáo với tiêu đề, mô tả và thể loại phù hợp."
     },
     {
-      icon: <Users2 className="w-12 h-12 text-primary" />,
+      icon: Users2,
       title: "Phát Triển Nhân Vật",
       description: "Tạo và hoàn thiện nhân vật với thông tin chi tiết về ngoại hình, tính cách và tiểu sử."
     },
     {
-      icon: <MessageSquare className="w-12 h-12 text-primary" />,
+      icon: MessageSquare,
       title: "Tạo Hội Thoại",
       description: "Tự động tạo các đoạn hội thoại tự nhiên và hấp dẫn giữa các nhân vật."
     },
     {
-      icon: <BookOpen className="w-12 h-12 text-primary" />,
+      icon: BookOpen,
       title: "Quản Lý Chương",
       description: "Hỗ trợ tạo và chỉnh sửa nội dung từng chương với tóm tắt chi tiết."
     },
     {
-      icon: <Wand2 className="w-12 h-12 text-primary" />,
+      icon: Wand2,
       title: "Tạo Đại Cương",
       description: "Phát triển cấu trúc tổng thể cho truyện với các đại cương chi tiết."
     },
     {
-      icon: <Image className="w-12 h-12 text-primary" />,
+      icon: Image,
       title: "Tạo Prompt Hình Ảnh",
       description: "Tự động tạo prompt cho ảnh bìa và avatar nhân vật phù hợp với nội dung."
     }
   ]
 
   return (
-    <div className="relative">
+    <div className="relative overflow-x-hidden">
       <div 
         ref={containerRef}
-        className="h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-300 relative overflow-hidden"
+        className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white 
+          transition-colors duration-300 relative overflow-hidden"
       >
-        {/* Tường AI hai bên với hiệu ứng */}
-        <div className="absolute left-0 top-0 h-full w-[50px] bg-gradient-to-r from-blue-600/30 to-transparent dark:from-blue-900/40">
+        {/* Tường AI hai bên - ẩn trên mobile */}
+        <div className="hidden sm:block absolute left-0 top-0 h-full w-[50px] 
+          bg-gradient-to-r from-blue-600/30 to-transparent dark:from-blue-900/40">
           {/* Hiệu ứng điểm sáng di chuyển */}
           {[...Array(5)].map((_, i) => (
             <div
@@ -215,7 +228,8 @@ export default function GeminiInfo() {
           />
         </div>
 
-        <div className="absolute right-0 top-0 h-full w-[50px] bg-gradient-to-l from-blue-600/30 to-transparent dark:from-blue-900/40">
+        <div className="hidden sm:block absolute right-0 top-0 h-full w-[50px] 
+          bg-gradient-to-l from-blue-600/30 to-transparent dark:from-blue-900/40">
           {/* Hiệu ứng điểm sáng di chuyển */}
           {[...Array(5)].map((_, i) => (
             <div
@@ -237,45 +251,51 @@ export default function GeminiInfo() {
           />
         </div>
 
-        <div className="container mx-auto px-4 py-12 h-full relative">
-          <div className="text-center mb-16">
-            <h1 ref={titleRef} className="text-5xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+        <div className="container mx-auto px-4 py-8 sm:py-12 h-full relative">
+          <div className="text-center mb-8 sm:mb-16">
+            <h1 ref={titleRef} 
+              className="text-3xl sm:text-5xl font-bold tracking-tight 
+                bg-gradient-to-r from-blue-600 to-purple-600 
+                dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent
+                px-4 sm:px-0"
+            >
               Sức Mạnh của Gemini AI
             </h1>
-            <p ref={subtitleRef} className="text-xl text-blue-600 dark:text-blue-400 mt-4">
+            <p ref={subtitleRef} 
+              className="text-lg sm:text-xl text-blue-600 dark:text-blue-400 mt-4 
+                px-4 sm:px-0"
+            >
               Khám phá những tính năng thông minh giúp sáng tạo nội dung truyện
             </p>
           </div>
 
-          <div className="flex gap-8 h-[calc(100%-12rem)]">
+          <div className="flex flex-col sm:flex-row gap-8 h-[calc(100%-12rem)]">
             {/* Left side: Logo with connection lines */}
-            <div className="w-1/6 relative">
+            <div className="w-full sm:w-1/6 flex justify-center sm:block relative">
               <img 
                 ref={logoRef}
                 src="https://lh3.googleusercontent.com/IuxHCXmHrnNoCYV8vpRfjuAmXVWIbIUYEWiN8bR8w7h-I3br50v6XuJqnUjkgciQIF7B6AhKfY1FO2lXT02hC7VHzI_5oD-vffTbmQsMBDvtk1nFLQ=w80-h80-n-nu-rw"
                 alt="Gemini Logo"
-                className="w-20 h-20 sticky top-[30%] transform -translate-y-1/2 z-10"
+                className="w-16 h-16 sm:w-20 sm:h-20 sticky top-[20%] 
+                  transform -translate-y-1/2 z-10"
               />
-              {/* Thêm đường kẻ kết nối */}
-            
             </div>
 
             {/* Right side: Features with connection lines */}
-            <div className="w-5/6 space-y-16 relative">
+            <div className="w-full sm:w-5/6 space-y-8 sm:space-y-16 relative">
               {features.map((feature, index) => (
                 <div 
                   key={index}
-                  className="space-y-4 relative"
+                  className="space-y-4 relative px-4 sm:px-0"
                 >
-                  {/* Xóa đường kẻ ngang */}
                   <div 
                     ref={(el: HTMLDivElement | null): void => { featuresRef.current[index] = el }}
                     className="border-l-4 border-transparent pl-4 transition-all duration-300 relative"
                   >
                     <div className="mb-2">
-                      {feature.icon}
+                      {feature.icon && <feature.icon className="w-8 h-8 sm:w-12 sm:h-12 text-primary" />}
                     </div>
-                    <h3 className="text-2xl font-semibold text-blue-600 dark:text-blue-400">
+                    <h3 className="text-xl sm:text-2xl font-semibold text-blue-600 dark:text-blue-400">
                       {feature.title}
                     </h3>
                   </div>
@@ -283,7 +303,7 @@ export default function GeminiInfo() {
                     ref={(el: HTMLDivElement | null): void => { descriptionsRef.current[index] = el }}
                     className="pl-8 overflow-hidden opacity-0 h-0"
                   >
-                    <p className="text-gray-600 dark:text-gray-400 text-lg">
+                    <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400">
                       {feature.description}
                     </p>
                   </div>
@@ -318,8 +338,8 @@ export default function GeminiInfo() {
             key={`final-dot-${i}`}
             className="absolute w-1.5 h-1.5 bg-blue-400/50 rounded-full"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
+              left: `${Math.min(Math.random() * 98, 98)}%`,
+              top: `${Math.min(Math.random() * 98, 98)}%`,
               animation: `float ${Math.random() * 10 + 5}s linear infinite`,
               animationDelay: `${Math.random() * 5}s`
             }}
@@ -327,22 +347,39 @@ export default function GeminiInfo() {
         ))}
 
         {/* Nội dung chính */}
-        <div className="relative z-10 text-center px-4 py-12 max-w-4xl mx-auto">
-          <div className="space-y-8 backdrop-blur-sm bg-slate-900/50 p-8 rounded-2xl border border-blue-500/20">
-            <h2 className="text-5xl font-bold text-white mb-6">
+        <div className="relative z-10 text-center px-4 sm:px-8 max-w-4xl mx-auto">
+          <div className="space-y-6 sm:space-y-8 backdrop-blur-sm bg-slate-900/50 
+            p-6 sm:p-8 rounded-xl sm:rounded-2xl border border-blue-500/20">
+            <h2 className="text-3xl sm:text-5xl font-bold text-white mb-4 sm:mb-6">
               Hãy Bắt Đầu Hành Trình Sáng Tạo
             </h2>
-            <p className="text-xl text-white/90 mb-8 leading-relaxed">
+            <p className="text-lg sm:text-xl text-white/90 mb-6 sm:mb-8 leading-relaxed">
               Với sự hỗ trợ của Gemini AI, việc sáng tác truyện chưa bao giờ dễ dàng đến thế. 
               Từ ý tưởng đến cốt truyện, từ nhân vật đến đối thoại - tất cả đều trong tầm tay bạn.
             </p>
-            <div className="flex gap-4 justify-center">
-              <button className="px-8 py-4 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-all transform hover:scale-105">
-                Bắt Đầu Ngay
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button 
+                onClick={() => {
+                  startLoading('/stories')
+                  router.push('/stories')
+                }}
+                className="px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 text-white 
+                  rounded-full font-semibold hover:bg-blue-700 transition-all 
+                  transform hover:scale-105"
+              >
+                Bắt Đầu Viết Ngay
               </button>
-              <button className="px-8 py-4 border-2 border-blue-400 text-blue-400 rounded-full font-semibold hover:bg-blue-400/10 transition-all transform hover:scale-105">
-                Tìm Hiểu Thêm
-              </button>
+              <a 
+                href="https://aistudio.google.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 sm:px-8 py-3 sm:py-4 border-2 border-blue-400 
+                  text-blue-400 rounded-full font-semibold hover:bg-blue-400/10 
+                  transition-all transform hover:scale-105 inline-flex items-center justify-center gap-2"
+              >
+                Khám Phá AI Studio
+                <ExternalLink className="w-4 h-4" />
+              </a>
             </div>
           </div>
         </div>
