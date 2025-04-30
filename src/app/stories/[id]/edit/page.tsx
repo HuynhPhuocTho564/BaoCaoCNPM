@@ -28,8 +28,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Suspense } from "react"
 import { ChevronLeft } from "lucide-react"
-import { IdeaGenerator } from "@/components/story/IdeaGenerator"
-import { CoverImagePrompt } from "@/components/story/CoverImagePrompt"
+import { IdeaGenerator } from "@/components/ai-generator/StoryIdeaGenerator"
+import { CoverImagePrompt } from "@/components/ai-generator/CoverImagePrompt"
 import { useLoading } from "@/providers/loading-provider"
 
 interface MainCategory {

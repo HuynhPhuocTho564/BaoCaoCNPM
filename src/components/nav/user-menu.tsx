@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ChevronDown, LogOut, User, BookOpen, Settings } from 'lucide-react'
 import clsx from 'clsx'
-import { UserAvatar } from "@/components/user/user-avatar"
+import { UserAvatar } from "@/components/user-avatar"
 import { useLoading } from "@/providers/loading-provider"
 
 interface UserMenuProps {

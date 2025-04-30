@@ -6,10 +6,10 @@ import { useSession } from "next-auth/react"
 import { Login } from "../login/login"
 import { UserMenu } from "./user-menu"
 import { useRouter } from "next/navigation"
-import { NotificationBell } from "../notification/NotificationBell"
+import { NotificationBell } from "../notification-bell"
 import { Button } from "@/components/ui/button"
 import { Search } from "lucide-react"
-import { SearchDialog } from "../search/search-dialog"
+import { SearchDialog } from "../search-dialog"
 import { useLoading } from "@/providers/loading-provider"
 
 // Sample menu items

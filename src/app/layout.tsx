@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import AuthProvider from "@/components/providers/session-provider"
+import AuthProvider from "@/providers/session-provider"
 import { Toaster } from 'sonner';
 import { ScrollToTop } from "@/components/scroll-to-top"
 import { Nav } from "@/components/nav/nav";

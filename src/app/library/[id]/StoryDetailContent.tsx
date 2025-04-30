@@ -7,9 +7,9 @@ import { BookOpenText, Clock, Eye, Heart, Check, MoreVertical, BookOpen, BookOpe
 import { Card, CardHeader } from "@/components/ui/card"
 import Skeleton from "react-loading-skeleton"
 import "react-loading-skeleton/dist/skeleton.css"
-import { StoryFavoriteButton } from '@/components/story/StoryFavoriteButton';
-import { StoryComments } from '@/components/story/StoryComments';
-import { StoryBookmarkButton } from '@/components/story/StoryBookmarkButton';
+import { StoryFavoriteButton } from '@/components/story/story-favorite-button';
+import { StoryComments } from '@/components/story/story-comments';
+import { StoryBookmarkButton } from '@/components/story/story-bookmark-button';
 import { 
   DropdownMenu,
   DropdownMenuContent,
