@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import Skeleton from "react-loading-skeleton"
 import "react-loading-skeleton/dist/skeleton.css"
-import { ChapterIdeaGenerator } from "@/components/chapter/ChapterIdeaGenerator"
+import { ChapterIdeaGenerator } from "@/components/ai-generator/ChapterIdeaGenerator"
 import { ChevronLeft, Sparkles } from "lucide-react"
 import { useLoading } from "@/providers/loading-provider"
 
