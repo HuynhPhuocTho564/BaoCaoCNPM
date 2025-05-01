@@ -57,12 +57,19 @@ export async function PUT(
   const { id: storyId, chapterId } = resolvedParams
   
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Không có quyền truy cập" },
-        { status: 401 }
-      )
+    // Kiểm tra API key trước
+    const apiKey = request.headers.get('x-api-key')
+    const isValidApiKey = apiKey === process.env.CHATSTORYAI_API_KEY
+
+    // Nếu không có API key hợp lệ thì mới check session
+    if (!isValidApiKey) {
+      const session = await getServerSession(authOptions)
+      if (!session?.user?.email) {
+        return NextResponse.json(
+          { error: "Không có quyền truy cập" },
+          { status: 401 }
+        )
+      }
     }
 
     const { title, summary, status: newStatus } = await request.json()

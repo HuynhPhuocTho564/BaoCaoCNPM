@@ -18,9 +18,9 @@ export async function getTogetherApiKey(): Promise<string> {
   }
 }
 
-// Khởi tạo Together client với API key
-export async function getTogetherClient(): Promise<Together> {
-  const apiKey = await getTogetherApiKey();
+// Sửa lại hàm để nhận API key từ bên ngoài
+export async function getTogetherClient(providedApiKey?: string): Promise<Together> {
+  const apiKey = providedApiKey || await getTogetherApiKey();
   return new Together({ apiKey });
 }
 
@@ -29,6 +29,7 @@ interface GenerateImageParams {
   negativePrompt: string;
   type?: 'cover' | 'avatar';
   steps?: number;
+  providedApiKey?: string;
 }
 
 interface TogetherResponse {
@@ -52,11 +53,12 @@ const IMAGE_DIMENSIONS = {
 export async function generateImage({
   prompt,
   negativePrompt,
-  type = 'cover', // Mặc định là ảnh bìa
+  type = 'cover',
   steps = 4,
-}: GenerateImageParams): Promise<string> {
+  providedApiKey
+}: GenerateImageParams & { providedApiKey?: string }): Promise<string> {
   try {
-    const together = await getTogetherClient();
+    const together = await getTogetherClient(providedApiKey);
     const dimensions = IMAGE_DIMENSIONS[type];
     
     const response = await together.images.create({

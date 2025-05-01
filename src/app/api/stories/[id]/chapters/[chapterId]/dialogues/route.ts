@@ -13,12 +13,17 @@ export async function GET(
   const { chapterId } = resolvedParams
   
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Không có quyền truy cập" },
-        { status: 401 }
-      )
+    const apiKey = request.headers.get('x-api-key')
+    const isValidApiKey = apiKey === process.env.CHATSTORYAI_API_KEY
+
+    if (!isValidApiKey) {
+      const session = await getServerSession(authOptions)
+      if (!session?.user?.email) {
+        return NextResponse.json(
+          { error: "Không có quyền truy cập" },
+          { status: 401 }
+        )
+      }
     }
 
     const [dialogues] = await pool.execute(`
@@ -47,12 +52,17 @@ export async function POST(
   const { chapterId } = resolvedParams
   
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Không có quyền truy cập" },
-        { status: 401 }
-      )
+    const apiKey = request.headers.get('x-api-key')
+    const isValidApiKey = apiKey === process.env.CHATSTORYAI_API_KEY
+
+    if (!isValidApiKey) {
+      const session = await getServerSession(authOptions)
+      if (!session?.user?.email) {
+        return NextResponse.json(
+          { error: "Không có quyền truy cập" },
+          { status: 401 }
+        )
+      }
     }
 
     const data = await request.json()
