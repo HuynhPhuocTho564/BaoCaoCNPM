@@ -11,17 +11,12 @@ export async function PUT(
   const { id } = resolvedParams
   
   try {
-    const apiKey = request.headers.get('x-api-key')
-    const isValidApiKey = apiKey === process.env.CHATSTORYAI_API_KEY
-
-    if (!isValidApiKey) {
-      const session = await getServerSession(authOptions)
-      if (!session?.user?.email) {
-        return NextResponse.json(
-          { error: "Không có quyền truy cập" },
-          { status: 401 }
-        )
-      }
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: "Không có quyền truy cập" },
+        { status: 401 }
+      )
     }
 
     // Kiểm tra điều kiện xuất bản

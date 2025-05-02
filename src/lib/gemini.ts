@@ -118,15 +118,9 @@ interface SearchResponse {
   results: SearchResult[];
 }
 
-export async function generateStoryIdea(
-  userPrompt: string, 
-  categories: string[], 
-  tags: string[],
-  providedApiKey?: string
-): Promise<StoryIdea> {
+export async function generateStoryIdea(userPrompt: string, categories: string[], tags: string[]): Promise<StoryIdea> {
   try {
-    const key = providedApiKey || await getApiKey();
-    
+    const key = await getApiKey();
     const genAI = new GoogleGenerativeAI(key!);
     const model = genAI.getGenerativeModel({ 
       model: "gemini-2.0-flash",
@@ -150,6 +144,7 @@ export async function generateStoryIdea(
     let storyIdea: StoryIdea;
     try {
       storyIdea = JSON.parse(jsonString);
+      // Kiểm tra tính hợp lệ của dữ liệu
       if (!storyIdea.title || !storyIdea.description || !storyIdea.mainCategory || !Array.isArray(storyIdea.suggestedTags)) {
         throw new Error('Dữ liệu không hợp lệ');
       }
@@ -367,13 +362,10 @@ export async function generateCoverImagePrompt(
     description: string;
     mainCategory: string;
     tags: string[];
-  },
-  providedApiKey?: string
+  }
 ): Promise<CoverImagePrompt> {
   try {
-    // Ưu tiên sử dụng API key được truyền vào
-    const key = providedApiKey || await getApiKey();
-    
+    const key = await getApiKey();
     const genAI = new GoogleGenerativeAI(key!);
     const model = genAI.getGenerativeModel({ 
       model: "gemini-2.0-flash",
@@ -381,7 +373,7 @@ export async function generateCoverImagePrompt(
       generationConfig,
       systemInstruction: SYSTEM_PROMPTS.COVER_IMAGE
     });
-
+    
     const chat = model.startChat({
       history: [
         createCoverImagePrompt(storyInfo),
@@ -391,6 +383,7 @@ export async function generateCoverImagePrompt(
     const result = await chat.sendMessage([{ 
       text: "Hãy tạo prompt cho ảnh bìa dựa trên thông tin truyện đã cung cấp" 
     }]);
+    
     const response = result.response.text();
     
     const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
