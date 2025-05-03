@@ -1,40 +1,67 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
-import { MoveRight } from "lucide-react";
+import { MoveRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useRef } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation"
 import { useLoading } from "@/providers/loading-provider"
+import React from "react";
+import Image from "next/image"
 
 // Đơn giản hóa Slider component
 const InfiniteSlider = ({ direction = 1 }: { direction?: number }) => {
-  const IMAGES = Array(6).fill("https://placehold.co/768x1024/333/FFF");
-  
+  const [images, setImages] = React.useState<string[]>([])
+
+  React.useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const response = await fetch('/api/stories/featured')
+        const data = await response.json()
+        if (data.stories) {
+          setImages(data.stories.map((story: any) => story.cover_image))
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy ảnh cho slider:", error)
+      }
+    }
+    fetchImages()
+  }, [])
+
+  if (images.length === 0) {
+    return null
+  }
+
+  // Tính toán tổng chiều rộng của một group ảnh
+  const groupWidth = images.length * 208 // 200px width + 8px gap
+
   return (
     <div className="relative w-full h-[200px] sm:h-[320px] overflow-hidden">
       <motion.div 
         className="flex gap-2 sm:gap-4 absolute left-0 top-0"
         animate={{
-          x: direction === 1 ? [0, -1000] : [-1000, 0]
+          x: direction === 1 ? [-groupWidth, 0] : [0, -groupWidth]
         }}
         transition={{
-          duration: 20,
+          duration: 30,
           repeat: Infinity,
-          ease: "linear"
+          ease: "linear",
+          repeatType: "loop"
         }}
       >
-        {IMAGES.concat(IMAGES).map((src, index) => (
+        {/* Lặp lại ảnh 3 lần để tạo hiệu ứng vô hạn mượt mà */}
+        {[...images, ...images, ...images].map((src, index) => (
           <div 
             key={index} 
             className="w-[140px] sm:w-[200px] inline-block flex-shrink-0"
           >
-            <img 
+            <Image 
               src={src}
               alt={`Story ${index + 1}`}
+              width={200}
+              height={300}
               className="w-full h-[180px] sm:h-[300px] object-cover rounded-md shadow-lg"
-              loading="eager"
+              priority={index < 6}
             />
           </div>
         ))}
@@ -94,10 +121,10 @@ function Hero() {
           {/* Title Section */}
           <motion.div variants={itemVariants} className="mt-4 sm:mt-8">
             <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold tracking-tight leading-[1.1]">
-              Sáng Tạo
+              Sáng Tạo Truyện 
             </h1>
             <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.1] md:text-right">
-              Truyện Cùng AI
+              Cùng AI <Sparkles className="inline w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" />
             </h1>
           </motion.div>
 

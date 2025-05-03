@@ -165,18 +165,29 @@ export function StoryCard({ story, onClick, variant = 'default', showRelevance =
         </div>
       )}
 
-      <div className="p-4 pt-0 mt-auto">
-        <div className="flex flex-wrap gap-1">
-          {story.tags?.map((tag: string) => (
-            <span
-              key={tag}
-              className="px-2 py-1 text-xs bg-gray-100 rounded-full"
-            >
-              {tag}
-            </span>
-          ))}
+      {story.tags && story.tags.length > 0 && (
+        <div className="p-4 pt-0 mt-auto">
+          <div className="flex flex-wrap gap-1 max-h-[32px] overflow-hidden">
+            {story.tags?.map((tag: string, index: number) => (
+              index < 3 ? (
+                <span
+                  key={tag}
+                  className="px-2 py-1 text-xs bg-gray-100 rounded-full whitespace-nowrap"
+                >
+                  {tag}
+                </span>
+              ) : index === 3 ? (
+                <span
+                  key="more"
+                  className="px-2 py-1 text-xs bg-gray-100 rounded-full whitespace-nowrap"
+                >
+                  +{(story.tags?.length ?? 0) - 3}
+                </span>
+              ) : null
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </Card>
   )
 } 

@@ -24,8 +24,8 @@ const AvatarFallback = ({ name, index }: { name: string, index: number }) => {
   const colorClass = avatarColors[index % avatarColors.length];
   
   return (
-    <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center ${colorClass}`}>
-      <span className="text-lg sm:text-xl font-semibold text-white">{initials}</span>
+    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${colorClass}`}>
+      <span className="text-lg font-semibold text-white">{initials}</span>
     </div>
   );
 };
@@ -83,58 +83,54 @@ export default function UserTestimonials() {
   ]
 
   return (
-    <div className="bg-background py-8 sm:py-16">
+    <section className="py-24 sm:py-32">
       <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-3xl sm:text-5xl font-bold mb-4">
+        <div className="max-w-3xl mx-auto text-center mb-16">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-6">
             Đánh Giá Từ Cộng Đồng
           </h2>
           <p className="text-xl text-muted-foreground">
             Khám phá trải nghiệm thực tế từ các tác giả đang sử dụng nền tảng
           </p>
-        </motion.div>
+        </div>
 
         <div className="relative w-full overflow-hidden">
           <motion.div 
-            className="flex gap-4"
+            className="flex gap-6"
             animate={{
-              x: [0, -4000],
+              x: [-2000, 0],
             }}
             transition={{
               x: {
                 repeat: Infinity,
-                duration: 50,
+                duration: 40,
                 ease: "linear",
               },
             }}
           >
-            {[...testimonials, ...testimonials, ...testimonials].map((testimonial, index) => (
+            {[...testimonials, ...testimonials].map((testimonial, index) => (
               <div 
                 key={index}
-                className="w-[280px] flex-shrink-0 bg-card p-6 rounded-xl shadow-lg"
+                className="w-[400px] flex-shrink-0 bg-card border rounded-xl p-8
+                  hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
               >
-                <div className="flex gap-1 mb-3">
+                <div className="flex gap-1 mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
 
-                <p className="text-base mb-4 text-muted-foreground line-clamp-3">
+                <p className="text-lg text-muted-foreground mb-6 line-clamp-3">
                   {testimonial.content}
                 </p>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <AvatarFallback 
                     name={testimonial.name} 
                     index={index} 
                   />
                   <div>
-                    <h3 className="font-semibold">
+                    <h3 className="font-semibold text-lg">
                       {testimonial.name}
                     </h3>
                     <p className="text-primary text-sm">
@@ -145,8 +141,12 @@ export default function UserTestimonials() {
               </div>
             ))}
           </motion.div>
+
+          {/* Gradient Overlays */}
+          <div className="absolute inset-y-0 left-0 w-40 bg-gradient-to-r from-background to-transparent" />
+          <div className="absolute inset-y-0 right-0 w-40 bg-gradient-to-l from-background to-transparent" />
         </div>
       </div>
-    </div>
+    </section>
   );
 } 

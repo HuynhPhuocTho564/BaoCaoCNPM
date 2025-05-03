@@ -72,7 +72,8 @@ export function InitialLoading() {
           '/api/vnpay',
           '/api/categories',
           '/api/subscribe',
-          '/api/revalidate'
+          '/api/revalidate',
+          '/api/stories/featured'
         ]
 
         // Tính progress cho mỗi API
