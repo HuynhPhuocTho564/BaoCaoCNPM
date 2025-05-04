@@ -57,6 +57,7 @@ export default function ChapterContent({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [storyTitle, setStoryTitle] = useState("")
   const [allChapters, setAllChapters] = useState<Chapter[]>([])
+  const [readingProgress, setReadingProgress] = useState(0)
 
   useEffect(() => {
     const fetchStoryData = async () => {
@@ -138,6 +139,15 @@ export default function ChapterContent({
     if (scrollableRef.current) {
       scrollableRef.current.scrollTop = scrollableRef.current.scrollHeight;
     }
+  }, [visibleDialogues])
+
+  const calculateProgress = () => {
+    if (!chapter?.dialogues) return 0
+    return (visibleDialogues.length / chapter.dialogues.length) * 100
+  }
+
+  useEffect(() => {
+    setReadingProgress(calculateProgress())
   }, [visibleDialogues])
 
   if (isLoading || !chapter) {
@@ -265,8 +275,17 @@ export default function ChapterContent({
 
       {/* Nội dung chính */}
       <div className="flex-1">
-        <div 
-          className="container max-w-2xl mx-auto px-4 py-8 select-none"
+        {/* Cập nhật style cho thanh progress */}
+        <div className="fixed top-0 left-0 w-full h-1.5 bg-muted/30 z-50">
+          <div 
+            className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all duration-300 ease-out shadow-lg shadow-primary/20"
+            style={{ 
+              width: `${readingProgress}%`,
+            }}
+          />
+        </div>
+
+        <div className="container max-w-2xl mx-auto px-4 py-8 select-none"
           onCopy={(e) => e.preventDefault()}
           onCut={(e) => e.preventDefault()}
           style={{ 
@@ -386,35 +405,40 @@ export default function ChapterContent({
             </div>
           </div>
 
-          <div className="flex justify-between items-center mt-12 gap-4">
-            {prevChapter ? (
+          {/* Thay thế phần điều hướng chương cũ */}
+          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-background/80 backdrop-blur-sm p-2 rounded-full border shadow-lg">
+            {prevChapter && (
               <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => {
                   startLoading(`/library/${storyId}/chapters/${prevChapter.chapter_id}`)
                   router.push(`/library/${storyId}/chapters/${prevChapter.chapter_id}`)
                 }}
-                className="flex items-center"
+                className="rounded-full"
+                title={`Chương trước: ${prevChapter.title}`}
               >
-                <ChevronLeft className="w-4 h-4 mr-2" />
-                Chương trước
+                <ChevronLeft className="w-5 h-5" />
               </Button>
-            ) : (
-              <div />
             )}
 
-            {nextChapter ? (
+            <div className="px-4 font-medium">
+              {visibleDialogues.length}/{chapter.dialogues.length}
+            </div>
+
+            {nextChapter && (
               <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => {
                   startLoading(`/library/${storyId}/chapters/${nextChapter.chapter_id}`)
                   router.push(`/library/${storyId}/chapters/${nextChapter.chapter_id}`)
                 }}
-                className="flex items-center"
+                className="rounded-full"
+                title={`Chương sau: ${nextChapter.title}`}
               >
-                Chương sau
-                <ChevronRight className="w-4 h-4 ml-2" />
+                <ChevronRight className="w-5 h-5" />
               </Button>
-            ) : (
-              <div />
             )}
           </div>
         </div>
