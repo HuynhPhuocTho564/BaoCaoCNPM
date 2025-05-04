@@ -157,6 +157,16 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
     }
   }
 
+  const handleCategoryClick = (category: string) => {
+    startLoading(`/library/search?category=${encodeURIComponent(category)}`)
+    router.push(`/library/search?category=${encodeURIComponent(category)}`)
+  }
+
+  const handleTagClick = (tag: string) => {
+    startLoading(`/library/search?tags=${encodeURIComponent(tag)}`)
+    router.push(`/library/search?tags=${encodeURIComponent(tag)}`)
+  }
+
   if (isLoading || !story) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -268,7 +278,10 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
           
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <span className="bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium">
+              <span 
+                className="bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium hover:bg-primary/20 cursor-pointer transition-colors"
+                onClick={() => handleCategoryClick(story.main_category)}
+              >
                 {story.main_category}
               </span>
               <span className="text-sm text-muted-foreground flex items-center gap-1.5">
@@ -286,7 +299,8 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
                 {story.tags.map((tag, index) => (
                   <span 
                     key={index}
-                    className="bg-muted/50 text-muted-foreground hover:bg-muted transition-colors px-3 py-1.5 rounded-full text-sm"
+                    className="bg-muted/50 text-muted-foreground hover:bg-muted transition-colors px-3 py-1.5 rounded-full text-sm cursor-pointer"
+                    onClick={() => handleTagClick(tag)}
                   >
                     #{tag}
                   </span>
