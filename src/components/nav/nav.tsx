@@ -40,7 +40,18 @@ const menuItems = [
   },
   {
     text: "Tạo truyện",
-    to: "/stories"
+    items: [
+      {
+        text: "Tạo bằng giao diện",
+        description: "Tạo truyện bằng giao diện trực quan",
+        to: "/stories/create",
+      },
+      {
+        text: "Tạo bằng AI",
+        description: "Tạo truyện thông qua trò chuyện với AI",
+        to: "/stories/create-ai",
+      }
+    ]
   },
   {
     text: "Hướng dẫn",
