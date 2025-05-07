@@ -36,8 +36,8 @@ ChatStoryAI là một nền tảng sáng tạo truyện với sự hỗ trợ c�
 
 1. Clone repository:
 ```bash
-git clone https://github.com/your-username/chatstoryai.git
-cd chatstoryai
+git clone https://github.com/NguyenHuynhPhuVinh-TomiSakae/ChatStoryAI.git
+cd ChatStoryAI
 ```
 
 2. Cài đặt dependencies:
@@ -66,31 +66,89 @@ npm run dev
 
 ```
 src/
-├── app/              # Pages và API routes
-├── components/       # React components
-├── lib/             # Utilities và helpers
-├── services/        # External services
-└── styles/          # Global styles
+├── app/ # Pages và API routes
+│ ├── account/ # Trang tài khoản
+│ ├── api/ # API endpoints
+│ │ ├── account/ # API liên quan đến tài khoản
+│ │ ├── ai/ # API liên quan đến AI
+│ │ ├── auth/ # API xác thực
+│ │ ├── library/ # API thư viện truyện
+│ │ ├── notifications/ # API thông báo
+│ │ ├── stories/ # API quản lý truyện
+│ │ └── user/ # API người dùng
+│ ├── library/ # Trang thư viện
+│ └── stories/ # Trang quản lý truyện
+├── components/ # React components
+│ ├── auth/ # Components xác thực
+│ ├── common/ # Components dùng chung
+│ ├── library/ # Components thư viện
+│ └── stories/ # Components quản lý truyện
+├── lib/ # Utilities và helpers
+│ ├── auth.ts # Cấu hình xác thực
+│ ├── db.ts # Kết nối database
+│ └── utils/ # Các utility functions
+├── services/ # External services
+│ ├── auth.client.ts # Xử lý xác thực phía client
+│ ├── auth.service.ts # Xử lý xác thực phía server
+│ └── google-drive.service.ts # Quản lý lưu trữ Google Drive
+└── types/ # TypeScript type definitions
 ```
 
 ## 🔑 API Endpoints
 
 ### Stories
-- `GET /api/stories` - Lấy danh sách truyện
-- `POST /api/stories/create` - Tạo truyện mới
-- `GET /api/stories/[id]` - Chi tiết truyện
-- `PUT /api/stories/[id]` - Cập nhật truyện
-- `DELETE /api/stories/[id]` - Xóa truyện
+- `GET /api/stories` - Lấy danh sách truyện 🔒
+- `POST /api/stories/create` - Tạo truyện mới 🔒
+- `GET /api/stories/[id]` - Chi tiết truyện 🔒
+- `PUT /api/stories/[id]` - Cập nhật truyện 🔒
+- `DELETE /api/stories/[id]` - Xóa truyện 🔒
+
+### Library
+- `GET /api/library` - Danh sách truyện công khai
+- `GET /api/library/new` - Truyện mới
+- `GET /api/library/popular` - Truyện phổ biến
+- `GET /api/library/search` - Tìm kiếm truyện
+- `POST /api/library/[id]/view` - Tăng lượt xem
 
 ### Chapters
-- `GET /api/stories/[id]/chapters` - Danh sách chương
-- `POST /api/stories/[id]/chapters` - Thêm chương mới
-- `GET /api/stories/[id]/chapters/[chapterId]` - Chi tiết chương
+- `GET /api/library/[id]/chapters` - Danh sách chương công khai
+- `GET /api/library/[id]/chapters/[chapterId]` - Chi tiết chương công khai
+- `POST /api/stories/[id]/chapters` - Thêm chương mới 🔒
+- `PUT /api/stories/[id]/chapters/[chapterId]` - Cập nhật chương 🔒
+- `DELETE /api/stories/[id]/chapters/[chapterId]` - Xóa chương 🔒
 
 ### Characters
-- `GET /api/stories/[id]/characters` - Danh sách nhân vật
-- `POST /api/stories/[id]/characters` - Thêm nhân vật mới
-- `PUT /api/stories/[id]/characters/[characterId]` - Cập nhật nhân vật
+- `GET /api/stories/[id]/characters` - Danh sách nhân vật 🔒
+- `POST /api/stories/[id]/characters` - Thêm nhân vật mới 🔒
+- `PUT /api/stories/[id]/characters/[characterId]` - Cập nhật nhân vật 🔒
+- `DELETE /api/stories/[id]/characters/[characterId]` - Xóa nhân vật 🔒
+
+### Comments
+- `GET /api/stories/[id]/comments` - Danh sách bình luận
+- `POST /api/stories/[id]/comments` - Thêm bình luận 🔒
+- `DELETE /api/stories/[id]/comments` - Xóa bình luận 🔒
+
+### Categories & Tags
+- `GET /api/categories` - Danh sách thể loại
+- `GET /api/tags` - Danh sách tag
+
+### User
+- `PUT /api/user/update-avatar` - Cập nhật avatar 🔒
+- `PATCH /api/user/update-username` - Cập nhật tên 🔒
+- `PUT /api/user/update-password` - Đổi mật khẩu 🔒
+- `DELETE /api/user/delete-account` - Xóa tài khoản 🔒
+
+### Bookmarks & Favorites
+- `GET /api/account/bookmarks` - Danh sách truyện đã lưu 🔒
+- `POST /api/stories/[id]/bookmarks` - Lưu/bỏ lưu truyện 🔒
+- `POST /api/stories/[id]/favorites` - Thích/bỏ thích truyện 🔒
+
+### Reading Progress
+- `POST /api/library/[id]/chapters/[chapterId]/read` - Đánh dấu đã đọc 🔒
+- `GET /api/account/view-history` - Lịch sử đọc 🔒
+
+Chú thích:
+- 🔒 : Yêu cầu đăng nhập
 
 ## 👥 Đóng Góp
 
@@ -112,8 +170,7 @@ Dự án được phân phối dưới giấy phép MIT. Xem `LICENSE` để bi�
 - Phone: 0762605309
 - Địa chỉ: Trường Đại Học Trà Vinh - DA22TTC
 
-## ✨ Người Đóng Góp
+## ✨ Người Thực Hiện Dự Án
 
-Cảm ơn những người đã đóng góp cho dự án này:
-
-- Nhóm sinh viên DA22TTC - Báo cáo môn học Công Nghệ Phần Mềm - Nguyễn Huỳnh Phú Vinh - Nguyễn Phú Vinh - Huỳnh Phước Thọ - Trường Đại học Trà Vinh
+Dự án được thực hiện bởi:
+Nhóm sinh viên DA22TTC - Báo cáo môn học Công Nghệ Phần Mềm - Nguyễn Huỳnh Phú Vinh - Nguyễn Phú Vinh - Huỳnh Phước Thọ - Trường Đại học Trà Vinh
