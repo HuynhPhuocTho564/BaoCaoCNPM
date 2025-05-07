@@ -49,7 +49,7 @@ const menuItems = [
       {
         text: "Tạo bằng AI",
         description: "Tạo truyện thông qua trò chuyện với AI",
-        to: "/stories/create-ai",
+        to: "/ai",
       }
     ]
   },
