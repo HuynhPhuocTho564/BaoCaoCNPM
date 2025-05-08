@@ -102,9 +102,9 @@ function PaymentCallbackContent() {
             <div className="space-y-2 py-2">
               <p className="text-sm text-muted-foreground">Gói Hỗ Trợ - 22.000đ</p>
               <div className="text-sm space-y-1 text-muted-foreground">
-                <p>✓ Huy hiệu người ủng hộ</p>
-                <p>✓ Được ghi nhận trong trang cảm ơn</p>
-                <p>✓ Góp phần duy trì máy chủ</p>
+                <p>✓ Nhận khung avatar ủng hộ</p>
+                <p>✓ Truy cập sớm tính năng mới</p>
+                <p>✓ Chế độ tạo truyện bằng trò chuyện AI</p>
               </div>
             </div>
           )}

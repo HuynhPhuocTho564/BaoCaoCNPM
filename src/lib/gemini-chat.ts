@@ -63,13 +63,15 @@ const safetySettings = [
   ];
 
 export interface Message {
-  role: "user" | "assistant";
-  content: string;
+  role: "user" | "assistant"
+  content: string
+  images?: string[] | null
 }
 
 export async function chat(
   message: string,
-  history: Message[] = []
+  history: Message[] = [],
+  imageFiles?: File[] | null
 ): Promise<ReadableStream> {
   try {
     const key = await getApiKey();
@@ -89,7 +91,21 @@ export async function chat(
       })),
     });
 
-    const result = await chat.sendMessageStream(message);
+    const parts: (string | { inlineData: { data: string; mimeType: string } })[] = [message]
+    
+    if (imageFiles?.length) {
+      for (const file of imageFiles) {
+        const imageData = await file.arrayBuffer()
+        parts.push({
+          inlineData: {
+            data: Buffer.from(imageData).toString("base64"),
+            mimeType: file.type
+          }
+        })
+      }
+    }
+
+    const result = await chat.sendMessageStream(parts);
 
     return new ReadableStream({
       async start(controller) {
@@ -104,4 +120,4 @@ export async function chat(
     console.error("Lỗi khi chat với AI:", error);
     throw error;
   }
-} 
+}

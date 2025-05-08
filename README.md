@@ -10,6 +10,8 @@ ChatStoryAI là một nền tảng sáng tạo truyện với sự hỗ trợ c�
 - Tạo hội thoại tự nhiên
 - Quản lý chương và đại cương
 - Tạo prompt cho ảnh bìa và avatar
+- Chế độ tạo truyện qua trò chuyện AI (Gói hỗ trợ)
+- Truy cập sớm tính năng mới (Gói hỗ trợ)
 
 ### 2. Thư Viện Truyện
 - Đọc truyện đa dạng thể loại

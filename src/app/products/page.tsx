@@ -16,7 +16,7 @@ export default function ProductsPage() {
       name: "Gói Miễn Phí",
       price: "0đ",
       features: [
-        "Truy cập tất cả tính năng",
+        "Truy cập tất cả tính năng cơ bản",
         "Không giới hạn thời gian sử dụng",
         "Cập nhật tính năng mới thường xuyên",
         "Hỗ trợ qua cộng đồng",
@@ -27,14 +27,15 @@ export default function ProductsPage() {
       label: "Bắt đầu ngay 🚀"
     },
     {
-      name: "Gói Hỗ Trợ",
+      name: "Gói Hỗ trợ",
       price: "22.000đ",
       features: [
         "Tất cả tính năng của gói miễn phí",
+        "Truy cập sớm tính năng mới",
+        "Chế độ tạo truyện bằng trò chuyện AI",
         "Hỗ trợ phát triển dự án",
         "Góp phần duy trì máy chủ",
-        "Nhận huy hiệu người ủng hộ",
-        "Được ghi nhận trong trang cảm ơn"
+        "Nhận khung avatar ủng hộ",
       ],
       isPopular: true,
       showLabel: true,
