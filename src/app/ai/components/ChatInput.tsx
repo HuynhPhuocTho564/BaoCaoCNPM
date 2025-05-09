@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Plus, Send, X } from "lucide-react"
 import Image from "next/image"
 import { useRef } from "react"
+import { Textarea } from "@/components/ui/textarea"
 
 interface ChatInputProps {
   input: string
@@ -26,6 +26,7 @@ export function ChatInput({
   onClearAllImages
 }: ChatInputProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -33,6 +34,22 @@ export function ChatInput({
       Array.from(files).forEach(file => {
         onImageUpload(file)
       })
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await onSubmit(e)
+    // Reset textarea height sau khi gửi
+    if (textareaRef.current) {
+      textareaRef.current.style.height = '56px'
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault()
+      handleSubmit(e as unknown as React.FormEvent)
     }
   }
 
@@ -79,7 +96,7 @@ export function ChatInput({
             )}
           </div>
         )}
-        <form className="flex gap-3 items-end" onSubmit={onSubmit}>
+        <form className="flex gap-3 items-end" onSubmit={handleSubmit}>
           <input
             type="file"
             ref={fileInputRef}
@@ -99,12 +116,20 @@ export function ChatInput({
             <Plus className="h-5 w-5" />
           </Button>
           <div className="flex-1">
-            <Input
+            <Textarea
+              ref={textareaRef}
               placeholder="Nhập câu hỏi của bạn..."
-              className="min-h-[56px]"
+              className="min-h-[56px] max-h-[200px] resize-none overflow-y-auto px-3 py-4 leading-relaxed"
               value={input}
               onChange={(e) => onInputChange(e.target.value)}
               disabled={isLoading}
+              rows={1}
+              onKeyDown={handleKeyDown}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = '56px';
+                target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
+              }}
             />
           </div>
           <Button 
@@ -116,6 +141,9 @@ export function ChatInput({
             <Send className="h-5 w-5" />
           </Button>
         </form>
+        <div className="text-center mt-2">
+          <span className="text-xs text-muted-foreground">Gửi tin nhắn bằng Ctrl + Enter</span>
+        </div>
       </div>
     </div>
   )
