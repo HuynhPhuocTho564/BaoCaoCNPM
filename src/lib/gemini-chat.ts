@@ -65,7 +65,10 @@ const safetySettings = [
 export interface Message {
   role: "user" | "assistant"
   content: string
-  images?: string[] | null
+  images?: {
+    fileId: string
+    url: string
+  }[]
 }
 
 export async function chat(

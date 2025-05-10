@@ -25,7 +25,7 @@ export class GoogleDriveService {
     file: Buffer, 
     mimeType: string, 
     userId: number, 
-    type: 'avatar' | 'cover' | 'character-avatar', 
+    type: 'avatar' | 'cover' | 'character-avatar' | 'chat',
     storyId: number | null,
     characterId?: number
   ) {
@@ -41,6 +41,7 @@ export class GoogleDriveService {
       // Tạo tên file dựa trên loại
       const fileName = type === 'avatar' ? `avatar_${userId}${extension}` :
                       type === 'cover' ? `cover_story_${storyId}${extension}` :
+                      type === 'chat' ? `chat_${userId}_${storyId}_${Date.now()}${extension}` :
                       `character_${characterId}_story_${storyId}${extension}`;
         
       // Kiểm tra file tồn tại

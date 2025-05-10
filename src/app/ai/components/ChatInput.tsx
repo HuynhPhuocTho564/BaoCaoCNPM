@@ -142,7 +142,7 @@ export function ChatInput({
           </Button>
         </form>
         <div className="text-center mt-2">
-          <span className="text-xs text-muted-foreground">Gửi tin nhắn bằng Ctrl + Enter</span>
+          <span className="text-xs text-muted-foreground">Gửi tin nhắn bằng Ctrl + Enter | Hỗ trợ tải ảnh lên bằng dấu &quot;+&quot;</span>
         </div>
       </div>
     </div>

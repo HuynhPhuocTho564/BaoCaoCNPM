@@ -28,17 +28,19 @@ export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEn
                   : "bg-muted"
               }`}
             >
-              {message.images && message.images.length > 0 && (
-                <div className="flex gap-2 overflow-x-auto pb-2">
-                  {message.images.map((image, imgIndex) => (
-                    <div key={imgIndex} className="relative w-40 h-40 flex-shrink-0">
-                      <Image
-                        src={image}
-                        alt={`Image ${imgIndex + 1}`}
-                        fill
-                        className="object-contain rounded-lg"
-                      />
-                    </div>
+              {(message.images && message.images.filter(img => img.url).length > 0) && (
+                <div className="flex gap-2 mb-4">
+                  {message.images?.map((image, index) => (
+                    image.url && (
+                      <div key={index} className="relative w-40 h-40">
+                        <Image
+                          src={image.url}
+                          alt={`Image ${index + 1}`}
+                          fill
+                          className="object-contain rounded-lg"
+                        />
+                      </div>
+                    )
                   ))}
                 </div>
               )}

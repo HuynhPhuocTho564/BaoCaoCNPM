@@ -7,6 +7,15 @@ import { Message, chat } from "@/lib/gemini-chat"
 import { WelcomeScreen } from "./components/WelcomeScreen"
 import { ChatMessages } from "./components/ChatMessages"
 import { ChatInput } from "./components/ChatInput"
+import { ChatSidebar } from "./components/ChatSidebar"
+import { toast } from "sonner"
+import { fetchChatHistory as fetchChatHistoryApi, fetchChatMessages, deleteChat, saveMessage } from './api/chatApi'
+
+interface ChatHistory {
+  chat_id: number
+  title: string
+  updated_at: string
+}
 
 export default function AIPage() {
   const { data: session } = useSession()
@@ -15,16 +24,63 @@ export default function AIPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [currentChatId, setCurrentChatId] = useState<number | null>(null)
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [selectedImages, setSelectedImages] = useState<string[]>([])
   const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   useEffect(() => {
     if (!isSupporter && messages.length > 0) {
       redirect('/')
     }
   }, [isSupporter, messages])
+
+  useEffect(() => {
+    if (isSupporter) {
+      fetchChatHistory()
+    }
+  }, [isSupporter])
+
+  const fetchChatHistory = async () => {
+    try {
+      const history = await fetchChatHistoryApi()
+      setChatHistory(history)
+    } catch (error) {
+      console.error("Lỗi khi lấy lịch sử chat:", error)
+    }
+  }
+
+  const handleSelectChat = async (chatId: number) => {
+    try {
+      const messages = await fetchChatMessages(chatId)
+      setMessages(messages)
+      setCurrentChatId(chatId)
+    } catch (error) {
+      console.error("Lỗi khi lấy tin nhắn:", error)
+    }
+  }
+
+  const handleNewChat = () => {
+    setMessages([])
+    setCurrentChatId(null)
+  }
+
+  const handleDeleteChat = async (chatId: number) => {
+    try {
+      await deleteChat(chatId)
+      await fetchChatHistory()
+      if (currentChatId === chatId) {
+        handleNewChat()
+      }
+      toast.success('Đã xóa cuộc trò chuyện thành công')
+    } catch (error) {
+      console.error("Lỗi khi xóa cuộc trò chuyện:", error)
+      toast.error('Không thể xóa cuộc trò chuyện. Vui lòng thử lại sau.')
+    }
+  }
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -59,10 +115,18 @@ export default function AIPage() {
     e.preventDefault()
     if ((!input.trim() && !imageFiles.length) || isLoading) return
 
+    const formData = new FormData()
+    imageFiles.forEach(file => {
+      formData.append('images', file)
+    })
+
     const userMessage: Message = {
       role: "user",
       content: input.trim(),
-      images: selectedImages
+      images: selectedImages.map((url, index) => ({
+        fileId: `temp-${index}`,
+        url
+      }))
     }
 
     setMessages(prev => [...prev, userMessage])
@@ -70,6 +134,18 @@ export default function AIPage() {
     setIsLoading(true)
 
     try {
+      // Lưu tin nhắn người dùng
+      const imageBuffers = imageFiles.length > 0 
+        ? await Promise.all(imageFiles.map(async (file) => ({
+            buffer: Array.from(new Uint8Array(await file.arrayBuffer())),
+            mimeType: file.type
+          })))
+        : undefined
+
+      const messageData = await saveMessage(currentChatId, "user", input.trim(), imageBuffers)
+      setCurrentChatId(messageData.chatId)
+
+      // Gọi API chat
       const stream = await chat(input, messages, imageFiles)
       const reader = stream.getReader()
       let accumulatedResponse = ""
@@ -95,6 +171,11 @@ export default function AIPage() {
           })
         }
       }
+
+      // Lưu tin nhắn AI
+      await saveMessage(messageData.chatId, "assistant", accumulatedResponse)
+
+      await fetchChatHistory()
     } catch (error) {
       console.error("Lỗi khi gửi tin nhắn:", error)
     } finally {
@@ -104,31 +185,42 @@ export default function AIPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
-      <div className="flex-1 overflow-hidden">
-        {messages.length === 0 ? (
-          <WelcomeScreen />
-        ) : isSupporter ? (
-          <ChatMessages
-            messages={messages}
+    <div className="flex h-[calc(100vh-4rem)]">
+      <ChatSidebar
+        chatHistory={chatHistory}
+        currentChatId={currentChatId}
+        onNewChat={handleNewChat}
+        onSelectChat={handleSelectChat}
+        onDeleteChat={handleDeleteChat}
+        isOpen={isSidebarOpen}
+        onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+      />
+      <div className="flex-1 flex flex-col">
+        <div className="flex-1 overflow-hidden">
+          {messages.length === 0 ? (
+            <WelcomeScreen />
+          ) : isSupporter ? (
+            <ChatMessages
+              messages={messages}
+              isLoading={isLoading}
+              chatContainerRef={chatContainerRef}
+              messagesEndRef={messagesEndRef}
+            />
+          ) : null}
+        </div>
+        {isSupporter && (
+          <ChatInput
+            input={input}
             isLoading={isLoading}
-            chatContainerRef={chatContainerRef}
-            messagesEndRef={messagesEndRef}
+            onInputChange={setInput}
+            onSubmit={handleSubmit}
+            selectedImages={selectedImages}
+            onImageUpload={handleImageUpload}
+            onClearImage={handleClearImage}
+            onClearAllImages={handleClearAllImages}
           />
-        ) : null}
+        )}
       </div>
-      {isSupporter && (
-        <ChatInput
-          input={input}
-          isLoading={isLoading}
-          onInputChange={setInput}
-          onSubmit={handleSubmit}
-          selectedImages={selectedImages}
-          onImageUpload={handleImageUpload}
-          onClearImage={handleClearImage}
-          onClearAllImages={handleClearAllImages}
-        />
-      )}
     </div>
   )
 }
