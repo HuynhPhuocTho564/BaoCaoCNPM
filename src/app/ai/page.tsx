@@ -114,12 +114,10 @@ export default function AIPage() {
     if (!isSupporter) return
     e.preventDefault()
     if ((!input.trim() && !imageFiles.length) || isLoading) return
-
     const formData = new FormData()
     imageFiles.forEach(file => {
       formData.append('images', file)
     })
-
     const userMessage: Message = {
       role: "user",
       content: input.trim(),
@@ -129,12 +127,14 @@ export default function AIPage() {
       }))
     }
 
+    // Hiển thị tin nhắn người dùng ngay lập tức
     setMessages(prev => [...prev, userMessage])
     setInput("")
     setIsLoading(true)
-
+    let newChatId = currentChatId
+    
     try {
-      // Lưu tin nhắn người dùng
+      // Lưu tin nhắn người dùng ở background
       const imageBuffers = imageFiles.length > 0 
         ? await Promise.all(imageFiles.map(async (file) => ({
             buffer: Array.from(new Uint8Array(await file.arrayBuffer())),
@@ -142,14 +142,23 @@ export default function AIPage() {
           })))
         : undefined
 
-      const messageData = await saveMessage(currentChatId, "user", input.trim(), imageBuffers)
-      setCurrentChatId(messageData.chatId)
+      const saveUserMessage = saveMessage(currentChatId, "user", input.trim(), imageBuffers)
+        .then(data => {
+          newChatId = data.chatId
+        })
+        .catch(error => {
+          console.error("Lỗi khi lưu tin nhắn người dùng:", error)
+          // Xóa tin nhắn người dùng nếu lưu thất bại
+          setMessages(prev => prev.filter(msg => msg !== userMessage))
+          throw error
+        })
 
-      // Gọi API chat
+      // Gọi API chat ngay không đợi lưu xong
       const stream = await chat(input, messages, imageFiles)
       const reader = stream.getReader()
       let accumulatedResponse = ""
       let isFirstChunk = true
+      let assistantMessage: Message
 
       while (true) {
         const { done, value } = await reader.read()
@@ -158,10 +167,11 @@ export default function AIPage() {
         accumulatedResponse += value
         
         if (isFirstChunk) {
-          setMessages(prev => [...prev, {
+          assistantMessage = {
             role: "assistant",
             content: accumulatedResponse
-          }])
+          } as Message
+          setMessages(prev => [...prev, assistantMessage])
           isFirstChunk = false
         } else {
           setMessages(prev => {
@@ -172,12 +182,23 @@ export default function AIPage() {
         }
       }
 
+      // Đợi lưu tin nhắn người dùng xong
+      await saveUserMessage
+
       // Lưu tin nhắn AI
-      await saveMessage(messageData.chatId, "assistant", accumulatedResponse)
+      await saveMessage(newChatId, "assistant", accumulatedResponse)
+        .catch(error => {
+          console.error("Lỗi khi lưu tin nhắn AI:", error)
+          // Xóa tin nhắn AI nếu lưu thất bại
+          if (assistantMessage) {
+            setMessages(prev => prev.filter(msg => msg !== assistantMessage))
+          }
+        })
 
       await fetchChatHistory()
     } catch (error) {
       console.error("Lỗi khi gửi tin nhắn:", error)
+      toast.error("Có lỗi xảy ra khi gửi tin nhắn")
     } finally {
       setIsLoading(false)
       handleClearAllImages()
