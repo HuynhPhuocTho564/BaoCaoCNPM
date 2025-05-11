@@ -18,6 +18,7 @@ interface ChatSidebarProps {
   onDeleteChat: (chatId: number) => Promise<void>
   isOpen: boolean
   onToggle: () => void
+  isLoading: boolean
 }
 
 export function ChatSidebar({
@@ -27,7 +28,8 @@ export function ChatSidebar({
   onSelectChat,
   onDeleteChat,
   isOpen,
-  onToggle
+  onToggle,
+  isLoading
 }: ChatSidebarProps) {
   const [deletingChatId, setDeletingChatId] = useState<number | null>(null);
 
@@ -59,6 +61,7 @@ export function ChatSidebar({
           <Button 
             className="w-full" 
             onClick={onNewChat}
+            disabled={isLoading}
           >
             <MessageSquarePlus className="mr-2 h-4 w-4" />
             Cuộc trò chuyện mới
@@ -72,8 +75,9 @@ export function ChatSidebar({
                 group flex items-center justify-between p-4 cursor-pointer hover:bg-accent
                 ${currentChatId === chat.chat_id ? 'bg-accent' : ''}
                 ${deletingChatId === chat.chat_id ? 'opacity-50 pointer-events-none' : ''}
+                ${isLoading ? 'pointer-events-none opacity-50' : ''}
               `}
-              onClick={() => onSelectChat(chat.chat_id)}
+              onClick={() => !isLoading && onSelectChat(chat.chat_id)}
             >
               <div className="flex-1 min-w-0">
                 <p className="truncate text-sm font-medium">

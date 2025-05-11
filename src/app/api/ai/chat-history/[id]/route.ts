@@ -26,7 +26,11 @@ export async function GET(
 
     // Lấy tin nhắn và hình ảnh
     const [messages] = await pool.query(`
-      SELECT m.*, 
+      SELECT 
+        m.message_id as id,
+        m.role,
+        m.content,
+        m.command_status,
         GROUP_CONCAT(
           JSON_OBJECT(
             'fileId', i.file_id,
@@ -43,12 +47,19 @@ export async function GET(
     // Format messages
     const formattedMessages = messages.map((msg: any) => {
       const messageData: {
+        id: number;
         role: string;
         content: string;
+        command_status?: 'loading' | 'success' | 'error';
         images?: { fileId: string; url: string; }[];
       } = {
+        id: msg.id,
         role: msg.role,
         content: msg.content
+      }
+      
+      if (msg.command_status) {
+        messageData.command_status = msg.command_status
       }
       
       if (msg.images && msg.images.length > 2) { // kiểm tra có ảnh thật sự

@@ -89,3 +89,16 @@ export const fetchCategories = async (): Promise<CategoriesResponse> => {
   const data = await res.json()
   return data
 }
+
+export const updateMessageStatus = async (
+  messageId: number, 
+  status: 'loading' | 'success' | 'error'
+) => {
+  await fetch(`/api/ai/chat-history/messages/${messageId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ command_status: status })
+  })
+}

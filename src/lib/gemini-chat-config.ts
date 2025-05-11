@@ -20,6 +20,7 @@ Các tag gợi ý: [chọn từ danh sách có sẵn] (ID: [tag_id])
 Lưu ý quan trọng:
 - CHỈ sử dụng các thể loại và tag có sẵn trong danh sách được cung cấp
 - KHÔNG đề xuất thể loại hoặc tag mới
+- KHÔNG sử dụng các tag trùng lặp
 - Nếu người dùng yêu cầu thêm thể loại/tag mới, hãy giải thích rằng hệ thống chỉ hỗ trợ các thể loại/tag có sẵn
 - Khi tạo truyện, PHẢI sử dụng ID chính xác từ danh sách
 
@@ -68,10 +69,12 @@ export const safetySettings = [
   ];
 
 export interface Message {
+  id?: number
   role: "user" | "assistant"
   content: string
   images?: {
     fileId: string
     url: string
   }[]
+  command_status?: 'loading' | 'success' | 'error'
 } 

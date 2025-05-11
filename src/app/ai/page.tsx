@@ -16,7 +16,8 @@ import {
   deleteChat, 
   saveMessage, 
   createStory,
-  fetchCategories
+  fetchCategories,
+  updateMessageStatus
 } from './api/chatApi'
 
 interface ChatHistory {
@@ -156,34 +157,52 @@ export default function AIPage() {
       await createStory(params)
       
       setCommandStatus('success')
-      setMessages(prev => {
-        const newMessages = [...prev]
-        const lastMessage = newMessages[newMessages.length - 1]
-        if (lastMessage) {
-          lastMessage.content = lastMessage.content.replace(
-            /\/create-story\s*({[\s\S]*?})/,
-            (match) => `${match}\n\n✅ Đã tạo truyện thành công!`
-          )
+      const lastMessage = messages[messages.length - 1]
+      if (lastMessage) {
+        // Cập nhật trạng thái trong CSDL
+        if (lastMessage?.id) {
+          await updateMessageStatus(lastMessage.id, 'success')
         }
-        return newMessages
-      })
+        
+        setMessages(prev => {
+          const newMessages = [...prev]
+          const lastMsg = newMessages[newMessages.length - 1]
+          if (lastMsg) {
+            lastMsg.content = lastMsg.content.replace(
+              /\/create-story\s*({[\s\S]*?})/,
+              (match) => `${match}\n\n✅ Đã tạo truyện thành công!`
+            )
+            lastMsg.command_status = 'success'
+          }
+          return newMessages
+        })
+      }
 
       toast.success('Đã tạo truyện thành công!')
     } catch (error) {
       console.error('Lỗi khi tạo truyện:', error)
       
       setCommandStatus('error')
-      setMessages(prev => {
-        const newMessages = [...prev]
-        const lastMessage = newMessages[newMessages.length - 1]
-        if (lastMessage) {
-          lastMessage.content = lastMessage.content.replace(
-            /\/create-story\s*({[\s\S]*?})/,
-            (match) => `${match}\n\n❌ Có lỗi xảy ra khi tạo truyện!`
-          )
+      const lastMessage = messages[messages.length - 1]
+      if (lastMessage) {
+        // Cập nhật trạng thái trong CSDL
+        if (lastMessage?.id) {
+          await updateMessageStatus(lastMessage.id, 'error')
         }
-        return newMessages
-      })
+        
+        setMessages(prev => {
+          const newMessages = [...prev]
+          const lastMsg = newMessages[newMessages.length - 1]
+          if (lastMsg) {
+            lastMsg.content = lastMsg.content.replace(
+              /\/create-story\s*({[\s\S]*?})/,
+              (match) => `${match}\n\n❌ Có lỗi xảy ra khi tạo truyện!`
+            )
+            lastMsg.command_status = 'error'
+          }
+          return newMessages
+        })
+      }
       
       toast.error('Có lỗi xảy ra khi tạo truyện')
     }
@@ -253,7 +272,13 @@ export default function AIPage() {
 
       // Lưu tin nhắn AI với chatId đã cập nhật
       if (assistantMessage.content !== "") {
-        await saveMessage(newChatId, "assistant", assistantMessage.content)
+        const savedMessage = await saveMessage(newChatId, "assistant", assistantMessage.content)
+        // Cập nhật id cho tin nhắn cuối
+        setMessages(prev => {
+          const newMessages = [...prev]
+          newMessages[newMessages.length - 1].id = savedMessage.messageId
+          return newMessages
+        })
       }
 
       await fetchChatHistory()
@@ -278,6 +303,7 @@ export default function AIPage() {
         onDeleteChat={handleDeleteChat}
         isOpen={isSidebarOpen}
         onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+        isLoading={isLoading}
       />
       <div className="flex-1 flex flex-col">
         <div className="flex-1 overflow-hidden">
