@@ -1,8 +1,7 @@
 import {
     GoogleGenerativeAI,
-    HarmCategory,
-    HarmBlockThreshold,
-  } from "@google/generative-ai";
+} from "@google/generative-ai";
+import { SYSTEM_PROMPT, generationConfig, safetySettings, Message } from './gemini-chat-config';
 
 let apiKey: string | null = null;
 async function getApiKey() {
@@ -18,73 +17,37 @@ async function getApiKey() {
     return apiKey;
   }
 
-const SYSTEM_PROMPT = `Bạn là một AI assistant chuyên về phát triển truyện. Nhiệm vụ của bạn là:
-- Giúp người dùng phát triển ý tưởng viết truyện
-- Đưa ra gợi ý về cốt truyện và nhân vật
-- Tạo đoạn hội thoại giữa các nhân vật
-- Phân tích và góp ý cải thiện nội dung
-- Trả lời các câu hỏi liên quan đến viết truyện
-
-Hãy trả lời một cách thân thiện, chuyên nghiệp và dễ hiểu.
-Luôn giữ giọng điệu tích cực và khuyến khích người dùng.
-
-Khi trả lời:
-- Sử dụng ngôn ngữ dễ hiểu, tránh từ ngữ chuyên môn phức tạp
-- Đưa ra các ví dụ cụ thể khi cần thiết
-- Chia nhỏ các ý thành điểm để dễ đọc
-- Khuyến khích sự sáng tạo của người dùng
-- Đề xuất các hướng phát triển mới cho ý tưởng
-- Tập trung vào việc cải thiện chất lượng nội dung`;
-
-const generationConfig = {
-  temperature: 1,
-  topP: 0.95,
-  topK: 40,
-  maxOutputTokens: 8192
-};
-
-const safetySettings = [
-    {
-      category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-      threshold: HarmBlockThreshold.BLOCK_NONE,
-    },
-    {
-      category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-      threshold: HarmBlockThreshold.BLOCK_NONE,
-    },
-    {
-      category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-      threshold: HarmBlockThreshold.BLOCK_NONE,
-    },
-    {
-      category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-      threshold: HarmBlockThreshold.BLOCK_NONE,
-    },
-  ];
-
-export interface Message {
-  role: "user" | "assistant"
-  content: string
-  images?: {
-    fileId: string
-    url: string
-  }[]
-}
-
 export async function chat(
   message: string,
   history: Message[] = [],
-  imageFiles?: File[] | null
+  imageFiles?: File[] | null,
+  onCreateStory?: (params: {
+    title: string;
+    description: string;
+    mainCategoryId: string;
+    tagIds: number[];
+  }) => Promise<void>,
+  categories: { id: number; name: string }[] = [],
+  tags: { id: number; name: string }[] = []
 ): Promise<ReadableStream> {
   try {
     const key = await getApiKey();
     const genAI = new GoogleGenerativeAI(key!);
 
+    // Thêm thông tin về categories và tags vào system prompt kèm ID
+    const systemPromptWithData = `${SYSTEM_PROMPT}
+
+Danh sách thể loại có sẵn:
+${categories.map(cat => `- ${cat.name} (ID: ${cat.id})`).join('\n')}
+
+Danh sách tag có sẵn:
+${tags.map(tag => `- ${tag.name} (ID: ${tag.id})`).join('\n')}`;
+
     const model = genAI.getGenerativeModel({
       model: "gemini-2.0-flash",
       generationConfig,
       safetySettings,
-      systemInstruction: SYSTEM_PROMPT
+      systemInstruction: systemPromptWithData
     });
 
     const chat = model.startChat({
@@ -112,8 +75,25 @@ export async function chat(
 
     return new ReadableStream({
       async start(controller) {
+        let accumulatedText = "";
+        
         for await (const chunk of result.stream) {
           const text = chunk.text();
+          accumulatedText += text;
+          
+          // Kiểm tra lệnh tạo truyện
+          if (accumulatedText.includes("/create-story")) {
+            const match = accumulatedText.match(/\/create-story\s*({[\s\S]*?})/);
+            if (match && onCreateStory) {
+              try {
+                const params = JSON.parse(match[1]);
+                await onCreateStory(params);
+              } catch (error) {
+                console.error("Lỗi khi xử lý lệnh tạo truyện:", error);
+              }
+            }
+          }
+          
           controller.enqueue(text);
         }
         controller.close();

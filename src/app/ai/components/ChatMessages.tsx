@@ -1,16 +1,50 @@
-import { Message } from "@/lib/gemini-chat"
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Message } from "@/lib/gemini-chat-config"
 import { Loader2 } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import Image from "next/image"
+import { CommandBox } from "./CommandBox"
+import { useState, useEffect } from "react"
 
 interface ChatMessagesProps {
   messages: Message[]
   isLoading: boolean
   chatContainerRef: React.RefObject<HTMLDivElement | null>
   messagesEndRef: React.RefObject<HTMLDivElement | null>
+  commandStatus: 'loading' | 'success' | 'error' | null
 }
 
-export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEndRef }: ChatMessagesProps) {
+export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEndRef, commandStatus }: ChatMessagesProps) {
+  const [commandParams, setCommandParams] = useState<Record<string, any> | null>(null)
+
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1]
+    if (lastMessage?.content) {
+      const match = lastMessage.content.match(/\/create-story\s*({[\s\S]*?})/);
+      if (match) {
+        try {
+          const params = JSON.parse(match[1]);
+          setCommandParams(params)
+        } catch (error) {
+          console.error("Lỗi khi parse params:", error)
+          setCommandParams(null)
+        }
+      } else {
+        setCommandParams(null)
+      }
+    }
+  }, [messages])
+
+  const processMessageContent = (content: string) => {
+    // Ẩn lệnh /create-story và JSON params ngay khi xuất hiện
+    const parts = content.split('/create-story')
+    if (parts.length > 1) {
+      // Chỉ giữ lại phần trước lệnh /create-story
+      return parts[0].trim()
+    }
+    return content
+  }
+
   return (
     <div ref={chatContainerRef} className="h-full overflow-y-auto p-4">
       <div className="max-w-3xl mx-auto">
@@ -45,7 +79,17 @@ export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEn
                 </div>
               )}
               {message.content && (
-                <ReactMarkdown>{message.content}</ReactMarkdown>
+                <ReactMarkdown>
+                  {processMessageContent(message.content)}
+                </ReactMarkdown>
+              )}
+              
+              {index === messages.length - 1 && commandParams && (
+                <CommandBox 
+                  command="/create-story"
+                  status={commandStatus || 'loading'}
+                  params={commandParams}
+                />
               )}
             </div>
           </div>

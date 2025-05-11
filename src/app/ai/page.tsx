@@ -3,18 +3,38 @@
 import { useState, useRef, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
-import { Message, chat } from "@/lib/gemini-chat"
+import { Message } from "@/lib/gemini-chat-config"
+import { chat } from "@/lib/gemini-chat"
 import { WelcomeScreen } from "./components/WelcomeScreen"
 import { ChatMessages } from "./components/ChatMessages"
 import { ChatInput } from "./components/ChatInput"
 import { ChatSidebar } from "./components/ChatSidebar"
 import { toast } from "sonner"
-import { fetchChatHistory as fetchChatHistoryApi, fetchChatMessages, deleteChat, saveMessage } from './api/chatApi'
+import { 
+  fetchChatHistory as fetchChatHistoryApi, 
+  fetchChatMessages, 
+  deleteChat, 
+  saveMessage, 
+  createStory,
+  fetchCategories
+} from './api/chatApi'
 
 interface ChatHistory {
   chat_id: number
   title: string
   updated_at: string
+}
+
+interface Category {
+  id: number;
+  name: string;
+  description: string;
+}
+
+interface Tag {
+  id: number;
+  name: string;
+  description: string;
 }
 
 export default function AIPage() {
@@ -31,6 +51,9 @@ export default function AIPage() {
   const [selectedImages, setSelectedImages] = useState<string[]>([])
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [categories, setCategories] = useState<Category[]>([])
+  const [tags, setTags] = useState<Tag[]>([])
+  const [commandStatus, setCommandStatus] = useState<'loading' | 'success' | 'error' | null>(null)
 
   useEffect(() => {
     if (!isSupporter && messages.length > 0) {
@@ -41,6 +64,18 @@ export default function AIPage() {
   useEffect(() => {
     if (isSupporter) {
       fetchChatHistory()
+      // Lấy danh sách thể loại và tag
+      const fetchData = async () => {
+        try {
+          const data = await fetchCategories()
+          setCategories(data.mainCategories)
+          setTags(data.tags)
+        } catch (error) {
+          console.error("Lỗi khi lấy dữ liệu:", error)
+          toast.error("Có lỗi xảy ra khi tải dữ liệu")
+        }
+      }
+      fetchData()
     }
   }, [isSupporter])
 
@@ -110,6 +145,50 @@ export default function AIPage() {
     setImageFiles([])
   }
 
+  const handleCreateStory = async (params: {
+    title: string;
+    description: string;
+    mainCategoryId: string;
+    tagIds: number[];
+  }) => {
+    try {
+      setCommandStatus('loading')
+      await createStory(params)
+      
+      setCommandStatus('success')
+      setMessages(prev => {
+        const newMessages = [...prev]
+        const lastMessage = newMessages[newMessages.length - 1]
+        if (lastMessage) {
+          lastMessage.content = lastMessage.content.replace(
+            /\/create-story\s*({[\s\S]*?})/,
+            (match) => `${match}\n\n✅ Đã tạo truyện thành công!`
+          )
+        }
+        return newMessages
+      })
+
+      toast.success('Đã tạo truyện thành công!')
+    } catch (error) {
+      console.error('Lỗi khi tạo truyện:', error)
+      
+      setCommandStatus('error')
+      setMessages(prev => {
+        const newMessages = [...prev]
+        const lastMessage = newMessages[newMessages.length - 1]
+        if (lastMessage) {
+          lastMessage.content = lastMessage.content.replace(
+            /\/create-story\s*({[\s\S]*?})/,
+            (match) => `${match}\n\n❌ Có lỗi xảy ra khi tạo truyện!`
+          )
+        }
+        return newMessages
+      })
+      
+      toast.error('Có lỗi xảy ra khi tạo truyện')
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     if (!isSupporter) return
     e.preventDefault()
@@ -131,10 +210,9 @@ export default function AIPage() {
     setMessages(prev => [...prev, userMessage])
     setInput("")
     setIsLoading(true)
-    let newChatId = currentChatId
     
     try {
-      // Lưu tin nhắn người dùng ở background
+      // Lưu tin nhắn người dùng và lấy chatId
       const imageBuffers = imageFiles.length > 0 
         ? await Promise.all(imageFiles.map(async (file) => ({
             buffer: Array.from(new Uint8Array(await file.arrayBuffer())),
@@ -142,23 +220,18 @@ export default function AIPage() {
           })))
         : undefined
 
-      const saveUserMessage = saveMessage(currentChatId, "user", input.trim(), imageBuffers)
-        .then(data => {
-          newChatId = data.chatId
-        })
-        .catch(error => {
-          console.error("Lỗi khi lưu tin nhắn người dùng:", error)
-          // Xóa tin nhắn người dùng nếu lưu thất bại
-          setMessages(prev => prev.filter(msg => msg !== userMessage))
-          throw error
-        })
+      // Lưu tin nhắn người dùng và đợi kết quả
+      const userMessageResponse = await saveMessage(currentChatId, "user", input.trim(), imageBuffers)
+      const newChatId = userMessageResponse.chatId
+      setCurrentChatId(newChatId) // Cập nhật currentChatId ngay lập tức
 
-      // Gọi API chat ngay không đợi lưu xong
-      const stream = await chat(input, messages, imageFiles)
+      const stream = await chat(input, messages, imageFiles, handleCreateStory, categories, tags)
       const reader = stream.getReader()
       let accumulatedResponse = ""
-      let isFirstChunk = true
-      let assistantMessage: Message
+      const assistantMessage: Message = {
+        role: "assistant",
+        content: ""
+      }
 
       while (true) {
         const { done, value } = await reader.read()
@@ -166,13 +239,9 @@ export default function AIPage() {
         
         accumulatedResponse += value
         
-        if (isFirstChunk) {
-          assistantMessage = {
-            role: "assistant",
-            content: accumulatedResponse
-          } as Message
+        if (assistantMessage.content === "") {
+          assistantMessage.content = accumulatedResponse
           setMessages(prev => [...prev, assistantMessage])
-          isFirstChunk = false
         } else {
           setMessages(prev => {
             const newMessages = [...prev]
@@ -182,23 +251,17 @@ export default function AIPage() {
         }
       }
 
-      // Đợi lưu tin nhắn người dùng xong
-      await saveUserMessage
-
-      // Lưu tin nhắn AI
-      await saveMessage(newChatId, "assistant", accumulatedResponse)
-        .catch(error => {
-          console.error("Lỗi khi lưu tin nhắn AI:", error)
-          // Xóa tin nhắn AI nếu lưu thất bại
-          if (assistantMessage) {
-            setMessages(prev => prev.filter(msg => msg !== assistantMessage))
-          }
-        })
+      // Lưu tin nhắn AI với chatId đã cập nhật
+      if (assistantMessage.content !== "") {
+        await saveMessage(newChatId, "assistant", assistantMessage.content)
+      }
 
       await fetchChatHistory()
     } catch (error) {
       console.error("Lỗi khi gửi tin nhắn:", error)
       toast.error("Có lỗi xảy ra khi gửi tin nhắn")
+      // Xóa tin nhắn người dùng nếu có lỗi
+      setMessages(prev => prev.filter(msg => msg !== userMessage))
     } finally {
       setIsLoading(false)
       handleClearAllImages()
@@ -226,6 +289,7 @@ export default function AIPage() {
               isLoading={isLoading}
               chatContainerRef={chatContainerRef}
               messagesEndRef={messagesEndRef}
+              commandStatus={commandStatus}
             />
           ) : null}
         </div>

@@ -41,4 +41,51 @@ export const saveMessage = async (
     })
   })
   return await res.json()
-} 
+}
+
+export const createStory = async (params: {
+  title: string;
+  description: string;
+  mainCategoryId: string | number;
+  tagIds: number[];
+}) => {
+  const formData = new FormData()
+  formData.append('title', params.title)
+  formData.append('description', params.description)
+  formData.append('mainCategoryId', params.mainCategoryId.toString())
+  formData.append('tagIds', JSON.stringify(params.tagIds))
+
+  const response = await fetch('/api/stories/create', {
+    method: 'POST',
+    body: formData
+  })
+
+  if (!response.ok) {
+    throw new Error('Không thể tạo truyện')
+  }
+
+  return await response.json()
+}
+
+interface Category {
+  id: number;
+  name: string;
+  description: string;
+}
+
+interface Tag {
+  id: number;
+  name: string;
+  description: string;
+}
+
+interface CategoriesResponse {
+  mainCategories: Category[];
+  tags: Tag[];
+}
+
+export const fetchCategories = async (): Promise<CategoriesResponse> => {
+  const res = await fetch('/api/categories')
+  const data = await res.json()
+  return data
+}
