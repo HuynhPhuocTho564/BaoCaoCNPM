@@ -11,9 +11,10 @@ interface ChatMessagesProps {
   chatContainerRef: React.RefObject<HTMLDivElement | null>
   messagesEndRef: React.RefObject<HTMLDivElement | null>
   commandStatus: 'loading' | 'success' | 'error' | null
+  stories?: any[]
 }
 
-export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEndRef, commandStatus }: ChatMessagesProps) {
+export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEndRef, commandStatus, stories }: ChatMessagesProps) {
   const getCommandParams = (content: string) => {
     const match = content.match(/\/create-story\s*({[\s\S]*?})/);
     if (match) {
@@ -35,6 +36,11 @@ export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEn
         return parts[0].trim()
       }
     }
+
+    if (content.includes('/list-stories')) {
+      return content.replace('/list-stories', '').trim()
+    }
+
     return content
   }
 
@@ -43,6 +49,7 @@ export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEn
       <div className="max-w-3xl mx-auto">
         {messages.map((message, index) => {
           const messageCommandParams = message.content ? getCommandParams(message.content) : null;
+          const hasListStoriesCommand = message.content?.includes('/list-stories');
           
           return (
             <div
@@ -89,6 +96,14 @@ export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEn
                       'success'
                     }
                     params={messageCommandParams}
+                  />
+                )}
+
+                {hasListStoriesCommand && (
+                  <CommandBox 
+                    command="/list-stories"
+                    status={message.command_status || (index === messages.length - 1 ? commandStatus : null) || 'success'}
+                    stories={stories}
                   />
                 )}
               </div>
