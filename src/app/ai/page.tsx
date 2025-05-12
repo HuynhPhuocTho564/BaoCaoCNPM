@@ -58,6 +58,7 @@ export default function AIPage() {
   const [tags, setTags] = useState<Tag[]>([])
   const [commandStatus, setCommandStatus] = useState<'loading' | 'success' | 'error' | null>(null)
   const [stories, setStories] = useState<any[]>([])
+  const [cachedStories, setCachedStories] = useState<any[]>([])
 
   useEffect(() => {
     if (!isSupporter && messages.length > 0) {
@@ -68,12 +69,15 @@ export default function AIPage() {
   useEffect(() => {
     if (isSupporter) {
       fetchChatHistory()
-      // Lấy danh sách thể loại và tag
+      // Tải trước danh sách truyện cùng với categories và tags
       const fetchData = async () => {
         try {
-          const data = await fetchCategories()
-          setCategories(data.mainCategories)
-          setTags(data.tags)
+          const [categoriesData] = await Promise.all([
+            fetchCategories(),
+            prefetchStories()
+          ])
+          setCategories(categoriesData.mainCategories)
+          setTags(categoriesData.tags)
         } catch (error) {
           console.error("Lỗi khi lấy dữ liệu:", error)
           toast.error("Có lỗi xảy ra khi tải dữ liệu")
@@ -211,31 +215,36 @@ export default function AIPage() {
     }
   }
 
+  const prefetchStories = async () => {
+    try {
+      const userStories = await fetchUserStories()
+      setCachedStories(userStories)
+    } catch (error) {
+      console.error('Lỗi khi tải danh sách truyện:', error)
+    }
+  }
+
   const handleListStories = async () => {
     try {
       setCommandStatus('loading')
-      const userStories = await fetchUserStories()
-      setStories(userStories)
+      // Sử dụng danh sách truyện đã cache
+      setStories(cachedStories)
       setCommandStatus('success')
 
-      // Cập nhật tin nhắn cuối cùng của AI
       const lastMessage = messages[messages.length - 1]
       if (lastMessage) {
-        // Cập nhật trạng thái trong CSDL
         if (lastMessage?.id) {
           await updateMessageStatus(lastMessage.id, 'success')
         }
         
+        // Thêm danh sách truyện vào nội dung tin nhắn
         setMessages(prev => {
           const newMessages = [...prev]
           const lastMsg = newMessages[newMessages.length - 1]
           if (lastMsg) {
-            // Ẩn lệnh /list-stories và thêm kết quả
-            lastMsg.content = lastMsg.content.replace(
-              /\/list-stories/,
-              ''
-            ).trim()
+            lastMsg.content = `${lastMsg.content}\n\nDanh sách truyện của bạn:`
             lastMsg.command_status = 'success'
+            lastMsg.stories = cachedStories
           }
           return newMessages
         })

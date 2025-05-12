@@ -103,7 +103,7 @@ export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEn
                   <CommandBox 
                     command="/list-stories"
                     status={message.command_status || (index === messages.length - 1 ? commandStatus : null) || 'success'}
-                    stories={stories}
+                    stories={message.stories || stories}
                   />
                 )}
               </div>

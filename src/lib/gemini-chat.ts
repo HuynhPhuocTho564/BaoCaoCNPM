@@ -54,7 +54,11 @@ ${tags.map(tag => `- ${tag.name} (ID: ${tag.id})`).join('\n')}`;
     const chat = model.startChat({
       history: history.map((msg) => ({
         role: msg.role === "user" ? "user" : "model",
-        parts: [{ text: msg.content }],
+        parts: [{ 
+          text: msg.stories 
+            ? `${msg.content}\n\nDanh sách truyện:\n${JSON.stringify(msg.stories, null, 2)}`
+            : msg.content 
+        }],
       })),
     });
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   HarmCategory,
   HarmBlockThreshold,
@@ -86,4 +87,5 @@ export interface Message {
     url: string
   }[]
   command_status?: 'loading' | 'success' | 'error'
+  stories?: any[]
 } 
