@@ -27,7 +27,6 @@ export async function chat(
     mainCategoryId: string;
     tagIds: number[];
   }) => Promise<void>,
-  onListStories?: () => Promise<void>,
   categories: { id: number; name: string }[] = [],
   tags: { id: number; name: string }[] = []
 ): Promise<ReadableStream> {
@@ -54,11 +53,7 @@ ${tags.map(tag => `- ${tag.name} (ID: ${tag.id})`).join('\n')}`;
     const chat = model.startChat({
       history: history.map((msg) => ({
         role: msg.role === "user" ? "user" : "model",
-        parts: [{ 
-          text: msg.stories 
-            ? `${msg.content}\n\nDanh sách truyện:\n${JSON.stringify(msg.stories, null, 2)}`
-            : msg.content 
-        }],
+        parts: [{ text: msg.content }],
       })),
     });
 
@@ -86,7 +81,7 @@ ${tags.map(tag => `- ${tag.name} (ID: ${tag.id})`).join('\n')}`;
           const text = chunk.text();
           accumulatedText += text;
           
-          // Kiểm tra các lệnh
+          // Kiểm tra lệnh tạo truyện
           if (accumulatedText.includes("/create-story")) {
             const match = accumulatedText.match(/\/create-story\s*({[\s\S]*?})/);
             if (match && onCreateStory) {
@@ -96,14 +91,6 @@ ${tags.map(tag => `- ${tag.name} (ID: ${tag.id})`).join('\n')}`;
               } catch (error) {
                 console.error("Lỗi khi xử lý lệnh tạo truyện:", error);
               }
-            }
-          }
-
-          if (accumulatedText.includes("/list-stories") && onListStories) {
-            try {
-              await onListStories();
-            } catch (error) {
-              console.error("Lỗi khi xử lý lệnh hiển thị truyện:", error);
             }
           }
           

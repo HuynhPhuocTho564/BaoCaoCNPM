@@ -26,8 +26,7 @@ export const saveMessage = async (
   chatId: number | null,
   role: "user" | "assistant",
   content: string,
-  images?: { buffer: number[], mimeType: string }[],
-  command_status?: 'loading' | 'success' | 'error'
+  images?: { buffer: number[], mimeType: string }[]
 ) => {
   const res = await fetch('/api/ai/chat-history/messages', {
     method: 'POST',
@@ -38,7 +37,6 @@ export const saveMessage = async (
       chatId,
       role,
       content,
-      command_status,
       ...(images && { images })
     })
   })
@@ -103,10 +101,4 @@ export const updateMessageStatus = async (
     },
     body: JSON.stringify({ command_status: status })
   })
-}
-
-export const fetchUserStories = async () => {
-  const res = await fetch('/api/stories')
-  const data = await res.json()
-  return data.stories
 }

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useState, useRef, useEffect } from "react"
@@ -18,8 +17,7 @@ import {
   saveMessage, 
   createStory,
   fetchCategories,
-  updateMessageStatus,
-  fetchUserStories
+  updateMessageStatus
 } from './api/chatApi'
 
 interface ChatHistory {
@@ -57,8 +55,6 @@ export default function AIPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [tags, setTags] = useState<Tag[]>([])
   const [commandStatus, setCommandStatus] = useState<'loading' | 'success' | 'error' | null>(null)
-  const [stories, setStories] = useState<any[]>([])
-  const [cachedStories, setCachedStories] = useState<any[]>([])
 
   useEffect(() => {
     if (!isSupporter && messages.length > 0) {
@@ -69,15 +65,12 @@ export default function AIPage() {
   useEffect(() => {
     if (isSupporter) {
       fetchChatHistory()
-      // Tải trước danh sách truyện cùng với categories và tags
+      // Lấy danh sách thể loại và tag
       const fetchData = async () => {
         try {
-          const [categoriesData] = await Promise.all([
-            fetchCategories(),
-            prefetchStories()
-          ])
-          setCategories(categoriesData.mainCategories)
-          setTags(categoriesData.tags)
+          const data = await fetchCategories()
+          setCategories(data.mainCategories)
+          setTags(data.tags)
         } catch (error) {
           console.error("Lỗi khi lấy dữ liệu:", error)
           toast.error("Có lỗi xảy ra khi tải dữ liệu")
@@ -215,66 +208,6 @@ export default function AIPage() {
     }
   }
 
-  const prefetchStories = async () => {
-    try {
-      const userStories = await fetchUserStories()
-      setCachedStories(userStories)
-    } catch (error) {
-      console.error('Lỗi khi tải danh sách truyện:', error)
-    }
-  }
-
-  const handleListStories = async () => {
-    try {
-      setCommandStatus('loading')
-      // Sử dụng danh sách truyện đã cache
-      setStories(cachedStories)
-      setCommandStatus('success')
-
-      const lastMessage = messages[messages.length - 1]
-      if (lastMessage) {
-        if (lastMessage?.id) {
-          await updateMessageStatus(lastMessage.id, 'success')
-        }
-        
-        // Thêm danh sách truyện vào nội dung tin nhắn
-        setMessages(prev => {
-          const newMessages = [...prev]
-          const lastMsg = newMessages[newMessages.length - 1]
-          if (lastMsg) {
-            lastMsg.content = `${lastMsg.content}\n\nDanh sách truyện của bạn:`
-            lastMsg.command_status = 'success'
-            lastMsg.stories = cachedStories
-          }
-          return newMessages
-        })
-      }
-
-    } catch (error) {
-      console.error('Lỗi khi xem danh sách truyện:', error)
-      setCommandStatus('error')
-
-      // Cập nhật trạng thái lỗi trong tin nhắn cuối
-      const lastMessage = messages[messages.length - 1]
-      if (lastMessage) {
-        if (lastMessage?.id) {
-          await updateMessageStatus(lastMessage.id, 'error')
-        }
-        
-        setMessages(prev => {
-          const newMessages = [...prev]
-          const lastMsg = newMessages[newMessages.length - 1]
-          if (lastMsg) {
-            lastMsg.command_status = 'error'
-          }
-          return newMessages
-        })
-      }
-
-      toast.error('Có lỗi xảy ra khi tải danh sách truyện')
-    }
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     if (!isSupporter) return
     e.preventDefault()
@@ -311,15 +244,7 @@ export default function AIPage() {
       const newChatId = userMessageResponse.chatId
       setCurrentChatId(newChatId) // Cập nhật currentChatId ngay lập tức
 
-      const stream = await chat(
-        input, 
-        messages, 
-        imageFiles, 
-        handleCreateStory,
-        handleListStories, 
-        categories, 
-        tags
-      )
+      const stream = await chat(input, messages, imageFiles, handleCreateStory, categories, tags)
       const reader = stream.getReader()
       let accumulatedResponse = ""
       const assistantMessage: Message = {
@@ -391,7 +316,6 @@ export default function AIPage() {
               chatContainerRef={chatContainerRef}
               messagesEndRef={messagesEndRef}
               commandStatus={commandStatus}
-              stories={stories}
             />
           ) : null}
         </div>

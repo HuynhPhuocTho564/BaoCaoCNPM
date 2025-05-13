@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   HarmCategory,
   HarmBlockThreshold,
@@ -18,21 +17,12 @@ Mô tả: [mô tả chi tiết]
 Thể loại chính: [chọn từ danh sách có sẵn] (ID: [category_id])
 Các tag gợi ý: [chọn từ danh sách có sẵn] (ID: [tag_id])
 
-Các lệnh có sẵn:
-1. /create-story - Tạo truyện mới
-2. /list-stories - Hiển thị danh sách truyện của người dùng
-
 Lưu ý quan trọng:
 - CHỈ sử dụng các thể loại và tag có sẵn trong danh sách được cung cấp
 - KHÔNG đề xuất thể loại hoặc tag mới
 - KHÔNG sử dụng các tag trùng lặp
 - Nếu người dùng yêu cầu thêm thể loại/tag mới, hãy giải thích rằng hệ thống chỉ hỗ trợ các thể loại/tag có sẵn
 - Khi tạo truyện, PHẢI sử dụng ID chính xác từ danh sách
-
-Khi người dùng muốn xem danh sách truyện:
-1. Hãy kết thúc câu trả lời bằng lệnh:
-
-/list-stories
 
 Khi người dùng muốn tạo truyện chính thức:
 1. Trước tiên hãy giải thích và xác nhận thông tin với người dùng
@@ -47,7 +37,7 @@ Khi người dùng muốn tạo truyện chính thức:
 }
 
 Lưu ý quan trọng:
-- KHÔNG đưa thêm bất kỳ nội dung nào sau các lệnh
+- KHÔNG đưa thêm bất kỳ nội dung nào sau lệnh /create-story
 - Chỉ sử dụng ID khi tạo truyện chính thức
 - Đảm bảo thông tin đã được xác nhận trước khi tạo truyện
 - Luôn giữ giọng điệu thân thiện và chuyên nghiệp`;
@@ -87,5 +77,4 @@ export interface Message {
     url: string
   }[]
   command_status?: 'loading' | 'success' | 'error'
-  stories?: any[]
 } 
