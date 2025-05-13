@@ -242,11 +242,12 @@ export default function AIPage() {
       // Lưu tin nhắn người dùng và đợi kết quả
       const userMessageResponse = await saveMessage(currentChatId, "user", input.trim(), imageBuffers)
       const newChatId = userMessageResponse.chatId
-      setCurrentChatId(newChatId) // Cập nhật currentChatId ngay lập tức
+      setCurrentChatId(newChatId)
 
+      // Thu thập toàn bộ phản hồi trước khi lưu
+      let fullResponse = ""
       const stream = await chat(input, messages, imageFiles, handleCreateStory, categories, tags)
       const reader = stream.getReader()
-      let accumulatedResponse = ""
       const assistantMessage: Message = {
         role: "assistant",
         content: ""
@@ -256,24 +257,23 @@ export default function AIPage() {
         const { done, value } = await reader.read()
         if (done) break
         
-        accumulatedResponse += value
+        fullResponse += value
         
         if (assistantMessage.content === "") {
-          assistantMessage.content = accumulatedResponse
+          assistantMessage.content = fullResponse
           setMessages(prev => [...prev, assistantMessage])
         } else {
           setMessages(prev => {
             const newMessages = [...prev]
-            newMessages[newMessages.length - 1].content = accumulatedResponse
+            newMessages[newMessages.length - 1].content = fullResponse
             return newMessages
           })
         }
       }
 
-      // Lưu tin nhắn AI với chatId đã cập nhật
-      if (assistantMessage.content !== "") {
-        const savedMessage = await saveMessage(newChatId, "assistant", assistantMessage.content)
-        // Cập nhật id cho tin nhắn cuối
+      // Lưu toàn bộ phản hồi sau khi đã thu thập xong
+      if (fullResponse !== "") {
+        const savedMessage = await saveMessage(newChatId, "assistant", fullResponse)
         setMessages(prev => {
           const newMessages = [...prev]
           newMessages[newMessages.length - 1].id = savedMessage.messageId
