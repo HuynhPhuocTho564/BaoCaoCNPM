@@ -17,6 +17,19 @@ async function getApiKey() {
     return apiKey;
   }
 
+interface Story {
+  story_id: number
+  title: string
+  main_category: string
+  status: 'draft' | 'published' | 'archived'
+  description?: string
+  cover_image?: string | null
+  view_count?: number
+  favorite_count?: number
+  updated_at?: string
+  tags?: string[]
+}
+
 export async function chat(
   message: string,
   history: Message[] = [],
@@ -28,20 +41,39 @@ export async function chat(
     tagIds: number[];
   }) => Promise<void>,
   categories: { id: number; name: string }[] = [],
-  tags: { id: number; name: string }[] = []
+  tags: { id: number; name: string }[] = [],
+  selectedStory?: Story | null
 ): Promise<ReadableStream> {
   try {
     const key = await getApiKey();
     const genAI = new GoogleGenerativeAI(key!);
 
-    // Thêm thông tin về categories và tags vào system prompt kèm ID
-    const systemPromptWithData = `${SYSTEM_PROMPT}
+    // Tạo system prompt với thông tin truyện được chọn
+    let systemPromptWithData = `${SYSTEM_PROMPT}
 
 Danh sách thể loại có sẵn:
 ${categories.map(cat => `- ${cat.name} (ID: ${cat.id})`).join('\n')}
 
 Danh sách tag có sẵn:
 ${tags.map(tag => `- ${tag.name} (ID: ${tag.id})`).join('\n')}`;
+
+    // Thêm thông tin truyện nếu có
+    if (selectedStory) {
+      systemPromptWithData += `
+
+Truyện đang được chọn:
+Tiêu đề: ${selectedStory.title}
+Mô tả: ${selectedStory.description || 'Chưa có mô tả'}
+Thể loại: ${selectedStory.main_category}
+Tags: ${selectedStory.tags?.join(', ') || 'Chưa có tags'}
+Trạng thái: ${selectedStory.status}
+Lượt xem: ${selectedStory.view_count || 0}
+Lượt thích: ${selectedStory.favorite_count || 0}
+ID: ${selectedStory.story_id}
+Cập nhật lần cuối: ${selectedStory.updated_at || 'Không có thông tin'}
+
+Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện này dựa trên các thông tin trên.`;
+    }
 
     const model = genAI.getGenerativeModel({
       model: "gemini-2.0-flash",

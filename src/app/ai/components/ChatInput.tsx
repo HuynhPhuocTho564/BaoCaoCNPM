@@ -1,8 +1,17 @@
 import { Button } from "@/components/ui/button"
-import { Plus, Send, X } from "lucide-react"
+import { Plus, Send, X} from "lucide-react"
 import Image from "next/image"
-import { useRef } from "react"
+import { useRef, useEffect, useState } from "react"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { toast } from "sonner"
+
+interface Story {
+  story_id: number
+  title: string
+  main_category: string
+  status: 'draft' | 'published' | 'archived'
+}
 
 interface ChatInputProps {
   input: string
@@ -13,6 +22,7 @@ interface ChatInputProps {
   onImageUpload: (file: File) => void
   onClearImage: (index: number) => void
   onClearAllImages: () => void
+  onStorySelect: (story: Story | null) => void
 }
 
 export function ChatInput({ 
@@ -23,10 +33,31 @@ export function ChatInput({
   selectedImages,
   onImageUpload,
   onClearImage,
-  onClearAllImages
+  onClearAllImages,
+  onStorySelect
 }: ChatInputProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [stories, setStories] = useState<Story[]>([])
+  const [isLoadingStories, setIsLoadingStories] = useState(true)
+
+  useEffect(() => {
+    const fetchStories = async () => {
+      try {
+        const response = await fetch('/api/stories')
+        const data = await response.json()
+        if (response.ok) {
+          setStories(data.stories)
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải danh sách truyện:", error)
+        toast.error("Không thể tải danh sách truyện")
+      } finally {
+        setIsLoadingStories(false)
+      }
+    }
+    fetchStories()
+  }, [])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -96,7 +127,31 @@ export function ChatInput({
             )}
           </div>
         )}
+        
         <form className="flex gap-3 items-end" onSubmit={handleSubmit}>
+          <Select
+            onValueChange={(value) => {
+              const story = stories.find(s => s.story_id.toString() === value)
+              onStorySelect(story || null)
+            }}
+          >
+            <SelectTrigger className="w-[200px] h-[56px]">
+              <SelectValue placeholder={isLoadingStories ? "Đang tải..." : "Chọn truyện..."} />
+            </SelectTrigger>
+            <SelectContent className="max-h-[300px] overflow-y-auto">
+              <SelectItem value="0">Không chọn truyện</SelectItem>
+              {stories.map((story) => (
+                <SelectItem 
+                  key={story.story_id} 
+                  value={story.story_id.toString()}
+                  className="truncate"
+                >
+                  {story.title} ({story.main_category})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <input
             type="file"
             ref={fileInputRef}
@@ -115,6 +170,7 @@ export function ChatInput({
           >
             <Plus className="h-5 w-5" />
           </Button>
+
           <div className="flex-1">
             <Textarea
               ref={textareaRef}
@@ -141,8 +197,11 @@ export function ChatInput({
             <Send className="h-5 w-5" />
           </Button>
         </form>
+        
         <div className="text-center mt-2">
-          <span className="text-xs text-muted-foreground">Gửi tin nhắn bằng Ctrl + Enter | Hỗ trợ tải ảnh lên bằng dấu &quot;+&quot;</span>
+          <span className="text-xs text-muted-foreground">
+            Gửi tin nhắn bằng Ctrl + Enter | Hỗ trợ tải ảnh lên bằng dấu &quot;+&quot;
+          </span>
         </div>
       </div>
     </div>

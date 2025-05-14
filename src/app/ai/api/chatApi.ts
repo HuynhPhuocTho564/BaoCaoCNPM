@@ -26,7 +26,8 @@ export const saveMessage = async (
   chatId: number | null,
   role: "user" | "assistant",
   content: string,
-  images?: { buffer: number[], mimeType: string }[]
+  images?: { buffer: number[], mimeType: string }[],
+  storyId?: number
 ) => {
   const res = await fetch('/api/ai/chat-history/messages', {
     method: 'POST',
@@ -37,6 +38,7 @@ export const saveMessage = async (
       chatId,
       role,
       content,
+      storyId,
       ...(images && { images })
     })
   })

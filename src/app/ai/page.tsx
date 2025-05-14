@@ -38,6 +38,13 @@ interface Tag {
   description: string;
 }
 
+interface Story {
+  story_id: number
+  title: string
+  main_category: string
+  status: 'draft' | 'published' | 'archived'
+}
+
 export default function AIPage() {
   const { data: session } = useSession()
   const isSupporter = session?.user?.hasBadge
@@ -55,6 +62,7 @@ export default function AIPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [tags, setTags] = useState<Tag[]>([])
   const [commandStatus, setCommandStatus] = useState<'loading' | 'success' | 'error' | null>(null)
+  const [selectedStory, setSelectedStory] = useState<Story | null>(null)
 
   useEffect(() => {
     if (!isSupporter && messages.length > 0) {
@@ -240,13 +248,27 @@ export default function AIPage() {
         : undefined
 
       // Lưu tin nhắn người dùng và đợi kết quả
-      const userMessageResponse = await saveMessage(currentChatId, "user", input.trim(), imageBuffers)
+      const userMessageResponse = await saveMessage(
+        currentChatId, 
+        "user", 
+        input.trim(), 
+        imageBuffers,
+        selectedStory?.story_id
+      )
       const newChatId = userMessageResponse.chatId
       setCurrentChatId(newChatId)
 
       // Thu thập toàn bộ phản hồi trước khi lưu
       let fullResponse = ""
-      const stream = await chat(input, messages, imageFiles, handleCreateStory, categories, tags)
+      const stream = await chat(
+        input, 
+        messages, 
+        imageFiles, 
+        handleCreateStory, 
+        categories, 
+        tags,
+        selectedStory
+      )
       const reader = stream.getReader()
       const assistantMessage: Message = {
         role: "assistant",
@@ -295,43 +317,44 @@ export default function AIPage() {
 
   return (
     <div className="flex h-[calc(100vh-4rem)]">
-      <ChatSidebar
-        chatHistory={chatHistory}
-        currentChatId={currentChatId}
-        onNewChat={handleNewChat}
-        onSelectChat={handleSelectChat}
-        onDeleteChat={handleDeleteChat}
-        isOpen={isSidebarOpen}
-        onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        isLoading={isLoading}
-      />
-      <div className="flex-1 flex flex-col">
-        <div className="flex-1 overflow-hidden">
-          {messages.length === 0 ? (
-            <WelcomeScreen />
-          ) : isSupporter ? (
-            <ChatMessages
-              messages={messages}
+        <ChatSidebar
+          chatHistory={chatHistory}
+          currentChatId={currentChatId}
+          onNewChat={handleNewChat}
+          onSelectChat={handleSelectChat}
+          onDeleteChat={handleDeleteChat}
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+          isLoading={isLoading}
+        />
+        <div className="flex-1 flex flex-col">
+          <div className="flex-1 overflow-hidden">
+            {messages.length === 0 ? (
+              <WelcomeScreen />
+            ) : isSupporter ? (
+              <ChatMessages
+                messages={messages}
+                isLoading={isLoading}
+                chatContainerRef={chatContainerRef}
+                messagesEndRef={messagesEndRef}
+                commandStatus={commandStatus}
+              />
+            ) : null}
+          </div>
+          {isSupporter && (
+            <ChatInput
+              input={input}
               isLoading={isLoading}
-              chatContainerRef={chatContainerRef}
-              messagesEndRef={messagesEndRef}
-              commandStatus={commandStatus}
+              onInputChange={setInput}
+              onSubmit={handleSubmit}
+              selectedImages={selectedImages}
+              onImageUpload={handleImageUpload}
+              onClearImage={handleClearImage}
+              onClearAllImages={handleClearAllImages}
+              onStorySelect={setSelectedStory}
             />
-          ) : null}
+          )}
         </div>
-        {isSupporter && (
-          <ChatInput
-            input={input}
-            isLoading={isLoading}
-            onInputChange={setInput}
-            onSubmit={handleSubmit}
-            selectedImages={selectedImages}
-            onImageUpload={handleImageUpload}
-            onClearImage={handleClearImage}
-            onClearAllImages={handleClearAllImages}
-          />
-        )}
       </div>
-    </div>
   )
 }
