@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from "@/components/ui/button"
 import { Plus, Send, X} from "lucide-react"
 import Image from "next/image"
@@ -41,21 +42,39 @@ export function ChatInput({
   const [stories, setStories] = useState<Story[]>([])
   const [isLoadingStories, setIsLoadingStories] = useState(true)
 
+  const fetchStories = async () => {
+    try {
+      const response = await fetch('/api/stories')
+      const data = await response.json()
+      if (response.ok) {
+        setStories(data.stories)
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách truyện:", error)
+      toast.error("Không thể tải danh sách truyện")
+    } finally {
+      setIsLoadingStories(false)
+    }
+  }
+
+  // Lắng nghe sự kiện tạo truyện thành công
   useEffect(() => {
-    const fetchStories = async () => {
-      try {
-        const response = await fetch('/api/stories')
-        const data = await response.json()
-        if (response.ok) {
-          setStories(data.stories)
-        }
-      } catch (error) {
-        console.error("Lỗi khi tải danh sách truyện:", error)
-        toast.error("Không thể tải danh sách truyện")
-      } finally {
-        setIsLoadingStories(false)
+    const handleStoryCreated = async (event: CustomEvent) => {
+      await fetchStories()
+      // Tự động chọn truyện mới tạo
+      const newStory = event.detail
+      if (newStory?.story_id) {
+        onStorySelect(newStory)
       }
     }
+
+    window.addEventListener('story-created' as any, handleStoryCreated)
+    return () => {
+      window.removeEventListener('story-created' as any, handleStoryCreated)
+    }
+  }, [onStorySelect])
+
+  useEffect(() => {
     fetchStories()
   }, [])
 
@@ -86,7 +105,7 @@ export function ChatInput({
 
   return (
     <div className="border-t bg-background/50 backdrop-blur-xl">
-      <div className="mx-auto max-w-3xl px-4 py-4">
+      <div className="mx-auto max-w-4xl px-4 py-4">
         {selectedImages.length > 0 && (
           <div className="relative">
             <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
@@ -135,7 +154,7 @@ export function ChatInput({
               onStorySelect(story || null)
             }}
           >
-            <SelectTrigger className="w-[200px] h-[56px]">
+            <SelectTrigger className="w-[180px] h-[56px]">
               <SelectValue placeholder={isLoadingStories ? "Đang tải..." : "Chọn truyện..."} />
             </SelectTrigger>
             <SelectContent className="max-h-[300px] overflow-y-auto">
@@ -164,7 +183,7 @@ export function ChatInput({
             type="button" 
             size="icon" 
             variant="ghost" 
-            className="h-[56px] w-[56px]"
+            className="h-[56px] w-[56px] shrink-0"
             disabled={isLoading}
             onClick={() => fileInputRef.current?.click()}
           >
@@ -175,7 +194,7 @@ export function ChatInput({
             <Textarea
               ref={textareaRef}
               placeholder="Nhập câu hỏi của bạn..."
-              className="min-h-[56px] max-h-[200px] resize-none overflow-y-auto px-3 py-4 leading-relaxed"
+              className="min-h-[56px] max-h-[200px] resize-none overflow-y-auto px-4 py-4 leading-relaxed"
               value={input}
               onChange={(e) => onInputChange(e.target.value)}
               disabled={isLoading}
@@ -191,7 +210,7 @@ export function ChatInput({
           <Button 
             type="submit" 
             size="icon" 
-            className="h-[56px] w-[56px]"
+            className="h-[56px] w-[56px] shrink-0"
             disabled={isLoading || (!input.trim() && !selectedImages.length)}
           >
             <Send className="h-5 w-5" />

@@ -66,7 +66,20 @@ export const createStory = async (params: {
     throw new Error('Không thể tạo truyện')
   }
 
-  return await response.json()
+  const result = await response.json()
+  
+  // Emit event khi tạo truyện thành công
+  const event = new CustomEvent('story-created', { 
+    detail: {
+      story_id: result.storyId,
+      title: result.title,
+      main_category: result.mainCategory,
+      status: 'draft'
+    }
+  })
+  window.dispatchEvent(event)
+
+  return result
 }
 
 interface Category {
