@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
     GoogleGenerativeAI,
 } from "@google/generative-ai";
@@ -28,6 +29,32 @@ interface Story {
   favorite_count?: number
   updated_at?: string
   tags?: string[]
+  chapters?: {
+    chapter_id: number
+    title: string
+    summary?: string
+    status: string
+  }[]
+  dialogues?: {
+    chapter_id: number
+    dialogues: {
+      type: 'dialogue' | 'aside'
+      content: string
+      character_name?: string
+    }[]
+  }[]
+  characters?: {
+    name: string
+    description: string
+    gender: string
+    personality: string
+    appearance: string
+    role: string
+  }[]
+  outlines?: {
+    title: string
+    description: string
+  }[]
 }
 
 export async function chat(
@@ -67,13 +94,42 @@ Mô tả: ${selectedStory.description || 'Chưa có mô tả'}
 Thể loại: ${selectedStory.main_category}
 Tags: ${selectedStory.tags?.join(', ') || 'Chưa có tags'}
 Trạng thái: ${selectedStory.status}
-Lượt xem: ${selectedStory.view_count || 0}
-Lượt thích: ${selectedStory.favorite_count || 0}
 ID: ${selectedStory.story_id}
-Cập nhật lần cuối: ${selectedStory.updated_at || 'Không có thông tin'}
+
+${selectedStory.characters?.length ? `
+Danh sách nhân vật:
+${selectedStory.characters.map(char => `
+- Tên: ${char.name}
+  Mô tả: ${char.description}
+  Giới tính: ${char.gender}
+  Tính cách: ${char.personality}
+  Ngoại hình: ${char.appearance}
+  Vai trò: ${char.role}
+`).join('\n')}` : ''}
+
+${selectedStory.outlines?.length ? `
+Đại cương:
+${selectedStory.outlines.map(outline => `
+- ${outline.title}
+  ${outline.description}
+`).join('\n')}` : ''}
+
+${selectedStory.chapters?.length ? `
+Các chương đã xuất bản:
+${selectedStory.chapters.map(chapter => `
+- ${chapter.title}
+  ${chapter.summary || 'Chưa có tóm tắt'}
+  ${selectedStory.dialogues?.find(d => d.chapter_id === chapter.chapter_id)?.dialogues.map(dialogue => 
+    dialogue.type === 'dialogue' ? 
+    `  [Hội thoại] ${dialogue.content}` :
+    `  [Mô tả] ${dialogue.content}`
+  ).join('\n  ') || ''}
+`).join('\n')}` : ''}
 
 Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện này dựa trên các thông tin trên.`;
     }
+
+    console.log(systemPromptWithData);
 
     const model = genAI.getGenerativeModel({
       model: "gemini-2.0-flash",

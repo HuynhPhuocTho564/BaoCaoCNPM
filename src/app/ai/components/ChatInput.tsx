@@ -12,6 +12,10 @@ interface Story {
   title: string
   main_category: string
   status: 'draft' | 'published' | 'archived'
+  chapters?: any[]
+  dialogues?: any[]
+  characters?: any[]
+  outlines?: any[]
 }
 
 interface ChatInputProps {
@@ -149,8 +153,69 @@ export function ChatInput({
         
         <form className="flex gap-3 items-end" onSubmit={handleSubmit}>
           <Select
-            onValueChange={(value) => {
+            onValueChange={async (value) => {
               const story = stories.find(s => s.story_id.toString() === value)
+              
+              if (story) {
+                try {
+                  // Fetch all related data
+                  const [chaptersRes, charactersListRes, outlinesRes] = await Promise.all([
+                    fetch(`/api/stories/${story.story_id}/chapters`),
+                    fetch(`/api/stories/${story.story_id}/characters`),
+                    fetch(`/api/stories/${story.story_id}/outlines`)
+                  ]);
+
+                  // Process chapters
+                  if (chaptersRes.ok) {
+                    const chaptersData = await chaptersRes.json();
+                    const publishedChapters = chaptersData.chapters.filter(
+                      (chapter: any) => chapter.status === 'published'
+                    );
+                    
+                    // Fetch dialogues for each chapter
+                    const dialoguesPromises = publishedChapters.map(async (chapter: any) => {
+                      const dialoguesRes = await fetch(`/api/stories/${story.story_id}/chapters/${chapter.chapter_id}/dialogues`);
+                      if (dialoguesRes.ok) {
+                        const dialoguesData = await dialoguesRes.json();
+                        return {
+                          chapter_id: chapter.chapter_id,
+                          dialogues: dialoguesData.dialogues
+                        };
+                      }
+                      return null;
+                    });
+                    
+                    const chapterDialogues = await Promise.all(dialoguesPromises);
+                    story.chapters = publishedChapters;
+                    story.dialogues = chapterDialogues.filter(d => d !== null);
+                  }
+
+                  // Process characters
+                  if (charactersListRes.ok) {
+                    const charactersListData = await charactersListRes.json();
+                    const charactersDetailPromises = charactersListData.characters.map(async (char: any) => {
+                      const detailRes = await fetch(`/api/stories/${story.story_id}/characters/${char.character_id}/get`);
+                      if (detailRes.ok) {
+                        const detailData = await detailRes.json();
+                        return detailData.character;
+                      }
+                      return null;
+                    });
+                    
+                    const characters = await Promise.all(charactersDetailPromises);
+                    story.characters = characters.filter(c => c !== null);
+                  }
+
+                  // Process outlines
+                  if (outlinesRes.ok) {
+                    const outlinesData = await outlinesRes.json();
+                    story.outlines = outlinesData.outlines;
+                  }
+                } catch (error) {
+                  console.error('Lỗi khi tải dữ liệu truyện:', error);
+                }
+              }
+              
               onStorySelect(story || null)
             }}
           >
