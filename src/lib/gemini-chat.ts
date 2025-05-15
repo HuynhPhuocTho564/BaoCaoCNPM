@@ -67,6 +67,19 @@ export async function chat(
     mainCategoryId: string;
     tagIds: number[];
   }) => Promise<void>,
+  onCreateCharacter?: (params: {
+    storyId: number;
+    name: string;
+    description: string;
+    role: 'main' | 'supporting';
+    gender: string;
+    birthday: string;
+    height: string;
+    weight: string;
+    personality: string;
+    appearance: string;
+    background: string;
+  }) => Promise<void>,
   categories: { id: number; name: string }[] = [],
   tags: { id: number; name: string }[] = [],
   selectedStory?: Story | null
@@ -169,15 +182,29 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
           const text = chunk.text();
           accumulatedText += text;
           
-          // Kiểm tra lệnh tạo truyện
-          if (accumulatedText.includes("/create-story")) {
-            const match = accumulatedText.match(/\/create-story\s*({[\s\S]*?})/);
-            if (match && onCreateStory) {
+          // Kiểm tra lệnh tạo truyện và tạo nhân vật
+          if (accumulatedText.includes("/create-story") || accumulatedText.includes("/create-character")) {
+            const storyMatch = accumulatedText.match(/\/create-story\s*({[\s\S]*?})/);
+            const characterMatch = accumulatedText.match(/\/create-character\s*({[\s\S]*?})/);
+
+            if (storyMatch && onCreateStory) {
               try {
-                const params = JSON.parse(match[1]);
+                const params = JSON.parse(storyMatch[1]);
                 await onCreateStory(params);
               } catch (error) {
                 console.error("Lỗi khi xử lý lệnh tạo truyện:", error);
+              }
+            }
+
+            if (characterMatch && onCreateCharacter && selectedStory) {
+              try {
+                const params = JSON.parse(characterMatch[1]);
+                await onCreateCharacter({
+                  ...params,
+                  storyId: selectedStory.story_id
+                });
+              } catch (error) {
+                console.error("Lỗi khi xử lý lệnh tạo nhân vật:", error);
               }
             }
           }

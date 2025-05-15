@@ -15,22 +15,42 @@ interface ChatMessagesProps {
 
 export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEndRef, commandStatus }: ChatMessagesProps) {
   const getCommandParams = (content: string) => {
-    const match = content.match(/\/create-story\s*({[\s\S]*?})/);
-    if (match) {
+    // Kiểm tra cả 2 loại lệnh
+    const storyMatch = content.match(/\/create-story\s*({[\s\S]*?})/);
+    const characterMatch = content.match(/\/create-character\s*({[\s\S]*?})/);
+    
+    if (storyMatch) {
       try {
-        return JSON.parse(match[1]);
+        return {
+          command: '/create-story',
+          params: JSON.parse(storyMatch[1])
+        };
       } catch (error) {
-        console.error("Lỗi khi parse params:", error)
+        console.error("Lỗi khi parse params story:", error)
         return null;
       }
     }
+    
+    if (characterMatch) {
+      try {
+        return {
+          command: '/create-character',
+          params: JSON.parse(characterMatch[1])
+        };
+      } catch (error) {
+        console.error("Lỗi khi parse params character:", error)
+        return null;
+      }
+    }
+    
     return null;
   }
 
   const processMessageContent = (content: string) => {
-    const params = getCommandParams(content);
-    if (params) {
-      const parts = content.split('/create-story')
+    const commandData = getCommandParams(content);
+    if (commandData) {
+      // Tách nội dung trước lệnh
+      const parts = content.split(commandData.command)
       if (parts.length > 1) {
         return parts[0].trim()
       }
@@ -42,7 +62,7 @@ export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEn
     <div ref={chatContainerRef} className="h-full overflow-y-auto p-4">
       <div className="max-w-3xl mx-auto">
         {messages.map((message, index) => {
-          const messageCommandParams = message.content ? getCommandParams(message.content) : null;
+          const commandData = message.content ? getCommandParams(message.content) : null;
           
           return (
             <div
@@ -80,15 +100,15 @@ export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEn
                   </ReactMarkdown>
                 )}
                 
-                {messageCommandParams && (
+                {commandData && (
                   <CommandBox 
-                    command="/create-story"
+                    command={commandData.command}
                     status={
                       message.command_status ||
                       (index === messages.length - 1 ? commandStatus : null) ||
                       'success'
                     }
-                    params={messageCommandParams}
+                    params={commandData.params}
                   />
                 )}
               </div>

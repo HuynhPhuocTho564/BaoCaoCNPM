@@ -216,6 +216,42 @@ export default function AIPage() {
     }
   }
 
+  const handleCreateCharacter = async (params: {
+    storyId: number;
+    name: string;
+    description: string;
+    role: 'main' | 'supporting';
+    gender: string;
+    birthday: string;
+    height: string;
+    weight: string;
+    personality: string;
+    appearance: string;
+    background: string;
+  }) => {
+    const formData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value.toString());
+    });
+
+    try {
+      const response = await fetch(`/api/stories/${params.storyId}/characters`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Không thể tạo nhân vật');
+      }
+
+      toast.success('Đã tạo nhân vật thành công!');
+    } catch (error) {
+      console.error('Lỗi khi tạo nhân vật:', error);
+      toast.error('Có lỗi xảy ra khi tạo nhân vật');
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     if (!isSupporter) return
     e.preventDefault()
@@ -260,16 +296,17 @@ export default function AIPage() {
 
       // Thu thập toàn bộ phản hồi trước khi lưu
       let fullResponse = ""
-      const stream = await chat(
-        input, 
-        messages, 
-        imageFiles, 
-        handleCreateStory, 
-        categories, 
+      const result = await chat(
+        input,
+        messages,
+        imageFiles,
+        handleCreateStory,
+        handleCreateCharacter,
+        categories,
         tags,
         selectedStory
       )
-      const reader = stream.getReader()
+      const reader = result.getReader()
       const assistantMessage: Message = {
         role: "assistant",
         content: ""
