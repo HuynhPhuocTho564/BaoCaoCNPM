@@ -252,6 +252,67 @@ export default function AIPage() {
     }
   };
 
+  const handleCreateChapter = async (params: {
+    title: string;
+    summary: string;
+    status: 'draft' | 'published';
+  }) => {
+    if (!selectedStory) {
+      toast.error('Vui lòng chọn truyện trước khi tạo chương');
+      throw new Error('Không có truyện được chọn');
+    }
+
+    try {
+      const response = await fetch(`/api/stories/${selectedStory.story_id}/chapters`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(params)
+      });
+
+      if (!response.ok) {
+        throw new Error('Không thể tạo chương mới');
+      }
+
+      toast.success('Đã tạo chương mới thành công!');
+    } catch (error) {
+      console.error('Lỗi khi tạo chương:', error);
+      toast.error('Có lỗi xảy ra khi tạo chương');
+      throw error;
+    }
+  };
+
+  const handleCreateOutline = async (params: {
+    title: string;
+    description: string;
+  }) => {
+    if (!selectedStory) {
+      toast.error('Vui lòng chọn truyện trước khi tạo đại cương');
+      throw new Error('Không có truyện được chọn');
+    }
+
+    try {
+      const response = await fetch(`/api/stories/${selectedStory.story_id}/outlines`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(params)
+      });
+
+      if (!response.ok) {
+        throw new Error('Không thể tạo đại cương mới');
+      }
+
+      toast.success('Đã tạo đại cương mới thành công!');
+    } catch (error) {
+      console.error('Lỗi khi tạo đại cương:', error);
+      toast.error('Có lỗi xảy ra khi tạo đại cương');
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     if (!isSupporter) return
     e.preventDefault()
@@ -302,6 +363,8 @@ export default function AIPage() {
         imageFiles,
         handleCreateStory,
         handleCreateCharacter,
+        handleCreateChapter,
+        handleCreateOutline,
         categories,
         tags,
         selectedStory

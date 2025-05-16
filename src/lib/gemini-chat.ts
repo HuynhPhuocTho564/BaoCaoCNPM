@@ -80,6 +80,15 @@ export async function chat(
     appearance: string;
     background: string;
   }) => Promise<void>,
+  onCreateChapter?: (params: {
+    title: string;
+    summary: string;
+    status: 'draft' | 'published';
+  }) => Promise<void>,
+  onCreateOutline?: (params: {
+    title: string;
+    description: string;
+  }) => Promise<void>,
   categories: { id: number; name: string }[] = [],
   tags: { id: number; name: string }[] = [],
   selectedStory?: Story | null
@@ -183,9 +192,10 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
           accumulatedText += text;
           
           // Kiểm tra lệnh tạo truyện và tạo nhân vật
-          if (accumulatedText.includes("/create-story") || accumulatedText.includes("/create-character")) {
+          if (accumulatedText.includes("/create-story") || accumulatedText.includes("/create-character") || accumulatedText.includes("/create-chapter")) {
             const storyMatch = accumulatedText.match(/\/create-story\s*({[\s\S]*?})/);
             const characterMatch = accumulatedText.match(/\/create-character\s*({[\s\S]*?})/);
+            const chapterMatch = accumulatedText.match(/\/create-chapter\s*({[\s\S]*?})/);
 
             if (storyMatch && onCreateStory) {
               try {
@@ -206,6 +216,29 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
               } catch (error) {
                 console.error("Lỗi khi xử lý lệnh tạo nhân vật:", error);
               }
+            }
+
+            if (chapterMatch && onCreateChapter && selectedStory) {
+              try {
+                const params = JSON.parse(chapterMatch[1]);
+                await onCreateChapter({
+                  ...params,
+                  storyId: selectedStory.story_id
+                });
+              } catch (error) {
+                console.error("Lỗi khi xử lý lệnh tạo chương:", error);
+              }
+            }
+          }
+          
+          // Kiểm tra lệnh tạo đại cương
+          const outlineMatch = accumulatedText.match(/\/create-outline\s*({[\s\S]*?})/);
+          if (outlineMatch && onCreateOutline && selectedStory) {
+            try {
+              const params = JSON.parse(outlineMatch[1]);
+              await onCreateOutline(params);
+            } catch (error) {
+              console.error("Lỗi khi xử lý lệnh tạo đại cương:", error);
             }
           }
           

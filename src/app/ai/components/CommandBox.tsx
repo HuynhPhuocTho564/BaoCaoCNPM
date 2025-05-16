@@ -22,6 +22,18 @@ export function CommandBox({ command, status, params }: CommandBoxProps) {
           success: 'Đã tạo nhân vật thành công!',
           error: 'Có lỗi xảy ra khi tạo nhân vật!'
         }[status]
+      case '/create-chapter':
+        return {
+          loading: 'Đang tạo chương mới...',
+          success: 'Đã tạo chương thành công!',
+          error: 'Có lỗi xảy ra khi tạo chương!'
+        }[status]
+      case '/create-outline':
+        return {
+          loading: 'Đang tạo đại cương mới...',
+          success: 'Đã tạo đại cương thành công!',
+          error: 'Có lỗi xảy ra khi tạo đại cương!'
+        }[status]
       default:
         return 'Đang xử lý...'
     }
@@ -41,7 +53,9 @@ export function CommandBox({ command, status, params }: CommandBoxProps) {
       weight: 'Cân nặng',
       personality: 'Tính cách',
       appearance: 'Ngoại hình',
-      background: 'Quá khứ'
+      background: 'Quá khứ',
+      summary: 'Tóm tắt',
+      status: 'Trạng thái'
     }
     return labels[key] || key
   }

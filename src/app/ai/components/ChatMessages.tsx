@@ -15,9 +15,11 @@ interface ChatMessagesProps {
 
 export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEndRef, commandStatus }: ChatMessagesProps) {
   const getCommandParams = (content: string) => {
-    // Kiểm tra cả 2 loại lệnh
+    // Kiểm tra tất cả các loại lệnh
     const storyMatch = content.match(/\/create-story\s*({[\s\S]*?})/);
     const characterMatch = content.match(/\/create-character\s*({[\s\S]*?})/);
+    const chapterMatch = content.match(/\/create-chapter\s*({[\s\S]*?})/);
+    const outlineMatch = content.match(/\/create-outline\s*({[\s\S]*?})/);
     
     if (storyMatch) {
       try {
@@ -39,6 +41,30 @@ export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEn
         };
       } catch (error) {
         console.error("Lỗi khi parse params character:", error)
+        return null;
+      }
+    }
+
+    if (chapterMatch) {
+      try {
+        return {
+          command: '/create-chapter',
+          params: JSON.parse(chapterMatch[1])
+        };
+      } catch (error) {
+        console.error("Lỗi khi parse params chapter:", error)
+        return null;
+      }
+    }
+
+    if (outlineMatch) {
+      try {
+        return {
+          command: '/create-outline',
+          params: JSON.parse(outlineMatch[1])
+        };
+      } catch (error) {
+        console.error("Lỗi khi parse params outline:", error)
         return null;
       }
     }

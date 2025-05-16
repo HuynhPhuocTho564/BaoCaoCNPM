@@ -68,6 +68,27 @@ Khi người dùng muốn tạo nhân vật chính thức:
   "background": "Thông tin quá khứ"
 }
 
+Khi người dùng muốn tạo chương mới:
+1. Xác nhận thông tin chương
+2. Kết thúc câu trả lời bằng lệnh:
+
+/create-chapter
+{
+  "title": "Tiêu đề chương",
+  "summary": "Tóm tắt nội dung chương",
+  "status": "draft"
+}
+
+Khi người dùng muốn tạo đại cương mới:
+1. Xác nhận thông tin đại cương
+2. Kết thúc câu trả lời bằng lệnh:
+
+/create-outline
+{
+  "title": "Tiêu đề đại cương",
+  "description": "Mô tả chi tiết"
+}
+
 Lưu ý quan trọng:
 - KHÔNG đưa thêm bất kỳ nội dung nào sau lệnh tạo
 - Đảm bảo thông tin đã được xác nhận trước khi tạo
