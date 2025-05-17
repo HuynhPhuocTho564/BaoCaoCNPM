@@ -15,35 +15,11 @@ import {
   fetchChatMessages, 
   deleteChat, 
   saveMessage, 
-  createStory,
   fetchCategories,
   updateMessageStatus
 } from './api/chatApi'
-
-interface ChatHistory {
-  chat_id: number
-  title: string
-  updated_at: string
-}
-
-interface Category {
-  id: number;
-  name: string;
-  description: string;
-}
-
-interface Tag {
-  id: number;
-  name: string;
-  description: string;
-}
-
-interface Story {
-  story_id: number
-  title: string
-  main_category: string
-  status: 'draft' | 'published' | 'archived'
-}
+import { useCommandHandler } from "./components/CommandHandler"
+import { ChatHistory, Category, Tag, Story } from './types'
 
 export default function AIPage() {
   const { data: session } = useSession()
@@ -63,6 +39,19 @@ export default function AIPage() {
   const [tags, setTags] = useState<Tag[]>([])
   const [commandStatus, setCommandStatus] = useState<'loading' | 'success' | 'error' | null>(null)
   const [selectedStory, setSelectedStory] = useState<Story | null>(null)
+
+  const {
+    handleCreateStory,
+    handleCreateCharacter,
+    handleCreateChapter,
+    handleCreateOutline
+  } = useCommandHandler({
+    selectedStory,
+    setCommandStatus,
+    messages,
+    setMessages,
+    updateMessageStatus
+  })
 
   useEffect(() => {
     if (!isSupporter && messages.length > 0) {
@@ -153,165 +142,6 @@ export default function AIPage() {
     setSelectedImages([])
     setImageFiles([])
   }
-
-  const handleCreateStory = async (params: {
-    title: string;
-    description: string;
-    mainCategoryId: string;
-    tagIds: number[];
-  }) => {
-    try {
-      setCommandStatus('loading')
-      await createStory(params)
-      
-      setCommandStatus('success')
-      const lastMessage = messages[messages.length - 1]
-      if (lastMessage) {
-        // Cập nhật trạng thái trong CSDL
-        if (lastMessage?.id) {
-          await updateMessageStatus(lastMessage.id, 'success')
-        }
-        
-        setMessages(prev => {
-          const newMessages = [...prev]
-          const lastMsg = newMessages[newMessages.length - 1]
-          if (lastMsg) {
-            lastMsg.content = lastMsg.content.replace(
-              /\/create-story\s*({[\s\S]*?})/,
-              (match) => `${match}\n\n✅ Đã tạo truyện thành công!`
-            )
-            lastMsg.command_status = 'success'
-          }
-          return newMessages
-        })
-      }
-
-      toast.success('Đã tạo truyện thành công!')
-    } catch (error) {
-      console.error('Lỗi khi tạo truyện:', error)
-      
-      setCommandStatus('error')
-      const lastMessage = messages[messages.length - 1]
-      if (lastMessage) {
-        // Cập nhật trạng thái trong CSDL
-        if (lastMessage?.id) {
-          await updateMessageStatus(lastMessage.id, 'error')
-        }
-        
-        setMessages(prev => {
-          const newMessages = [...prev]
-          const lastMsg = newMessages[newMessages.length - 1]
-          if (lastMsg) {
-            lastMsg.content = lastMsg.content.replace(
-              /\/create-story\s*({[\s\S]*?})/,
-              (match) => `${match}\n\n❌ Có lỗi xảy ra khi tạo truyện!`
-            )
-            lastMsg.command_status = 'error'
-          }
-          return newMessages
-        })
-      }
-      
-      toast.error('Có lỗi xảy ra khi tạo truyện')
-    }
-  }
-
-  const handleCreateCharacter = async (params: {
-    storyId: number;
-    name: string;
-    description: string;
-    role: 'main' | 'supporting';
-    gender: string;
-    birthday: string;
-    height: string;
-    weight: string;
-    personality: string;
-    appearance: string;
-    background: string;
-  }) => {
-    const formData = new FormData();
-    Object.entries(params).forEach(([key, value]) => {
-      formData.append(key, value.toString());
-    });
-
-    try {
-      const response = await fetch(`/api/stories/${params.storyId}/characters`, {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!response.ok) {
-        throw new Error('Không thể tạo nhân vật');
-      }
-
-      toast.success('Đã tạo nhân vật thành công!');
-    } catch (error) {
-      console.error('Lỗi khi tạo nhân vật:', error);
-      toast.error('Có lỗi xảy ra khi tạo nhân vật');
-      throw error;
-    }
-  };
-
-  const handleCreateChapter = async (params: {
-    title: string;
-    summary: string;
-    status: 'draft' | 'published';
-  }) => {
-    if (!selectedStory) {
-      toast.error('Vui lòng chọn truyện trước khi tạo chương');
-      throw new Error('Không có truyện được chọn');
-    }
-
-    try {
-      const response = await fetch(`/api/stories/${selectedStory.story_id}/chapters`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(params)
-      });
-
-      if (!response.ok) {
-        throw new Error('Không thể tạo chương mới');
-      }
-
-      toast.success('Đã tạo chương mới thành công!');
-    } catch (error) {
-      console.error('Lỗi khi tạo chương:', error);
-      toast.error('Có lỗi xảy ra khi tạo chương');
-      throw error;
-    }
-  };
-
-  const handleCreateOutline = async (params: {
-    title: string;
-    description: string;
-  }) => {
-    if (!selectedStory) {
-      toast.error('Vui lòng chọn truyện trước khi tạo đại cương');
-      throw new Error('Không có truyện được chọn');
-    }
-
-    try {
-      const response = await fetch(`/api/stories/${selectedStory.story_id}/outlines`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(params)
-      });
-
-      if (!response.ok) {
-        throw new Error('Không thể tạo đại cương mới');
-      }
-
-      toast.success('Đã tạo đại cương mới thành công!');
-    } catch (error) {
-      console.error('Lỗi khi tạo đại cương:', error);
-      toast.error('Có lỗi xảy ra khi tạo đại cương');
-      throw error;
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     if (!isSupporter) return
