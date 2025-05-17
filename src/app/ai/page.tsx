@@ -438,6 +438,8 @@ export default function AIPage() {
                 chatContainerRef={chatContainerRef}
                 messagesEndRef={messagesEndRef}
                 commandStatus={commandStatus}
+                categories={categories}
+                tags={tags}
               />
             ) : null}
           </div>

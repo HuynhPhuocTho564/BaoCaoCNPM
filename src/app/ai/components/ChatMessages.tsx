@@ -11,9 +11,11 @@ interface ChatMessagesProps {
   chatContainerRef: React.RefObject<HTMLDivElement | null>
   messagesEndRef: React.RefObject<HTMLDivElement | null>
   commandStatus: 'loading' | 'success' | 'error' | null
+  categories?: { id: number; name: string }[]
+  tags?: { id: number; name: string }[]
 }
 
-export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEndRef, commandStatus }: ChatMessagesProps) {
+export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEndRef, commandStatus, categories, tags }: ChatMessagesProps) {
   const getCommandParams = (content: string) => {
     // Kiểm tra tất cả các loại lệnh
     const storyMatch = content.match(/\/create-story\s*({[\s\S]*?})/);
@@ -135,6 +137,8 @@ export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEn
                       'success'
                     }
                     params={commandData.params}
+                    categories={categories}
+                    tags={tags}
                   />
                 )}
               </div>
