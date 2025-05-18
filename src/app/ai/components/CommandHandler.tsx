@@ -27,7 +27,7 @@ export const useCommandHandler = ({
   }) => {
     try {
       setCommandStatus('loading')
-      await createStory(params)
+      const response = await createStory(params)
       
       setCommandStatus('success')
       const lastMessage = messages[messages.length - 1]
@@ -51,6 +51,12 @@ export const useCommandHandler = ({
       }
 
       toast.success('Đã tạo truyện thành công!')
+      
+      // Dispatch event để ChatInput biết và fetch lại danh sách
+      window.dispatchEvent(new CustomEvent('story-created', {
+        detail: response.story // Giả sử API trả về thông tin truyện mới
+      }))
+      
     } catch (error) {
       console.error('Lỗi khi tạo truyện:', error)
       handleCommandError(error as Error, 'create-story')
@@ -154,6 +160,63 @@ export const useCommandHandler = ({
     }
   }
 
+  const handleEditStory = async (params: {
+    title: string
+    description: string
+    mainCategoryId: string
+    tagIds: number[]
+  }) => {
+    if (!selectedStory) {
+      toast.error('Vui lòng chọn truyện trước khi sửa')
+      throw new Error('Không có truyện được chọn')
+    }
+
+    try {
+      setCommandStatus('loading')
+      const formData = new FormData()
+      formData.append('title', params.title)
+      formData.append('description', params.description)
+      formData.append('mainCategoryId', params.mainCategoryId)
+      formData.append('tagIds', JSON.stringify(params.tagIds))
+
+      const response = await fetch(`/api/stories/${selectedStory.story_id}`, {
+        method: 'PUT',
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error('Không thể cập nhật truyện')
+      }
+
+      setCommandStatus('success')
+      const lastMessage = messages[messages.length - 1]
+      if (lastMessage?.id) {
+        await updateMessageStatus(lastMessage.id, 'success')
+      }
+
+      setMessages((prev: Message[]) => {
+        const newMessages = [...prev]
+        const lastMsg = newMessages[newMessages.length - 1]
+        if (lastMsg) {
+          lastMsg.content = lastMsg.content.replace(
+            /\/edit-story\s*({[\s\S]*?})/,
+            (match) => `${match}\n\n✅ Đã cập nhật truyện thành công!`
+          )
+          lastMsg.command_status = 'success'
+        }
+        return newMessages
+      })
+
+      toast.success('Đã cập nhật truyện thành công!')
+      
+      // Dispatch event để ChatInput biết và fetch lại danh sách
+      window.dispatchEvent(new CustomEvent('story-created'))
+      } catch (error) {
+      console.error('Lỗi khi cập nhật truyện:', error)
+      handleCommandError(error as Error, 'edit-story')
+    }
+  }
+
   const handleCommandError = async (error: Error, commandType: string) => {
     setCommandStatus('error')
     const lastMessage = messages[messages.length - 1]
@@ -183,6 +246,7 @@ export const useCommandHandler = ({
     handleCreateStory,
     handleCreateCharacter,
     handleCreateChapter,
-    handleCreateOutline
+    handleCreateOutline,
+    handleEditStory
   }
 } 

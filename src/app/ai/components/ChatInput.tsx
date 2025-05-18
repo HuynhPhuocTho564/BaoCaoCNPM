@@ -64,7 +64,7 @@ export function ChatInput({
   // Lắng nghe sự kiện tạo truyện thành công
   useEffect(() => {
     const handleStoryCreated = async (event: CustomEvent) => {
-      await fetchStories()
+      await fetchStories() // Fetch lại danh sách truyện
       // Tự động chọn truyện mới tạo
       const newStory = event.detail
       if (newStory?.story_id) {

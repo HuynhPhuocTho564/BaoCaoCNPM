@@ -61,34 +61,11 @@ export async function chat(
   message: string,
   history: Message[] = [],
   imageFiles?: File[] | null,
-  onCreateStory?: (params: {
-    title: string;
-    description: string;
-    mainCategoryId: string;
-    tagIds: number[];
-  }) => Promise<void>,
-  onCreateCharacter?: (params: {
-    storyId: number;
-    name: string;
-    description: string;
-    role: 'main' | 'supporting';
-    gender: string;
-    birthday: string;
-    height: string;
-    weight: string;
-    personality: string;
-    appearance: string;
-    background: string;
-  }) => Promise<void>,
-  onCreateChapter?: (params: {
-    title: string;
-    summary: string;
-    status: 'draft' | 'published';
-  }) => Promise<void>,
-  onCreateOutline?: (params: {
-    title: string;
-    description: string;
-  }) => Promise<void>,
+  onCreateStory?: (params: any) => Promise<void>,
+  onCreateCharacter?: (params: any) => Promise<void>,
+  onCreateChapter?: (params: any) => Promise<void>,
+  onCreateOutline?: (params: any) => Promise<void>,
+  onEditStory?: (params: any) => Promise<void>,
   categories: { id: number; name: string }[] = [],
   tags: { id: number; name: string }[] = [],
   selectedStory?: Story | null
@@ -192,10 +169,17 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
           accumulatedText += text;
           
           // Kiểm tra lệnh tạo truyện và tạo nhân vật
-          if (accumulatedText.includes("/create-story") || accumulatedText.includes("/create-character") || accumulatedText.includes("/create-chapter")) {
+          if (accumulatedText.includes("/create-story") || 
+              accumulatedText.includes("/create-character") || 
+              accumulatedText.includes("/create-chapter") || 
+              accumulatedText.includes("/create-outline") ||
+              accumulatedText.includes("/edit-story")) {
+            
             const storyMatch = accumulatedText.match(/\/create-story\s*({[\s\S]*?})/);
             const characterMatch = accumulatedText.match(/\/create-character\s*({[\s\S]*?})/);
             const chapterMatch = accumulatedText.match(/\/create-chapter\s*({[\s\S]*?})/);
+            const outlineMatch = accumulatedText.match(/\/create-outline\s*({[\s\S]*?})/);
+            const editMatch = accumulatedText.match(/\/edit-story\s*({[\s\S]*?})/);
 
             if (storyMatch && onCreateStory) {
               try {
@@ -229,16 +213,23 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
                 console.error("Lỗi khi xử lý lệnh tạo chương:", error);
               }
             }
-          }
-          
-          // Kiểm tra lệnh tạo đại cương
-          const outlineMatch = accumulatedText.match(/\/create-outline\s*({[\s\S]*?})/);
-          if (outlineMatch && onCreateOutline && selectedStory) {
-            try {
-              const params = JSON.parse(outlineMatch[1]);
-              await onCreateOutline(params);
-            } catch (error) {
-              console.error("Lỗi khi xử lý lệnh tạo đại cương:", error);
+
+            if (outlineMatch && onCreateOutline && selectedStory) {
+              try {
+                const params = JSON.parse(outlineMatch[1]);
+                await onCreateOutline(params);
+              } catch (error) {
+                console.error("Lỗi khi xử lý lệnh tạo đại cương:", error);
+              }
+            }
+
+            if (editMatch && onEditStory && selectedStory) {
+              try {
+                const params = JSON.parse(editMatch[1]);
+                await onEditStory(params);
+              } catch (error) {
+                console.error("Lỗi khi xử lý lệnh sửa truyện:", error);
+              }
             }
           }
           

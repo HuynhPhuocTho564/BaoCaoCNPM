@@ -89,6 +89,18 @@ Khi người dùng muốn tạo đại cương mới:
   "description": "Mô tả chi tiết"
 }
 
+Khi người dùng muốn sửa truyện:
+1. Xác nhận thông tin cần sửa
+2. Kết thúc câu trả lời bằng lệnh:
+
+/edit-story
+{
+  "title": "Tiêu đề truyện",
+  "description": "Mô tả truyện",
+  "mainCategoryId": [category_id],
+  "tagIds": [tag_id_1, tag_id_2, ...]
+}
+
 Lưu ý quan trọng:
 - KHÔNG đưa thêm bất kỳ nội dung nào sau lệnh tạo
 - Đảm bảo thông tin đã được xác nhận trước khi tạo

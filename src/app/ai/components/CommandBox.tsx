@@ -36,6 +36,12 @@ export function CommandBox({ command, status, params, categories, tags }: Comman
           success: 'Đã tạo đại cương thành công!',
           error: 'Có lỗi xảy ra khi tạo đại cương!'
         }[status]
+      case '/edit-story':
+        return {
+          loading: 'Đang cập nhật truyện...',
+          success: 'Đã cập nhật truyện thành công!',
+          error: 'Có lỗi xảy ra khi cập nhật truyện!'
+        }[status]
       default:
         return 'Đang xử lý...'
     }

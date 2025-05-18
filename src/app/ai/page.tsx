@@ -44,7 +44,8 @@ export default function AIPage() {
     handleCreateStory,
     handleCreateCharacter,
     handleCreateChapter,
-    handleCreateOutline
+    handleCreateOutline,
+    handleEditStory
   } = useCommandHandler({
     selectedStory,
     setCommandStatus,
@@ -195,6 +196,7 @@ export default function AIPage() {
         handleCreateCharacter,
         handleCreateChapter,
         handleCreateOutline,
+        handleEditStory,
         categories,
         tags,
         selectedStory
