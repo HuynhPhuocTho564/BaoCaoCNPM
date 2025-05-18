@@ -5,9 +5,12 @@ import pool from "@/lib/db"
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const resolvedParams = await context.params
+    const { id } = resolvedParams
+
     const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
       return NextResponse.json(
@@ -21,7 +24,7 @@ export async function PATCH(
 
     await pool.execute(
       'UPDATE ai_chat_messages SET command_status = ? WHERE message_id = ?',
-      [command_status, params.id]
+      [command_status, id]
     )
 
     return NextResponse.json({ success: true })

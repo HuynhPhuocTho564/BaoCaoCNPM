@@ -8,9 +8,12 @@ import { GoogleDriveService } from "@/services/google-drive.service"
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const resolvedParams = await context.params
+    const { id } = resolvedParams
+
     const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
       return NextResponse.json(
@@ -42,7 +45,7 @@ export async function GET(
       WHERE m.chat_id = ?
       GROUP BY m.message_id
       ORDER BY m.created_at ASC
-    `, [params.id]) as any[]
+    `, [id]) as any[]
 
     // Format messages
     const formattedMessages = messages.map((msg: any) => {
@@ -84,9 +87,12 @@ export async function GET(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const resolvedParams = await context.params
+    const { id } = resolvedParams
+
     const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
       return NextResponse.json(
@@ -101,7 +107,7 @@ export async function DELETE(
       FROM ai_chat_images i
       JOIN ai_chat_messages m ON i.message_id = m.message_id
       WHERE m.chat_id = ?
-    `, [params.id]) as any[]
+    `, [id]) as any[]
 
     // Xóa từng ảnh trên Google Drive
     for (const image of images) {
@@ -111,7 +117,7 @@ export async function DELETE(
     // Xóa chat (cascade sẽ xóa messages và images)
     await pool.execute(
       'DELETE FROM ai_chat_history WHERE chat_id = ?',
-      [params.id]
+      [id]
     )
 
     return NextResponse.json({ message: "Xóa thành công" })
