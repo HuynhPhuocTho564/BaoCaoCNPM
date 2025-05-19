@@ -42,6 +42,12 @@ export function CommandBox({ command, status, params, categories, tags }: Comman
           success: 'Đã cập nhật truyện thành công!',
           error: 'Có lỗi xảy ra khi cập nhật truyện!'
         }[status]
+      case '/edit-character':
+        return {
+          loading: 'Đang cập nhật nhân vật...',
+          success: 'Đã cập nhật nhân vật thành công!',
+          error: 'Có lỗi xảy ra khi cập nhật nhân vật!'
+        }[status]
       default:
         return 'Đang xử lý...'
     }
@@ -63,7 +69,8 @@ export function CommandBox({ command, status, params, categories, tags }: Comman
       appearance: 'Ngoại hình',
       background: 'Quá khứ',
       summary: 'Tóm tắt',
-      status: 'Trạng thái'
+      status: 'Trạng thái',
+      character_id: 'ID nhân vật'
     }
     return labels[key] || key
   }

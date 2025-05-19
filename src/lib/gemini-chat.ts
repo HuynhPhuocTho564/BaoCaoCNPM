@@ -50,8 +50,14 @@ interface Story {
     personality: string
     appearance: string
     role: string
+    character_id: number
+    birthday?: string
+    height?: string
+    weight?: string
+    background?: string
   }[]
   outlines?: {
+    outline_id: number
     title: string
     description: string
   }[]
@@ -68,7 +74,8 @@ export async function chat(
   onEditStory?: (params: any) => Promise<void>,
   categories: { id: number; name: string }[] = [],
   tags: { id: number; name: string }[] = [],
-  selectedStory?: Story | null
+  selectedStory?: Story | null,
+  onEditCharacter?: (params: any) => Promise<void>,
 ): Promise<ReadableStream> {
   try {
     const key = await getApiKey();
@@ -99,25 +106,32 @@ ${selectedStory.characters?.length ? `
 Danh sách nhân vật:
 ${selectedStory.characters.map(char => `
 - Tên: ${char.name}
+  ID: ${char.character_id}
   Mô tả: ${char.description}
   Giới tính: ${char.gender}
+  Ngày sinh: ${char.birthday || 'Chưa có'}
+  Chiều cao: ${char.height || 'Chưa có'}
+  Cân nặng: ${char.weight || 'Chưa có'}
   Tính cách: ${char.personality}
   Ngoại hình: ${char.appearance}
   Vai trò: ${char.role}
+  Quá khứ: ${char.background || 'Chưa có'}
 `).join('\n')}` : ''}
 
 ${selectedStory.outlines?.length ? `
 Đại cương:
 ${selectedStory.outlines.map(outline => `
-- ${outline.title}
-  ${outline.description}
+- ID: ${outline.outline_id}
+  Tiêu đề: ${outline.title}
+  Mô tả: ${outline.description}
 `).join('\n')}` : ''}
 
 ${selectedStory.chapters?.length ? `
 Các chương đã xuất bản:
 ${selectedStory.chapters.map(chapter => `
-- ${chapter.title}
-  ${chapter.summary || 'Chưa có tóm tắt'}
+- ID: ${chapter.chapter_id}
+  Tiêu đề: ${chapter.title}
+  Tóm tắt: ${chapter.summary || 'Chưa có tóm tắt'}
   ${selectedStory.dialogues?.find(d => d.chapter_id === chapter.chapter_id)?.dialogues.map(dialogue => 
     dialogue.type === 'dialogue' ? 
     `  [Hội thoại] ${dialogue.content}` :
@@ -173,14 +187,16 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
               accumulatedText.includes("/create-character") || 
               accumulatedText.includes("/create-chapter") || 
               accumulatedText.includes("/create-outline") ||
-              accumulatedText.includes("/edit-story")) {
+              accumulatedText.includes("/edit-story") ||
+              accumulatedText.includes("/edit-character")) {
             
             const storyMatch = accumulatedText.match(/\/create-story\s*({[\s\S]*?})/);
             const characterMatch = accumulatedText.match(/\/create-character\s*({[\s\S]*?})/);
             const chapterMatch = accumulatedText.match(/\/create-chapter\s*({[\s\S]*?})/);
             const outlineMatch = accumulatedText.match(/\/create-outline\s*({[\s\S]*?})/);
             const editMatch = accumulatedText.match(/\/edit-story\s*({[\s\S]*?})/);
-
+            const editCharacterMatch = accumulatedText.match(/\/edit-character\s*({[\s\S]*?})/);
+            
             if (storyMatch && onCreateStory) {
               try {
                 const params = JSON.parse(storyMatch[1]);
@@ -229,6 +245,15 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
                 await onEditStory(params);
               } catch (error) {
                 console.error("Lỗi khi xử lý lệnh sửa truyện:", error);
+              }
+            }
+
+            if (editCharacterMatch && onEditCharacter && selectedStory) {
+              try {
+                const params = JSON.parse(editCharacterMatch[1]);
+                await onEditCharacter(params);
+              } catch (error) {
+                console.error("Lỗi khi xử lý lệnh sửa nhân vật:", error);
               }
             }
           }

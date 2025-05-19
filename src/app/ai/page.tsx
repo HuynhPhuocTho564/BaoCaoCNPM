@@ -45,7 +45,8 @@ export default function AIPage() {
     handleCreateCharacter,
     handleCreateChapter,
     handleCreateOutline,
-    handleEditStory
+    handleEditStory,
+    handleEditCharacter
   } = useCommandHandler({
     selectedStory,
     setCommandStatus,
@@ -199,7 +200,8 @@ export default function AIPage() {
         handleEditStory,
         categories,
         tags,
-        selectedStory
+        selectedStory,
+        handleEditCharacter
       )
       const reader = result.getReader()
       const assistantMessage: Message = {

@@ -23,6 +23,7 @@ export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEn
     const chapterMatch = content.match(/\/create-chapter\s*({[\s\S]*?})/);
     const outlineMatch = content.match(/\/create-outline\s*({[\s\S]*?})/);
     const editMatch = content.match(/\/edit-story\s*({[\s\S]*?})/);
+    const editCharacterMatch = content.match(/\/edit-character\s*({[\s\S]*?})/);
     
     if (storyMatch) {
       try {
@@ -80,6 +81,18 @@ export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEn
         };
       } catch (error) {
         console.error("Lỗi khi parse params edit story:", error)
+        return null;
+      }
+    }
+
+    if (editCharacterMatch) {
+      try {
+        return {
+          command: '/edit-character',
+          params: JSON.parse(editCharacterMatch[1])
+        };
+      } catch (error) {
+        console.error("Lỗi khi parse params edit character:", error)
         return null;
       }
     }

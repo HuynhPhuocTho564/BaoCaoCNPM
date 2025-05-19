@@ -101,6 +101,27 @@ Khi người dùng muốn sửa truyện:
   "tagIds": [tag_id_1, tag_id_2, ...]
 }
 
+Khi người dùng muốn sửa nhân vật:
+1. Xác nhận thông tin cần sửa và ID nhân vật
+2. Kết thúc câu trả lời bằng lệnh:
+
+/edit-character
+{
+  "character_id": [ID của nhân vật cần sửa],
+  "name": "Tên nhân vật",
+  "description": "Mô tả tổng quan",
+  "role": "main/supporting",
+  "gender": "nam/nữ",
+  "birthday": "YYYY-MM-DD",
+  "height": "xxx",
+  "weight": "xxx",
+  "personality": "Mô tả tính cách",
+  "appearance": "Mô tả ngoại hình",
+  "background": "Thông tin quá khứ, xuất thân"
+}
+
+Lưu ý: Phải cung cấp đúng ID của nhân vật cần sửa, có thể tham khảo từ danh sách nhân vật được cung cấp.
+
 Lưu ý quan trọng:
 - KHÔNG đưa thêm bất kỳ nội dung nào sau lệnh tạo
 - Đảm bảo thông tin đã được xác nhận trước khi tạo

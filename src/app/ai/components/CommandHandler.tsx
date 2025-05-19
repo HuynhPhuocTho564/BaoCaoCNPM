@@ -217,6 +217,67 @@ export const useCommandHandler = ({
     }
   }
 
+  const handleEditCharacter = async (params: {
+    character_id: number
+    name: string
+    description: string
+    role: 'main' | 'supporting'
+    gender: string
+    birthday: string
+    height: string
+    weight: string
+    personality: string
+    appearance: string
+    background: string
+  }) => {
+    if (!selectedStory) {
+      toast.error('Vui lòng chọn truyện trước khi sửa nhân vật')
+      throw new Error('Không có truyện được chọn')
+    }
+
+    try {
+      setCommandStatus('loading')
+      const formData = new FormData()
+      Object.entries(params).forEach(([key, value]) => {
+        formData.append(key, value.toString())
+      })
+
+      const response = await fetch(`/api/stories/${selectedStory.story_id}/characters/${params.character_id}`, {
+        method: 'PUT',
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error('Không thể cập nhật nhân vật')
+      }
+
+      setCommandStatus('success')
+      const lastMessage = messages[messages.length - 1]
+      if (lastMessage?.id) {
+        await updateMessageStatus(lastMessage.id, 'success')
+      }
+
+      setMessages((prev: Message[]) => {
+        const newMessages = [...prev]
+        const lastMsg = newMessages[newMessages.length - 1]
+        if (lastMsg) {
+          lastMsg.content = lastMsg.content.replace(
+            /\/edit-character\s*({[\s\S]*?})/,
+            (match) => `${match}\n\n✅ Đã cập nhật nhân vật thành công!`
+          )
+          lastMsg.command_status = 'success'
+        }
+        return newMessages
+      })
+
+      toast.success('Đã cập nhật nhân vật thành công!')
+      window.dispatchEvent(new CustomEvent('character-updated'))
+    } catch (error) {
+      console.error('Lỗi khi cập nhật nhân vật:', error)
+      handleCommandError(error as Error, 'edit-character')
+    }
+  }
+
   const handleCommandError = async (error: Error, commandType: string) => {
     setCommandStatus('error')
     const lastMessage = messages[messages.length - 1]
@@ -247,6 +308,7 @@ export const useCommandHandler = ({
     handleCreateCharacter,
     handleCreateChapter,
     handleCreateOutline,
-    handleEditStory
+    handleEditStory,
+    handleEditCharacter
   }
 } 
