@@ -45,6 +45,7 @@ export function ChatInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [stories, setStories] = useState<Story[]>([])
   const [isLoadingStories, setIsLoadingStories] = useState(true)
+  const [selectedValue, setSelectedValue] = useState<string>("0")
 
   const fetchStories = async () => {
     try {
@@ -81,6 +82,91 @@ export function ChatInput({
   useEffect(() => {
     fetchStories()
   }, [])
+
+  const fetchStoryDetails = async (story: Story) => {
+    try {
+      // Fetch all related data
+      const [chaptersRes, charactersListRes, outlinesRes] = await Promise.all([
+        fetch(`/api/stories/${story.story_id}/chapters`),
+        fetch(`/api/stories/${story.story_id}/characters`),
+        fetch(`/api/stories/${story.story_id}/outlines`)
+      ]);
+
+      if (chaptersRes.ok) {
+        const chaptersData = await chaptersRes.json();
+        const allChapters = chaptersData.chapters;
+        
+        const dialoguesPromises = allChapters.map(async (chapter: any) => {
+          const dialoguesRes = await fetch(`/api/stories/${story.story_id}/chapters/${chapter.chapter_id}/dialogues`);
+          if (dialoguesRes.ok) {
+            const dialoguesData = await dialoguesRes.json();
+            return {
+              chapter_id: chapter.chapter_id,
+              dialogues: dialoguesData.dialogues
+            };
+          }
+          return null;
+        });
+        
+        const chapterDialogues = await Promise.all(dialoguesPromises);
+        story.chapters = allChapters;
+        story.dialogues = chapterDialogues.filter(d => d !== null);
+      }
+
+      if (charactersListRes.ok) {
+        const charactersListData = await charactersListRes.json();
+        const charactersDetailPromises = charactersListData.characters.map(async (char: any) => {
+          const detailRes = await fetch(`/api/stories/${story.story_id}/characters/${char.character_id}/get`);
+          if (detailRes.ok) {
+            const detailData = await detailRes.json();
+            return detailData.character;
+          }
+          return null;
+        });
+        
+        const characters = await Promise.all(charactersDetailPromises);
+        story.characters = characters.filter(c => c !== null);
+      }
+
+      if (outlinesRes.ok) {
+        const outlinesData = await outlinesRes.json();
+        story.outlines = outlinesData.outlines;
+      }
+
+      return story;
+    } catch (error) {
+      console.error('Lỗi khi tải dữ liệu truyện:', error);
+      return null;
+    }
+  };
+
+  // Trong useEffect cho command-executed
+  useEffect(() => {
+    const handleCommandExecuted = async (event: any) => {
+      console.log('[ChatInput] Command executed event received:', event.detail);
+      await fetchStories();
+      
+      // Sử dụng selectedValue đã lưu
+      if (selectedValue && selectedValue !== "0") {
+        console.log('[ChatInput] Current selected story value:', selectedValue);
+        const story = stories.find(s => s.story_id.toString() === selectedValue);
+        if (story) {
+          const updatedStory = await fetchStoryDetails(story);
+          if (updatedStory) {
+            console.log('[ChatInput] Story details fetched successfully');
+            onStorySelect(updatedStory);
+          }
+        }
+      } else {
+        console.log('[ChatInput] No story selected');
+      }
+    };
+
+    window.addEventListener('command-executed', handleCommandExecuted);
+    return () => {
+      window.removeEventListener('command-executed', handleCommandExecuted);
+    };
+  }, [stories, onStorySelect, selectedValue]); // Thêm selectedValue vào dependencies
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -153,70 +239,16 @@ export function ChatInput({
         
         <form className="flex gap-3 items-end" onSubmit={handleSubmit}>
           <Select
+            value={selectedValue}
             onValueChange={async (value) => {
-              const story = stories.find(s => s.story_id.toString() === value)
-              
+              setSelectedValue(value);
+              const story = stories.find(s => s.story_id.toString() === value);
               if (story) {
-                try {
-                  // Fetch all related data
-                  const [chaptersRes, charactersListRes, outlinesRes] = await Promise.all([
-                    fetch(`/api/stories/${story.story_id}/chapters`),
-                    fetch(`/api/stories/${story.story_id}/characters`),
-                    fetch(`/api/stories/${story.story_id}/outlines`)
-                  ]);
-
-                  // Process chapters
-                  if (chaptersRes.ok) {
-                    const chaptersData = await chaptersRes.json();
-                    const publishedChapters = chaptersData.chapters.filter(
-                      (chapter: any) => chapter.status === 'published'
-                    );
-                    
-                    // Fetch dialogues for each chapter
-                    const dialoguesPromises = publishedChapters.map(async (chapter: any) => {
-                      const dialoguesRes = await fetch(`/api/stories/${story.story_id}/chapters/${chapter.chapter_id}/dialogues`);
-                      if (dialoguesRes.ok) {
-                        const dialoguesData = await dialoguesRes.json();
-                        return {
-                          chapter_id: chapter.chapter_id,
-                          dialogues: dialoguesData.dialogues
-                        };
-                      }
-                      return null;
-                    });
-                    
-                    const chapterDialogues = await Promise.all(dialoguesPromises);
-                    story.chapters = publishedChapters;
-                    story.dialogues = chapterDialogues.filter(d => d !== null);
-                  }
-
-                  // Process characters
-                  if (charactersListRes.ok) {
-                    const charactersListData = await charactersListRes.json();
-                    const charactersDetailPromises = charactersListData.characters.map(async (char: any) => {
-                      const detailRes = await fetch(`/api/stories/${story.story_id}/characters/${char.character_id}/get`);
-                      if (detailRes.ok) {
-                        const detailData = await detailRes.json();
-                        return detailData.character;
-                      }
-                      return null;
-                    });
-                    
-                    const characters = await Promise.all(charactersDetailPromises);
-                    story.characters = characters.filter(c => c !== null);
-                  }
-
-                  // Process outlines
-                  if (outlinesRes.ok) {
-                    const outlinesData = await outlinesRes.json();
-                    story.outlines = outlinesData.outlines;
-                  }
-                } catch (error) {
-                  console.error('Lỗi khi tải dữ liệu truyện:', error);
-                }
+                const updatedStory = await fetchStoryDetails(story);
+                onStorySelect(updatedStory || null);
+              } else {
+                onStorySelect(null);
               }
-              
-              onStorySelect(story || null)
             }}
           >
             <SelectTrigger className="w-[180px] h-[56px]">

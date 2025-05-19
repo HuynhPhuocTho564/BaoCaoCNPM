@@ -278,6 +278,77 @@ export const useCommandHandler = ({
     }
   }
 
+  const handleEditChapter = async (params: {
+    chapter_id: number
+    title: string
+    summary: string
+    status: 'draft' | 'published'
+  }) => {
+    if (!selectedStory) {
+      toast.error('Vui lòng chọn truyện trước khi sửa chương')
+      throw new Error('Không có truyện được chọn')
+    }
+
+    try {
+      setCommandStatus('loading')
+      const response = await fetch(
+        `/api/stories/${selectedStory.story_id}/chapters/${params.chapter_id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(params)
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('Không thể cập nhật chương')
+      }
+
+      handleCommandSuccess('edit-chapter')
+      window.dispatchEvent(new CustomEvent('chapter-updated'))
+    } catch (error) {
+      console.error('Lỗi khi cập nhật chương:', error)
+      handleCommandError(error as Error, 'edit-chapter')
+    }
+  }
+
+  const handleEditOutline = async (params: {
+    outline_id: number
+    title: string
+    description: string
+  }) => {
+    if (!selectedStory) {
+      toast.error('Vui lòng chọn truyện trước khi sửa đại cương')
+      throw new Error('Không có truyện được chọn')
+    }
+
+    try {
+      setCommandStatus('loading')
+      const response = await fetch(
+        `/api/stories/${selectedStory.story_id}/outlines/${params.outline_id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(params)
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('Không thể cập nhật đại cương')
+      }
+
+      handleCommandSuccess('edit-outline')
+      window.dispatchEvent(new CustomEvent('outline-updated'))
+    } catch (error) {
+      console.error('Lỗi khi cập nhật đại cương:', error)
+      handleCommandError(error as Error, 'edit-outline')
+    }
+  }
+
   const handleCommandError = async (error: Error, commandType: string) => {
     setCommandStatus('error')
     const lastMessage = messages[messages.length - 1]
@@ -303,12 +374,39 @@ export const useCommandHandler = ({
     toast.error(`Có lỗi xảy ra khi thực hiện lệnh ${commandType}`)
   }
 
+  const handleCommandSuccess = (commandType: string) => {
+    setCommandStatus('success')
+    const lastMessage = messages[messages.length - 1]
+    if (lastMessage) {
+      if (lastMessage?.id) {
+        updateMessageStatus(lastMessage.id, 'success')
+      }
+      
+      setMessages(prev => {
+        const newMessages = [...prev]
+        const lastMsg = newMessages[newMessages.length - 1]
+        if (lastMsg) {
+          lastMsg.content = lastMsg.content.replace(
+            new RegExp(`\\/${commandType}\\s*({[\\s\\S]*?})`),
+            (match) => `${match}\n\n✅ Thực hiện lệnh ${commandType} thành công!`
+          )
+          lastMsg.command_status = 'success'
+        }
+        return newMessages
+      })
+    }
+    
+    toast.success(`Thực hiện lệnh ${commandType} thành công!`)
+  }
+
   return {
     handleCreateStory,
     handleCreateCharacter,
     handleCreateChapter,
     handleCreateOutline,
     handleEditStory,
-    handleEditCharacter
+    handleEditCharacter,
+    handleEditChapter,
+    handleEditOutline
   }
 } 

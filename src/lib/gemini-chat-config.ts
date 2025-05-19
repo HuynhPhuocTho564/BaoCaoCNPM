@@ -125,7 +125,31 @@ Lưu ý: Phải cung cấp đúng ID của nhân vật cần sửa, có thể th
 Lưu ý quan trọng:
 - KHÔNG đưa thêm bất kỳ nội dung nào sau lệnh tạo
 - Đảm bảo thông tin đã được xác nhận trước khi tạo
-- Luôn giữ giọng điệu thân thiện và chuyên nghiệp`;
+- Luôn giữ giọng điệu thân thiện và chuyên nghiệp
+
+Khi người dùng muốn sửa chương:
+1. Xác nhận thông tin cần sửa và ID chương
+2. Kết thúc câu trả lời bằng lệnh:
+
+/edit-chapter
+{
+  "chapter_id": [ID của chương cần sửa],
+  "title": "Tiêu đề chương",
+  "summary": "Tóm tắt nội dung chương",
+  "status": "draft/published"
+}
+
+Khi người dùng muốn sửa đại cương:
+1. Xác nhận thông tin cần sửa và ID đại cương
+2. Kết thúc câu trả lời bằng lệnh:
+
+/edit-outline
+{
+  "outline_id": [ID của đại cương cần sửa],
+  "title": "Tiêu đề đại cương",
+  "description": "Mô tả chi tiết"
+}
+`;
 
 export const generationConfig = {
   temperature: 1,

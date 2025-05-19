@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Loader2, CheckCircle2, XCircle } from "lucide-react"
+import { useEffect } from "react"
 
 interface CommandBoxProps {
   command: string
@@ -10,6 +11,16 @@ interface CommandBoxProps {
 }
 
 export function CommandBox({ command, status, params, categories, tags }: CommandBoxProps) {
+  useEffect(() => {
+    if (status === 'success') {
+      // Kích hoạt event để fetch lại data khi command thực hiện thành công
+      const event = new CustomEvent('command-executed', {
+        detail: { command }
+      });
+      window.dispatchEvent(event);
+    }
+  }, [status, command]);
+
   const getCommandTitle = () => {
     switch (command) {
       case '/create-story':
@@ -48,6 +59,18 @@ export function CommandBox({ command, status, params, categories, tags }: Comman
           success: 'Đã cập nhật nhân vật thành công!',
           error: 'Có lỗi xảy ra khi cập nhật nhân vật!'
         }[status]
+      case '/edit-chapter':
+        return {
+          loading: 'Đang cập nhật chương...',
+          success: 'Đã cập nhật chương thành công!',
+          error: 'Có lỗi xảy ra khi cập nhật chương!'
+        }[status]
+      case '/edit-outline':
+        return {
+          loading: 'Đang cập nhật đại cương...',
+          success: 'Đã cập nhật đại cương thành công!',
+          error: 'Có lỗi xảy ra khi cập nhật đại cương!'
+        }[status]
       default:
         return 'Đang xử lý...'
     }
@@ -70,7 +93,9 @@ export function CommandBox({ command, status, params, categories, tags }: Comman
       background: 'Quá khứ',
       summary: 'Tóm tắt',
       status: 'Trạng thái',
-      character_id: 'ID nhân vật'
+      character_id: 'ID nhân vật',
+      chapter_id: 'ID chương',
+      outline_id: 'ID đại cương'
     }
     return labels[key] || key
   }

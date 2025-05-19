@@ -76,6 +76,8 @@ export async function chat(
   tags: { id: number; name: string }[] = [],
   selectedStory?: Story | null,
   onEditCharacter?: (params: any) => Promise<void>,
+  onEditChapter?: (params: any) => Promise<void>,
+  onEditOutline?: (params: any) => Promise<void>,
 ): Promise<ReadableStream> {
   try {
     const key = await getApiKey();
@@ -127,7 +129,7 @@ ${selectedStory.outlines.map(outline => `
 `).join('\n')}` : ''}
 
 ${selectedStory.chapters?.length ? `
-Các chương đã xuất bản:
+Các chương của truyện:
 ${selectedStory.chapters.map(chapter => `
 - ID: ${chapter.chapter_id}
   Tiêu đề: ${chapter.title}
@@ -188,7 +190,9 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
               accumulatedText.includes("/create-chapter") || 
               accumulatedText.includes("/create-outline") ||
               accumulatedText.includes("/edit-story") ||
-              accumulatedText.includes("/edit-character")) {
+              accumulatedText.includes("/edit-character") ||
+              accumulatedText.includes("/edit-chapter") ||
+              accumulatedText.includes("/edit-outline")) {
             
             const storyMatch = accumulatedText.match(/\/create-story\s*({[\s\S]*?})/);
             const characterMatch = accumulatedText.match(/\/create-character\s*({[\s\S]*?})/);
@@ -196,7 +200,9 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
             const outlineMatch = accumulatedText.match(/\/create-outline\s*({[\s\S]*?})/);
             const editMatch = accumulatedText.match(/\/edit-story\s*({[\s\S]*?})/);
             const editCharacterMatch = accumulatedText.match(/\/edit-character\s*({[\s\S]*?})/);
-            
+            const editChapterMatch = accumulatedText.match(/\/edit-chapter\s*({[\s\S]*?})/);
+            const editOutlineMatch = accumulatedText.match(/\/edit-outline\s*({[\s\S]*?})/);
+
             if (storyMatch && onCreateStory) {
               try {
                 const params = JSON.parse(storyMatch[1]);
@@ -254,6 +260,24 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
                 await onEditCharacter(params);
               } catch (error) {
                 console.error("Lỗi khi xử lý lệnh sửa nhân vật:", error);
+              }
+            }
+
+            if (editChapterMatch && onEditChapter && selectedStory) {
+              try {
+                const params = JSON.parse(editChapterMatch[1]);
+                await onEditChapter(params);
+              } catch (error) {
+                console.error("Lỗi khi xử lý lệnh sửa chương:", error);
+              }
+            }
+
+            if (editOutlineMatch && onEditOutline && selectedStory) {
+              try {
+                const params = JSON.parse(editOutlineMatch[1]);
+                await onEditOutline(params);
+              } catch (error) {
+                console.error("Lỗi khi xử lý lệnh sửa đại cương:", error);
               }
             }
           }
