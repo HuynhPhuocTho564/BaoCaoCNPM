@@ -89,6 +89,12 @@ export function CommandBox({ command, status, params, categories, tags }: Comman
           success: 'Đã xóa đại cương thành công!',
           error: 'Có lỗi xảy ra khi xóa đại cương!'
         }[status]
+      case '/create-dialogue':
+        return {
+          loading: 'Đang tạo hội thoại...',
+          success: 'Đã tạo hội thoại thành công!',
+          error: 'Có lỗi xảy ra khi tạo hội thoại!'
+        }[status]
       default:
         return 'Đang xử lý...'
     }
@@ -113,7 +119,11 @@ export function CommandBox({ command, status, params, categories, tags }: Comman
       status: 'Trạng thái',
       character_id: 'ID nhân vật',
       chapter_id: 'ID chương',
-      outline_id: 'ID đại cương'
+      outline_id: 'ID đại cương',
+      dialogues: 'Các đoạn hội thoại',
+      content: 'Nội dung',
+      type: 'Loại',
+      order_number: 'Thứ tự'
     }
     return labels[key] || key
   }
@@ -150,6 +160,18 @@ export function CommandBox({ command, status, params, categories, tags }: Comman
       return roleMap[value] || value
     }
 
+    // Xử lý đặc biệt cho dialogues
+    if (key === 'dialogues' && Array.isArray(value)) {
+      return value.map((dialogue, index) => (
+        `Đoạn ${index + 1}: ${dialogue.type === 'dialogue' ? 'Hội thoại' : 'Mô tả'} - ${dialogue.content}`
+      )).join('\n')
+    }
+
+    // Nếu là object, chuyển thành chuỗi JSON
+    if (typeof value === 'object' && value !== null) {
+      return JSON.stringify(value)
+    }
+
     return value
   }
 
@@ -177,7 +199,7 @@ export function CommandBox({ command, status, params, categories, tags }: Comman
           {Object.entries(params).map(([key, value]) => (
             <div key={key} className="flex gap-2">
               <span className="font-medium">{getParamLabel(key)}:</span>
-              <span>{formatParamValue(key, value)}</span>
+              <span className="whitespace-pre-wrap">{formatParamValue(key, value)}</span>
             </div>
           ))}
         </div>

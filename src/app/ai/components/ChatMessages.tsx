@@ -17,7 +17,50 @@ interface ChatMessagesProps {
 
 export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEndRef, commandStatus, categories, tags }: ChatMessagesProps) {
   const getCommandParams = (content: string) => {
-    // Kiểm tra tất cả các loại lệnh
+    // Xử lý đặc biệt cho create-dialogue
+    const createDialogueMatch = content.match(/\/create-dialogue\s*([\s\S]*?)(?=\n\n|$)/);
+    if (createDialogueMatch) {
+      try {
+        // Tìm và parse tất cả các đoạn JSON trong nội dung
+        const dialogueContent = createDialogueMatch[1];
+        const jsonMatches = dialogueContent.match(/({[\s\S]*?})/g);
+        
+        if (jsonMatches) {
+          const dialogues = jsonMatches.map(json => {
+            try {
+              return JSON.parse(json);
+            } catch (e) {
+              console.error("Lỗi parse JSON dialogue:", e);
+              return null;
+            }
+          }).filter(Boolean);
+
+          if (dialogues.length > 0) {
+            // Lấy chapter_id từ dialogue đầu tiên
+            const chapter_id = dialogues[0].chapter_id;
+            
+            return {
+              command: '/create-dialogue',
+              params: {
+                chapter_id,
+                dialogues: dialogues.map(d => ({
+                  character_id: d.character_id || null,
+                  content: d.content,
+                  type: d.type || 'dialogue',
+                  order_number: d.order_number
+                }))
+              }
+            };
+          }
+        }
+        return null;
+      } catch (error) {
+        console.error("Lỗi khi parse params create dialogue:", error);
+        return null;
+      }
+    }
+
+    // Kiểm tra các lệnh khác như cũ
     const storyMatch = content.match(/\/create-story\s*({[\s\S]*?})/);
     const characterMatch = content.match(/\/create-character\s*({[\s\S]*?})/);
     const chapterMatch = content.match(/\/create-chapter\s*({[\s\S]*?})/);

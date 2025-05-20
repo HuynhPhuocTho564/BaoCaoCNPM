@@ -41,6 +41,8 @@ interface Story {
       type: 'dialogue' | 'aside'
       content: string
       character_name?: string
+      dialogue_id?: number
+      order_number?: number
     }[]
   }[]
   characters?: {
@@ -81,6 +83,7 @@ export async function chat(
   onDeleteCharacter?: (params: any) => Promise<void>,
   onDeleteChapter?: (params: any) => Promise<void>,
   onDeleteOutline?: (params: any) => Promise<void>,
+  onCreateDialogue?: (params: any) => Promise<void>,
 ): Promise<ReadableStream> {
   try {
     const key = await getApiKey();
@@ -137,11 +140,13 @@ ${selectedStory.chapters.map(chapter => `
 - ID: ${chapter.chapter_id}
   Tiêu đề: ${chapter.title}
   Tóm tắt: ${chapter.summary || 'Chưa có tóm tắt'}
-  ${selectedStory.dialogues?.find(d => d.chapter_id === chapter.chapter_id)?.dialogues.map(dialogue => 
-    dialogue.type === 'dialogue' ? 
-    `  [Hội thoại] ${dialogue.content}` :
-    `  [Mô tả] ${dialogue.content}`
-  ).join('\n  ') || ''}
+  ${selectedStory.dialogues?.find(d => d.chapter_id === chapter.chapter_id)?.dialogues.map(dialogue => `
+    [${dialogue.type === 'dialogue' ? 'Hội thoại' : 'Mô tả'}]
+    ID: ${dialogue.dialogue_id}
+    ${dialogue.character_name ? `Nhân vật: ${dialogue.character_name}` : ''}
+    Nội dung: ${dialogue.content}
+    Thứ tự: ${dialogue.order_number}
+  `).join('\n  ') || 'Chưa có hội thoại'}
 `).join('\n')}` : ''}
 
 Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện này dựa trên các thông tin trên.`;
@@ -198,8 +203,45 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
               accumulatedText.includes("/edit-outline") ||
               accumulatedText.includes("/delete-character") ||
               accumulatedText.includes("/delete-chapter") ||
-              accumulatedText.includes("/delete-outline")) {
+              accumulatedText.includes("/delete-outline") ||
+              accumulatedText.includes("/create-dialogue")) {
             
+            // Xử lý đặc biệt cho create-dialogue
+            const createDialogueMatch = accumulatedText.match(/\/create-dialogue\s*([\s\S]*?)(?=\n\n|$)/);
+            if (createDialogueMatch && onCreateDialogue) {
+              try {
+                const dialogueContent = createDialogueMatch[1];
+                const jsonMatches = dialogueContent.match(/({[\s\S]*?})/g);
+                
+                if (jsonMatches) {
+                  const dialogues = jsonMatches.map(json => {
+                    try {
+                      return JSON.parse(json);
+                    } catch (e) {
+                      console.error("Lỗi parse JSON dialogue:", e);
+                      return null;
+                    }
+                  }).filter(Boolean);
+
+                  if (dialogues.length > 0) {
+                    const chapter_id = dialogues[0].chapter_id;
+                    await onCreateDialogue({
+                      chapter_id,
+                      dialogues: dialogues.map(d => ({
+                        character_id: d.character_id || null,
+                        content: d.content,
+                        type: d.type || 'dialogue',
+                        order_number: d.order_number
+                      }))
+                    });
+                  }
+                }
+              } catch (error) {
+                console.error("Lỗi khi xử lý lệnh tạo hội thoại:", error);
+              }
+            }
+
+            // Xử lý các lệnh khác như cũ
             const storyMatch = accumulatedText.match(/\/create-story\s*({[\s\S]*?})/);
             const characterMatch = accumulatedText.match(/\/create-character\s*({[\s\S]*?})/);
             const chapterMatch = accumulatedText.match(/\/create-chapter\s*({[\s\S]*?})/);

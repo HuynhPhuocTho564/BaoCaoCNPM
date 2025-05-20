@@ -168,6 +168,40 @@ Khi người dùng muốn xóa nhân vật/chương/đại cương:
 {
   "outline_id": [ID của đại cương cần xóa]
 }
+
+Khi người dùng muốn tạo hội thoại cho chương:
+1. Xác nhận thông tin chương và nhân vật
+2. Kết thúc câu trả lời bằng lệnh:
+
+/create-dialogue
+{
+  "chapter_id": 1,
+  "character_id": 1,
+  "content": "Nội dung hội thoại 1",
+  "type": "dialogue",
+  "order_number": 1
+}
+{
+  "chapter_id": 1,
+  "character_id": 2,
+  "content": "Nội dung hội thoại 2",
+  "type": "dialogue", 
+  "order_number": 2
+}
+{
+  "chapter_id": 1,
+  "character_id": null,
+  "content": "Đoạn mô tả hành động",
+  "type": "aside",
+  "order_number": 3
+}
+
+Lưu ý:
+- Mỗi đoạn hội thoại là một JSON object riêng biệt
+- chapter_id phải giống nhau cho tất cả các đoạn trong cùng một chuỗi hội thoại
+- type="dialogue": Là hội thoại của nhân vật, cần có character_id
+- type="aside": Là đoạn mô tả, không cần character_id
+- order_number bắt đầu từ 1 và tăng dần
 `;
 
 export const generationConfig = {

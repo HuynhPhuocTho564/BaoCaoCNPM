@@ -424,6 +424,70 @@ export const useCommandHandler = ({
     }
   }
 
+  const handleCreateDialogue = async (params: {
+    chapter_id: number
+    dialogues: Array<{
+      character_id: number | null
+      content: string
+      type: 'dialogue' | 'aside'
+      order_number: number
+    }>
+  }) => {
+    if (!selectedStory) {
+      toast.error('Vui lòng chọn truyện trước khi tạo hội thoại')
+      throw new Error('Không có truyện được chọn')
+    }
+
+    try {
+      setCommandStatus('loading')
+      
+      // Thêm từng dialogue một
+      for (const dialogue of params.dialogues) {
+        const response = await fetch(
+          `/api/stories/${selectedStory.story_id}/chapters/${params.chapter_id}/dialogues`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dialogue)
+          }
+        )
+
+        if (!response.ok) {
+          throw new Error('Không thể thêm hội thoại')
+        }
+      }
+
+      // Cập nhật trạng thái thành công
+      setCommandStatus('success')
+      const lastMessage = messages[messages.length - 1]
+      if (lastMessage?.id) {
+        await updateMessageStatus(lastMessage.id, 'success')
+      }
+
+      // Cập nhật nội dung tin nhắn
+      setMessages((prev: Message[]) => {
+        const newMessages = [...prev]
+        const lastMsg = newMessages[newMessages.length - 1]
+        if (lastMsg) {
+          lastMsg.content = lastMsg.content.replace(
+            /\/create-dialogue\s*({[\s\S]*?})/,
+            (match) => `${match}\n\n✅ Đã tạo hội thoại thành công!`
+          )
+          lastMsg.command_status = 'success'
+        }
+        return newMessages
+      })
+
+      toast.success('Đã tạo hội thoại thành công!')
+      window.dispatchEvent(new CustomEvent('dialogues-created'))
+    } catch (error) {
+      console.error('Lỗi khi tạo hội thoại:', error)
+      handleCommandError(error as Error, 'create-dialogue')
+    }
+  }
+
   const handleCommandError = async (error: Error, commandType: string) => {
     setCommandStatus('error')
     const lastMessage = messages[messages.length - 1]
@@ -485,6 +549,7 @@ export const useCommandHandler = ({
     handleEditOutline,
     handleDeleteCharacter,
     handleDeleteChapter,
-    handleDeleteOutline
+    handleDeleteOutline,
+    handleCreateDialogue
   }
 } 
