@@ -78,6 +78,9 @@ export async function chat(
   onEditCharacter?: (params: any) => Promise<void>,
   onEditChapter?: (params: any) => Promise<void>,
   onEditOutline?: (params: any) => Promise<void>,
+  onDeleteCharacter?: (params: any) => Promise<void>,
+  onDeleteChapter?: (params: any) => Promise<void>,
+  onDeleteOutline?: (params: any) => Promise<void>,
 ): Promise<ReadableStream> {
   try {
     const key = await getApiKey();
@@ -192,7 +195,10 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
               accumulatedText.includes("/edit-story") ||
               accumulatedText.includes("/edit-character") ||
               accumulatedText.includes("/edit-chapter") ||
-              accumulatedText.includes("/edit-outline")) {
+              accumulatedText.includes("/edit-outline") ||
+              accumulatedText.includes("/delete-character") ||
+              accumulatedText.includes("/delete-chapter") ||
+              accumulatedText.includes("/delete-outline")) {
             
             const storyMatch = accumulatedText.match(/\/create-story\s*({[\s\S]*?})/);
             const characterMatch = accumulatedText.match(/\/create-character\s*({[\s\S]*?})/);
@@ -202,6 +208,9 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
             const editCharacterMatch = accumulatedText.match(/\/edit-character\s*({[\s\S]*?})/);
             const editChapterMatch = accumulatedText.match(/\/edit-chapter\s*({[\s\S]*?})/);
             const editOutlineMatch = accumulatedText.match(/\/edit-outline\s*({[\s\S]*?})/);
+            const deleteCharacterMatch = accumulatedText.match(/\/delete-character\s*({[\s\S]*?})/);
+            const deleteChapterMatch = accumulatedText.match(/\/delete-chapter\s*({[\s\S]*?})/);
+            const deleteOutlineMatch = accumulatedText.match(/\/delete-outline\s*({[\s\S]*?})/);
 
             if (storyMatch && onCreateStory) {
               try {
@@ -278,6 +287,33 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
                 await onEditOutline(params);
               } catch (error) {
                 console.error("Lỗi khi xử lý lệnh sửa đại cương:", error);
+              }
+            }
+
+            if (deleteCharacterMatch && onDeleteCharacter && selectedStory) {
+              try {
+                const params = JSON.parse(deleteCharacterMatch[1]);
+                await onDeleteCharacter(params);
+              } catch (error) {
+                console.error("Lỗi khi xử lý lệnh xóa nhân vật:", error);
+              }
+            }
+
+            if (deleteChapterMatch && onDeleteChapter && selectedStory) {
+              try {
+                const params = JSON.parse(deleteChapterMatch[1]);
+                await onDeleteChapter(params);
+              } catch (error) {
+                console.error("Lỗi khi xử lý lệnh xóa chương:", error);
+              }
+            }
+
+            if (deleteOutlineMatch && onDeleteOutline && selectedStory) {
+              try {
+                const params = JSON.parse(deleteOutlineMatch[1]);
+                await onDeleteOutline(params);
+              } catch (error) {
+                console.error("Lỗi khi xử lý lệnh xóa đại cương:", error);
               }
             }
           }

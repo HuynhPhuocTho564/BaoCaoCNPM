@@ -71,6 +71,24 @@ export function CommandBox({ command, status, params, categories, tags }: Comman
           success: 'Đã cập nhật đại cương thành công!',
           error: 'Có lỗi xảy ra khi cập nhật đại cương!'
         }[status]
+      case '/delete-character':
+        return {
+          loading: 'Đang xóa nhân vật...',
+          success: 'Đã xóa nhân vật thành công!',
+          error: 'Có lỗi xảy ra khi xóa nhân vật!'
+        }[status]
+      case '/delete-chapter':
+        return {
+          loading: 'Đang xóa chương...',
+          success: 'Đã xóa chương thành công!',
+          error: 'Có lỗi xảy ra khi xóa chương!'
+        }[status]
+      case '/delete-outline':
+        return {
+          loading: 'Đang xóa đại cương...',
+          success: 'Đã xóa đại cương thành công!',
+          error: 'Có lỗi xảy ra khi xóa đại cương!'
+        }[status]
       default:
         return 'Đang xử lý...'
     }

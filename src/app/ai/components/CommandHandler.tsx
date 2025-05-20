@@ -349,6 +349,81 @@ export const useCommandHandler = ({
     }
   }
 
+  const handleDeleteCharacter = async (params: { character_id: number }) => {
+    if (!selectedStory) {
+      toast.error('Vui lòng chọn truyện trước khi xóa nhân vật')
+      throw new Error('Không có truyện được chọn')
+    }
+
+    try {
+      setCommandStatus('loading')
+      const response = await fetch(
+        `/api/stories/${selectedStory.story_id}/characters/${params.character_id}`,
+        { method: 'DELETE' }
+      )
+
+      if (!response.ok) {
+        throw new Error('Không thể xóa nhân vật')
+      }
+
+      handleCommandSuccess('delete-character')
+      window.dispatchEvent(new CustomEvent('character-deleted'))
+    } catch (error) {
+      console.error('Lỗi khi xóa nhân vật:', error)
+      handleCommandError(error as Error, 'delete-character')
+    }
+  }
+
+  const handleDeleteChapter = async (params: { chapter_id: number }) => {
+    if (!selectedStory) {
+      toast.error('Vui lòng chọn truyện trước khi xóa chương')
+      throw new Error('Không có truyện được chọn')
+    }
+
+    try {
+      setCommandStatus('loading')
+      const response = await fetch(
+        `/api/stories/${selectedStory.story_id}/chapters/${params.chapter_id}`,
+        { method: 'DELETE' }
+      )
+
+      if (!response.ok) {
+        throw new Error('Không thể xóa chương')
+      }
+
+      handleCommandSuccess('delete-chapter')
+      window.dispatchEvent(new CustomEvent('chapter-deleted'))
+    } catch (error) {
+      console.error('Lỗi khi xóa chương:', error)
+      handleCommandError(error as Error, 'delete-chapter')
+    }
+  }
+
+  const handleDeleteOutline = async (params: { outline_id: number }) => {
+    if (!selectedStory) {
+      toast.error('Vui lòng chọn truyện trước khi xóa đại cương')
+      throw new Error('Không có truyện được chọn')
+    }
+
+    try {
+      setCommandStatus('loading')
+      const response = await fetch(
+        `/api/stories/${selectedStory.story_id}/outlines/${params.outline_id}`,
+        { method: 'DELETE' }
+      )
+
+      if (!response.ok) {
+        throw new Error('Không thể xóa đại cương')
+      }
+
+      handleCommandSuccess('delete-outline')
+      window.dispatchEvent(new CustomEvent('outline-deleted'))
+    } catch (error) {
+      console.error('Lỗi khi xóa đại cương:', error)
+      handleCommandError(error as Error, 'delete-outline')
+    }
+  }
+
   const handleCommandError = async (error: Error, commandType: string) => {
     setCommandStatus('error')
     const lastMessage = messages[messages.length - 1]
@@ -407,6 +482,9 @@ export const useCommandHandler = ({
     handleEditStory,
     handleEditCharacter,
     handleEditChapter,
-    handleEditOutline
+    handleEditOutline,
+    handleDeleteCharacter,
+    handleDeleteChapter,
+    handleDeleteOutline
   }
 } 

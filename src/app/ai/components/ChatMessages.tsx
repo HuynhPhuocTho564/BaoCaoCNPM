@@ -26,6 +26,9 @@ export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEn
     const editCharacterMatch = content.match(/\/edit-character\s*({[\s\S]*?})/);
     const editChapterMatch = content.match(/\/edit-chapter\s*({[\s\S]*?})/);
     const editOutlineMatch = content.match(/\/edit-outline\s*({[\s\S]*?})/);
+    const deleteCharacterMatch = content.match(/\/delete-character\s*({[\s\S]*?})/);
+    const deleteChapterMatch = content.match(/\/delete-chapter\s*({[\s\S]*?})/);
+    const deleteOutlineMatch = content.match(/\/delete-outline\s*({[\s\S]*?})/);
     
     if (storyMatch) {
       try {
@@ -119,6 +122,42 @@ export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEn
         };
       } catch (error) {
         console.error("Lỗi khi parse params edit outline:", error)
+        return null;
+      }
+    }
+
+    if (deleteCharacterMatch) {
+      try {
+        return {
+          command: '/delete-character',
+          params: JSON.parse(deleteCharacterMatch[1])
+        };
+      } catch (error) {
+        console.error("Lỗi khi parse params delete character:", error)
+        return null;
+      }
+    }
+
+    if (deleteChapterMatch) {
+      try {
+        return {
+          command: '/delete-chapter',
+          params: JSON.parse(deleteChapterMatch[1])
+        };
+      } catch (error) {
+        console.error("Lỗi khi parse params delete chapter:", error)
+        return null;
+      }
+    }
+
+    if (deleteOutlineMatch) {
+      try {
+        return {
+          command: '/delete-outline',
+          params: JSON.parse(deleteOutlineMatch[1])
+        };
+      } catch (error) {
+        console.error("Lỗi khi parse params delete outline:", error)
         return null;
       }
     }

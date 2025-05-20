@@ -149,6 +149,25 @@ Khi người dùng muốn sửa đại cương:
   "title": "Tiêu đề đại cương",
   "description": "Mô tả chi tiết"
 }
+
+Khi người dùng muốn xóa nhân vật/chương/đại cương:
+1. Xác nhận ID cần xóa
+2. Kết thúc câu trả lời bằng lệnh tương ứng:
+
+/delete-character
+{
+  "character_id": [ID của nhân vật cần xóa]
+}
+
+/delete-chapter
+{
+  "chapter_id": [ID của chương cần xóa]
+}
+
+/delete-outline
+{
+  "outline_id": [ID của đại cương cần xóa]
+}
 `;
 
 export const generationConfig = {
