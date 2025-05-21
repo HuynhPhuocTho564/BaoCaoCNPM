@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { toast } from "sonner"
 import { Message } from "@/lib/gemini-chat-config"
 import { Story } from '../types'
@@ -441,8 +442,34 @@ export const useCommandHandler = ({
     try {
       setCommandStatus('loading')
       
-      // Thêm từng dialogue một
-      for (const dialogue of params.dialogues) {
+      // Lấy danh sách hội thoại hiện có của chương
+      const existingDialoguesResponse = await fetch(
+        `/api/stories/${selectedStory.story_id}/chapters/${params.chapter_id}/dialogues`
+      )
+      
+      if (!existingDialoguesResponse.ok) {
+        throw new Error('Không thể lấy danh sách hội thoại hiện có')
+      }
+
+      const { dialogues: existingDialogues } = await existingDialoguesResponse.json()
+      
+      // Lọc ra những dialogue chưa tồn tại
+      const newDialogues = params.dialogues.filter(newDialogue => 
+        !existingDialogues.some((existingDialogue: any) => 
+          existingDialogue.content === newDialogue.content &&
+          existingDialogue.character_id === newDialogue.character_id &&
+          existingDialogue.type === newDialogue.type
+        )
+      )
+
+      if (newDialogues.length === 0) {
+        toast.info('Tất cả hội thoại đã tồn tại')
+        setCommandStatus('success')
+        return
+      }
+
+      // Thêm từng dialogue mới
+      for (const dialogue of newDialogues) {
         const response = await fetch(
           `/api/stories/${selectedStory.story_id}/chapters/${params.chapter_id}/dialogues`,
           {
@@ -473,14 +500,14 @@ export const useCommandHandler = ({
         if (lastMsg) {
           lastMsg.content = lastMsg.content.replace(
             /\/create-dialogue\s*({[\s\S]*?})/,
-            (match) => `${match}\n\n✅ Đã tạo hội thoại thành công!`
+            (match) => `${match}\n\n✅ Đã tạo ${newDialogues.length} hội thoại mới thành công!`
           )
           lastMsg.command_status = 'success'
         }
         return newMessages
       })
 
-      toast.success('Đã tạo hội thoại thành công!')
+      toast.success(`Đã tạo ${newDialogues.length} hội thoại mới thành công!`)
       window.dispatchEvent(new CustomEvent('dialogues-created'))
     } catch (error) {
       console.error('Lỗi khi tạo hội thoại:', error)
