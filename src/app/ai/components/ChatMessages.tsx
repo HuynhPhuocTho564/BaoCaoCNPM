@@ -72,7 +72,9 @@ export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEn
     const deleteCharacterMatch = content.match(/\/delete-character\s*({[\s\S]*?})/);
     const deleteChapterMatch = content.match(/\/delete-chapter\s*({[\s\S]*?})/);
     const deleteOutlineMatch = content.match(/\/delete-outline\s*({[\s\S]*?})/);
-    
+    const editDialogueMatch = content.match(/\/edit-dialogue\s*({[\s\S]*?})/);
+    const deleteDialogueMatch = content.match(/\/delete-dialogue\s*({[\s\S]*?})/);
+
     if (storyMatch) {
       try {
         return {
@@ -201,6 +203,30 @@ export function ChatMessages({ messages, isLoading, chatContainerRef, messagesEn
         };
       } catch (error) {
         console.error("Lỗi khi parse params delete outline:", error)
+        return null;
+      }
+    }
+
+    if (editDialogueMatch) {
+      try {
+        return {
+          command: '/edit-dialogue',
+          params: JSON.parse(editDialogueMatch[1])
+        };
+      } catch (error) {
+        console.error("Lỗi khi parse params edit dialogue:", error)
+        return null;
+      }
+    }
+
+    if (deleteDialogueMatch) {
+      try {
+        return {
+          command: '/delete-dialogue',
+          params: JSON.parse(deleteDialogueMatch[1])
+        };
+      } catch (error) {
+        console.error("Lỗi khi parse params delete dialogue:", error)
         return null;
       }
     }

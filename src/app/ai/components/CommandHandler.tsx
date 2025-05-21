@@ -515,6 +515,75 @@ export const useCommandHandler = ({
     }
   }
 
+  const handleEditDialogue = async (params: {
+    dialogue_id: number
+    content: string
+    type: 'dialogue' | 'aside'
+    character_id: number | null
+    chapter_id: number
+  }) => {
+    if (!selectedStory) {
+      toast.error('Vui lòng chọn truyện trước khi sửa hội thoại')
+      throw new Error('Không có truyện được chọn')
+    }
+
+    try {
+      setCommandStatus('loading')
+      const response = await fetch(
+        `/api/stories/${selectedStory.story_id}/chapters/${params.chapter_id}/dialogues/${params.dialogue_id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            content: params.content,
+            type: params.type,
+            character_id: params.character_id
+          })
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('Không thể cập nhật hội thoại')
+      }
+
+      handleCommandSuccess('edit-dialogue')
+      window.dispatchEvent(new CustomEvent('dialogue-updated'))
+    } catch (error) {
+      console.error('Lỗi khi cập nhật hội thoại:', error)
+      handleCommandError(error as Error, 'edit-dialogue')
+    }
+  }
+
+  const handleDeleteDialogue = async (params: { 
+    dialogue_id: number
+    chapter_id: number 
+  }) => {
+    if (!selectedStory) {
+      toast.error('Vui lòng chọn truyện trước khi xóa hội thoại')
+      throw new Error('Không có truyện được chọn')
+    }
+
+    try {
+      setCommandStatus('loading')
+      const response = await fetch(
+        `/api/stories/${selectedStory.story_id}/chapters/${params.chapter_id}/dialogues/${params.dialogue_id}`,
+        { method: 'DELETE' }
+      )
+
+      if (!response.ok) {
+        throw new Error('Không thể xóa hội thoại')
+      }
+
+      handleCommandSuccess('delete-dialogue')
+      window.dispatchEvent(new CustomEvent('dialogue-deleted'))
+    } catch (error) {
+      console.error('Lỗi khi xóa hội thoại:', error)
+      handleCommandError(error as Error, 'delete-dialogue')
+    }
+  }
+
   const handleCommandError = async (error: Error, commandType: string) => {
     setCommandStatus('error')
     const lastMessage = messages[messages.length - 1]
@@ -577,6 +646,8 @@ export const useCommandHandler = ({
     handleDeleteCharacter,
     handleDeleteChapter,
     handleDeleteOutline,
-    handleCreateDialogue
+    handleCreateDialogue,
+    handleEditDialogue,
+    handleDeleteDialogue
   }
 } 

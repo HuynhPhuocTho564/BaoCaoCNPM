@@ -95,6 +95,18 @@ export function CommandBox({ command, status, params, categories, tags }: Comman
           success: 'Đã tạo hội thoại thành công!',
           error: 'Có lỗi xảy ra khi tạo hội thoại!'
         }[status]
+      case '/edit-dialogue':
+        return {
+          loading: 'Đang cập nhật hội thoại...',
+          success: 'Đã cập nhật hội thoại thành công!',
+          error: 'Có lỗi xảy ra khi cập nhật hội thoại!'
+        }[status]
+      case '/delete-dialogue':
+        return {
+          loading: 'Đang xóa hội thoại...',
+          success: 'Đã xóa hội thoại thành công!',
+          error: 'Có lỗi xảy ra khi xóa hội thoại!'
+        }[status]
       default:
         return 'Đang xử lý...'
     }
@@ -123,7 +135,8 @@ export function CommandBox({ command, status, params, categories, tags }: Comman
       dialogues: 'Các đoạn hội thoại',
       content: 'Nội dung',
       type: 'Loại',
-      order_number: 'Thứ tự'
+      order_number: 'Thứ tự',
+      dialogue_id: 'ID hội thoại'
     }
     return labels[key] || key
   }

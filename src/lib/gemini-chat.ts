@@ -84,6 +84,8 @@ export async function chat(
   onDeleteChapter?: (params: any) => Promise<void>,
   onDeleteOutline?: (params: any) => Promise<void>,
   onCreateDialogue?: (params: any) => Promise<void>,
+  onEditDialogue?: (params: any) => Promise<void>,
+  onDeleteDialogue?: (params: any) => Promise<void>,
 ): Promise<ReadableStream> {
   try {
     const key = await getApiKey();
@@ -204,8 +206,10 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
               accumulatedText.includes("/delete-character") ||
               accumulatedText.includes("/delete-chapter") ||
               accumulatedText.includes("/delete-outline") ||
-              accumulatedText.includes("/create-dialogue")) {
-            
+              accumulatedText.includes("/create-dialogue") ||
+              accumulatedText.includes("/edit-dialogue") ||
+              accumulatedText.includes("/delete-dialogue")) {
+
             // Xử lý đặc biệt cho create-dialogue
             const createDialogueMatch = accumulatedText.match(/\/create-dialogue\s*([\s\S]*?)(?=\n\n|$)/);
             if (createDialogueMatch && onCreateDialogue) {
@@ -253,7 +257,9 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
             const deleteCharacterMatch = accumulatedText.match(/\/delete-character\s*({[\s\S]*?})/);
             const deleteChapterMatch = accumulatedText.match(/\/delete-chapter\s*({[\s\S]*?})/);
             const deleteOutlineMatch = accumulatedText.match(/\/delete-outline\s*({[\s\S]*?})/);
-
+            const deleteDialogueMatch = accumulatedText.match(/\/delete-dialogue\s*({[\s\S]*?})/);
+            const editDialogueMatch = accumulatedText.match(/\/edit-dialogue\s*({[\s\S]*?})/);
+            // Xử lý lệnh tạo truyện
             if (storyMatch && onCreateStory) {
               try {
                 const params = JSON.parse(storyMatch[1]);
@@ -358,8 +364,33 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
                 console.error("Lỗi khi xử lý lệnh xóa đại cương:", error);
               }
             }
+
+            if (editDialogueMatch && onEditDialogue && selectedStory) {
+              const editDialogueMatch = accumulatedText.match(/\/edit-dialogue\s*({[\s\S]*?})/);
+              if (editDialogueMatch && onEditDialogue) {
+                try {
+                  const params = JSON.parse(editDialogueMatch[1]);
+                  await onEditDialogue(params);
+                } catch (error) {
+                  console.error("Lỗi khi xử lý lệnh sửa hội thoại:", error);
+                }
+              }
+            }
+  
+            if (deleteDialogueMatch && onDeleteDialogue && selectedStory) {
+              const deleteDialogueMatch = accumulatedText.match(/\/delete-dialogue\s*({[\s\S]*?})/);
+              if (deleteDialogueMatch && onDeleteDialogue) {
+                try {
+                  const params = JSON.parse(deleteDialogueMatch[1]);
+                  await onDeleteDialogue(params);
+                } catch (error) {
+                  console.error("Lỗi khi xử lý lệnh xóa hội thoại:", error);
+                }
+              }
+            }
+            
           }
-          
+
           controller.enqueue(text);
         }
         controller.close();

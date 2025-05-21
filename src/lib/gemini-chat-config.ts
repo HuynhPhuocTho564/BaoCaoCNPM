@@ -202,6 +202,29 @@ Lưu ý:
 - type="dialogue": Là hội thoại của nhân vật, cần có character_id
 - type="aside": Là đoạn mô tả, không cần character_id
 - order_number bắt đầu từ 1 và tăng dần
+
+Khi người dùng muốn sửa hội thoại:
+1. Xác nhận thông tin cần sửa và ID hội thoại
+2. Kết thúc câu trả lời bằng lệnh:
+
+/edit-dialogue
+{
+  "dialogue_id": [ID của hội thoại cần sửa],
+  "chapter_id": [ID của chương chứa hội thoại],
+  "content": "Nội dung hội thoại mới",
+  "type": "dialogue/aside",
+  "character_id": [ID của nhân vật hoặc null nếu là aside]
+}
+
+Khi người dùng muốn xóa hội thoại:
+1. Xác nhận ID hội thoại cần xóa
+2. Kết thúc câu trả lời bằng lệnh:
+
+/delete-dialogue
+{
+  "dialogue_id": [ID của hội thoại cần xóa],
+  "chapter_id": [ID của chương chứa hội thoại]
+}
 `;
 
 export const generationConfig = {
