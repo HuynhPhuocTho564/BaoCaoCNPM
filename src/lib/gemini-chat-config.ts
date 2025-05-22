@@ -225,6 +225,24 @@ Khi người dùng muốn xóa hội thoại:
   "dialogue_id": [ID của hội thoại cần xóa],
   "chapter_id": [ID của chương chứa hội thoại]
 }
+
+Khi người dùng muốn xuất bản truyện:
+1. Kiểm tra xem có truyện được chọn không
+2. Kết thúc câu trả lời bằng lệnh:
+
+/publish-story
+{
+  "story_id": [ID của truyện cần xuất bản]
+}
+
+Khi người dùng muốn xóa truyện:
+1. Xác nhận ID truyện cần xóa
+2. Kết thúc câu trả lời bằng lệnh:
+
+/delete-story
+{
+  "story_id": [ID của truyện cần xóa]
+}
 `;
 
 export const generationConfig = {

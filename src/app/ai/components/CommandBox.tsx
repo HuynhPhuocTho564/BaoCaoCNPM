@@ -107,6 +107,18 @@ export function CommandBox({ command, status, params, categories, tags }: Comman
           success: 'Đã xóa hội thoại thành công!',
           error: 'Có lỗi xảy ra khi xóa hội thoại!'
         }[status]
+      case '/publish-story':
+        return {
+          loading: 'Đang xuất bản truyện...',
+          success: 'Đã xuất bản truyện thành công!',
+          error: 'Có lỗi xảy ra khi xuất bản truyện!'
+        }[status]
+      case '/delete-story':
+        return {
+          loading: 'Đang xóa truyện...',
+          success: 'Đã xóa truyện thành công!',
+          error: 'Có lỗi xảy ra khi xóa truyện!'
+        }[status]
       default:
         return 'Đang xử lý...'
     }

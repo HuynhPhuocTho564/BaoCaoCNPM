@@ -54,7 +54,9 @@ export default function AIPage() {
     handleDeleteOutline,
     handleCreateDialogue,
     handleEditDialogue,
-    handleDeleteDialogue
+    handleDeleteDialogue,
+    handlePublishStory,
+    handleDeleteStory
   } = useCommandHandler({
     selectedStory,
     setCommandStatus,
@@ -217,7 +219,9 @@ export default function AIPage() {
         handleDeleteOutline,
         handleCreateDialogue,
         handleEditDialogue,
-        handleDeleteDialogue
+        handleDeleteDialogue,
+        handlePublishStory,
+        handleDeleteStory
       )
       const reader = result.getReader()
       const assistantMessage: Message = {

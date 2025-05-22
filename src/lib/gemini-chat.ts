@@ -86,6 +86,8 @@ export async function chat(
   onCreateDialogue?: (params: any) => Promise<void>,
   onEditDialogue?: (params: any) => Promise<void>,
   onDeleteDialogue?: (params: any) => Promise<void>,
+  onPublishStory?: (params: any) => Promise<void>,
+  onDeleteStory?: (params: any) => Promise<void>,
 ): Promise<ReadableStream> {
   try {
     const key = await getApiKey();
@@ -208,7 +210,9 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
               accumulatedText.includes("/delete-outline") ||
               accumulatedText.includes("/create-dialogue") ||
               accumulatedText.includes("/edit-dialogue") ||
-              accumulatedText.includes("/delete-dialogue")) {
+              accumulatedText.includes("/delete-dialogue") ||
+              accumulatedText.includes("/publish-story") ||
+              accumulatedText.includes("/delete-story")) {
 
             // Xử lý đặc biệt cho create-dialogue
             const createDialogueMatch = accumulatedText.match(/\/create-dialogue\s*([\s\S]*?)(?=\n\n|$)/);
@@ -259,6 +263,8 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
             const deleteOutlineMatch = accumulatedText.match(/\/delete-outline\s*({[\s\S]*?})/);
             const deleteDialogueMatch = accumulatedText.match(/\/delete-dialogue\s*({[\s\S]*?})/);
             const editDialogueMatch = accumulatedText.match(/\/edit-dialogue\s*({[\s\S]*?})/);
+            const publishStoryMatch = accumulatedText.match(/\/publish-story\s*({[\s\S]*?})/);
+            const deleteStoryMatch = accumulatedText.match(/\/delete-story\s*({[\s\S]*?})/);
             // Xử lý lệnh tạo truyện
             if (storyMatch && onCreateStory) {
               try {
@@ -386,6 +392,24 @@ Lưu ý: Hãy tập trung vào việc phát triển và cải thiện truyện n
                 } catch (error) {
                   console.error("Lỗi khi xử lý lệnh xóa hội thoại:", error);
                 }
+              }
+            }
+
+            if (publishStoryMatch && onPublishStory && selectedStory) {
+              try {
+                const params = JSON.parse(publishStoryMatch[1]);
+                await onPublishStory(params);
+              } catch (error) {
+                console.error("Lỗi khi xử lý lệnh xuất bản truyện:", error);
+              }
+            }
+
+            if (deleteStoryMatch && onDeleteStory && selectedStory) {
+              try {
+                const params = JSON.parse(deleteStoryMatch[1]);
+                await onDeleteStory(params);
+              } catch (error) {
+                console.error("Lỗi khi xử lý lệnh xóa truyện:", error);
               }
             }
             

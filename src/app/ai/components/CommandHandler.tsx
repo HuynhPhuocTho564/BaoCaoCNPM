@@ -584,6 +584,56 @@ export const useCommandHandler = ({
     }
   }
 
+  const handlePublishStory = async (params: { story_id: number }) => {
+    if (!selectedStory) {
+      toast.error('Vui lòng chọn truyện trước khi xuất bản')
+      throw new Error('Không có truyện được chọn')
+    }
+
+    try {
+      setCommandStatus('loading')
+      const response = await fetch(
+        `/api/stories/${params.story_id}/publish`,
+        { method: 'PUT' }
+      )
+
+      if (!response.ok) {
+        throw new Error('Không thể xuất bản truyện')
+      }
+
+      handleCommandSuccess('publish-story')
+      window.dispatchEvent(new CustomEvent('story-published'))
+    } catch (error) {
+      console.error('Lỗi khi xuất bản truyện:', error)
+      handleCommandError(error as Error, 'publish-story')
+    }
+  }
+
+  const handleDeleteStory = async (params: { story_id: number }) => {
+    if (!selectedStory) {
+      toast.error('Vui lòng chọn truyện trước khi xóa')
+      throw new Error('Không có truyện được chọn')
+    }
+
+    try {
+      setCommandStatus('loading')
+      const response = await fetch(
+        `/api/stories/${params.story_id}`,
+        { method: 'DELETE' }
+      )
+
+      if (!response.ok) {
+        throw new Error('Không thể xóa truyện')
+      }
+
+      handleCommandSuccess('delete-story')
+      window.dispatchEvent(new CustomEvent('story-deleted'))
+    } catch (error) {
+      console.error('Lỗi khi xóa truyện:', error)
+      handleCommandError(error as Error, 'delete-story')
+    }
+  }
+
   const handleCommandError = async (error: Error, commandType: string) => {
     setCommandStatus('error')
     const lastMessage = messages[messages.length - 1]
@@ -648,6 +698,8 @@ export const useCommandHandler = ({
     handleDeleteOutline,
     handleCreateDialogue,
     handleEditDialogue,
-    handleDeleteDialogue
+    handleDeleteDialogue,
+    handlePublishStory,
+    handleDeleteStory
   }
 } 
