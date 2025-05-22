@@ -11,8 +11,8 @@ import { Camera, ChevronLeft } from "lucide-react"
 import { toast } from "sonner"
 import Skeleton from "react-loading-skeleton"
 import "react-loading-skeleton/dist/skeleton.css"
-import { IdeaGenerator } from "@/components/character/IdeaGenerator"
-import { AvatarImagePrompt } from "@/components/character/AvatarImagePrompt"
+import { IdeaGenerator } from "@/components/ai-generator/CharacterIdeaGenerator"
+import { AvatarImagePrompt } from "@/components/ai-generator/AvatarImagePrompt"
 import { useLoading } from "@/providers/loading-provider"
 
 export default function CreateCharacterContent({ storyId }: { storyId: string }) {

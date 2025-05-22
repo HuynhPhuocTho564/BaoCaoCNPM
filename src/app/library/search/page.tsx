@@ -61,9 +61,13 @@ function SearchContent() {
   const [tags, setTags] = useState<Tag[]>([])
   
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "")
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(searchParams.get("category"))
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    searchParams.get("category") || null
+  )
   const [selectedTags, setSelectedTags] = useState<string[]>(
-    searchParams.get("tags")?.split(",").filter(Boolean) || []
+    searchParams.get("tags") 
+      ? decodeURIComponent(searchParams.get("tags")!).split(",").filter(Boolean)
+      : []
   )
   const [timeRange, setTimeRange] = useState<string>(searchParams.get("timeRange") || "all")
   const [fromDate, setFromDate] = useState<Date | undefined>(
@@ -95,6 +99,18 @@ function SearchContent() {
     fetchCategories()
   }, [])
 
+  useEffect(() => {
+    if (searchParams.get("category") || searchParams.get("tags")) {
+      handleSearch()
+    }
+  }, [])
+
+  const updateURL = (params: URLSearchParams) => {
+    const url = new URL(window.location.href)
+    url.search = params.toString()
+    window.history.pushState({}, '', url)
+  }
+
   const handleSearch = async () => {
     setIsLoading(true)
     try {
@@ -111,6 +127,8 @@ function SearchContent() {
       if (minViews) params.set("minViews", minViews)
       if (minFavorites) params.set("minFavorites", minFavorites)
       if (useAI) params.set("useAI", "true")
+      
+      updateURL(params)
       
       const response = await fetch(`/api/library/search?${params.toString()}`)
       const data = await response.json()

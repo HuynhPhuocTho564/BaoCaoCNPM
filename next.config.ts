@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   images: {
     domains: [
       "drive.google.com", 
@@ -8,6 +9,14 @@ const nextConfig: NextConfig = {
       "lh3.googleusercontent.com",
       "placehold.co"
     ],
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/fonts/:path*',
+        destination: 'https://fonts.gstatic.com/:path*',
+      },
+    ]
   },
 };
 

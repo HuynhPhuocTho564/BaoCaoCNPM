@@ -2,8 +2,13 @@
 import { NextResponse } from "next/server"
 import pool from "@/lib/db"
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = 20
+    const offset = (page - 1) * limit
+
     const [stories] = await pool.execute(`
       SELECT 
         s.story_id,
@@ -17,8 +22,8 @@ export async function GET() {
       LEFT JOIN main_categories mc ON s.main_category_id = mc.category_id
       WHERE s.status = 'published'
       ORDER BY s.view_count DESC
-      LIMIT 20
-    `) as any[]
+      LIMIT ? OFFSET ?
+    `, [limit, offset]) as any[]
 
     return NextResponse.json({ stories })
   } catch (error) {

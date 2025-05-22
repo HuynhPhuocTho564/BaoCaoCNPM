@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { ChevronLeft, Sparkles } from "lucide-react"
 import TextareaAutosize from 'react-textarea-autosize'
-import { OutlineIdeaGenerator } from "@/components/outline/OutlineIdeaGenerator"
+import { OutlineIdeaGenerator } from "@/components/ai-generator/OutlineIdeaGenerator"
 import Skeleton from "react-loading-skeleton"
 import "react-loading-skeleton/dist/skeleton.css"
 import { useLoading } from "@/providers/loading-provider"

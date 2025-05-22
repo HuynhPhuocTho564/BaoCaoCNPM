@@ -32,6 +32,14 @@ export default function FAQPage() {
     {
       question: "Tôi có thể chỉnh sửa truyện sau khi xuất bản không?",
       answer: "Có, bạn vẫn có thể chỉnh sửa nội dung truyện sau khi xuất bản. Tuy nhiên, nên cân nhắc kỹ trước khi thay đổi nội dung đã xuất bản để đảm bảo trải nghiệm đọc của người dùng."
+    },
+    {
+      question: "Gói hỗ trợ có những đặc quyền gì?",
+      answer: "Gói hỗ trợ cung cấp các đặc quyền như: truy cập sớm các tính năng mới, chế độ tạo truyện bằng trò chuyện AI, huy hiệu người ủng hộ đặc biệt, và được ghi nhận trong trang cảm ơn. Ngoài ra còn góp phần duy trì và phát triển dự án."
+    },
+    {
+      question: "Chế độ tạo truyện bằng trò chuyện AI là gì?",
+      answer: "Đây là tính năng độc quyền cho gói hỗ trợ, cho phép bạn tạo truyện thông qua trò chuyện tự nhiên với AI. Thay vì sử dụng giao diện form thông thường, bạn có thể mô tả ý tưởng và để AI giúp phát triển cốt truyện, nhân vật và hội thoại một cách tự nhiên hơn."
     }
   ]
 

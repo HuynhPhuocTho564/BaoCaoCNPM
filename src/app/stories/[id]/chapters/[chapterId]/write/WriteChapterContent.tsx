@@ -27,7 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { DialogueGenerator } from "@/components/ai/DialogueGenerator"
+import { DialogueGenerator } from "@/components/ai-generator/DialogueGenerator"
 import { useLoading } from "@/providers/loading-provider"
 
 interface Character {

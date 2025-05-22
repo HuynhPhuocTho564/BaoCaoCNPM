@@ -399,7 +399,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
       <div
         className={clsx(
           "bg-background rounded-lg shadow-lg",
-          "w-full h-screen md:w-[500px] md:h-[600px]",
+          "w-full h-[100dvh] md:w-[500px] md:h-[600px]",
           "transition-all duration-300 ease-in-out",
           "fixed md:absolute bottom-0 right-0",
           "flex flex-col",
@@ -919,7 +919,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ className }) => {
           "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
           "flex items-center gap-2",
           "md:static fixed bottom-4 right-4",
-          isOpen ? "md:block hidden" : "block",
+          isOpen ? "hidden" : "",
           className
         )}
         aria-label="Mở trợ lý truyện"

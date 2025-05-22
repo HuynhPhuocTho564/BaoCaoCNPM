@@ -531,8 +531,9 @@ export default function StoryDetailContent({ storyId }: { storyId: string }) {
             </div>
 
             {outlines.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">Chưa có đại cương nào</p>
+              <div className="text-center py-8 sm:py-12">
+                <BookOpen className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-3 sm:mb-4 text-muted-foreground/30" />
+                <p className="text-sm sm:text-base text-muted-foreground">Chưa có đại cương nào</p>
               </div>
             ) : (
               <div className="grid gap-4">

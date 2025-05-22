@@ -17,8 +17,8 @@ import {
 } from "@/components/ui/sheet"
 import { useRouter } from 'next/navigation'
 import { useLoading } from "@/providers/loading-provider"
-import { NotificationBell } from "@/components/notification/NotificationBell"
-import { SearchDialog } from "@/components/search/search-dialog"
+import { NotificationBell } from "@/components/notification-bell"
+import { SearchDialog } from "@/components/search-dialog"
 
 interface MobileMenuProps {
   items?: NavItem[];

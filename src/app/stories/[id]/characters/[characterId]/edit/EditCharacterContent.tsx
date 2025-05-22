@@ -24,8 +24,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { IdeaGenerator } from "@/components/character/IdeaGenerator"
-import { AvatarImagePrompt } from "@/components/character/AvatarImagePrompt"
+import { IdeaGenerator } from "@/components/ai-generator/CharacterIdeaGenerator"
+import { AvatarImagePrompt } from "@/components/ai-generator/AvatarImagePrompt"
 import { useLoading } from "@/providers/loading-provider"
 
 interface Character {

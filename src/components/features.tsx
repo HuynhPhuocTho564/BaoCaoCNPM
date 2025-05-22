@@ -14,26 +14,31 @@ interface FeatureCardProps {
   icon: React.ReactElement<SVGProps<SVGSVGElement>>;
   title: string;
   description: string;
+  delay?: number;
 }
 
-function FeatureCard({ icon, title, description }: FeatureCardProps) {
+function FeatureCard({ icon, title, description, delay = 0 }: FeatureCardProps) {
   return (
-    <motion.div 
-      className="flex flex-col rounded-xl border-2 border-primary/20 
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay }}
+      viewport={{ once: true }}
+      className="group relative flex flex-col rounded-xl border-2 border-primary/20
         bg-gradient-to-br from-white/80 to-white/40 dark:from-background/80 dark:to-background/40
-        backdrop-blur-sm p-6 sm:p-8"
-      whileHover={{ 
-        scale: 1.02,
-        transition: { duration: 0.2 }
-      }}
+        backdrop-blur-sm p-6 sm:p-8 hover:shadow-lg hover:border-primary/40 
+        transition-all duration-300"
     >
       <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-        <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center">
+        <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center
+          group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-300">
           {React.cloneElement(icon, { 
-            className: "w-8 h-8 text-primary"
+            className: "w-8 h-8 text-primary group-hover:scale-110 transition-transform duration-300"
           })}
         </div>
-        <h3 className="font-bold text-2xl text-center sm:text-left">{title}</h3>
+        <h3 className="font-bold text-2xl text-center sm:text-left group-hover:text-primary transition-colors duration-300">
+          {title}
+        </h3>
       </div>
       <p className="mt-4 text-muted-foreground text-lg leading-relaxed">
         {description}
@@ -71,51 +76,39 @@ function Features() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.5,
-        ease: "easeOut"
+        staggerChildren: 0.15,
+        delayChildren: 0.3
       }
     }
   };
 
   return (
-    <section className="w-full py-16 sm:py-24">
+    <section className="w-full py-16 sm:py-24 overflow-hidden bg-gradient-to-b from-background to-background/80">
       <div className="container px-4 mx-auto max-w-7xl">
-        <motion.h2 
-          className="text-3xl sm:text-5xl font-bold text-center mb-10 sm:mb-16"
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
+        <h2 className="text-3xl sm:text-5xl font-bold text-center mb-10 sm:mb-16">
           Tính Năng Nổi Bật
-        </motion.h2>
+        </h2>
         
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 relative"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
         >
           {features.map((feature, index) => (
-            <motion.div 
-              key={index}
-              variants={itemVariants}
-            >
-              <FeatureCard {...feature} />
-            </motion.div>
+            <FeatureCard 
+              key={index} 
+              {...feature} 
+              delay={index * 0.1} 
+            />
           ))}
+          
+          {/* Decorative elements */}
+          <div className="absolute -z-10 w-[200px] h-[200px] bg-primary/5 rounded-full 
+            blur-3xl top-0 -left-20 animate-pulse" />
+          <div className="absolute -z-10 w-[300px] h-[300px] bg-primary/5 rounded-full 
+            blur-3xl bottom-0 -right-20 animate-pulse delay-1000" />
         </motion.div>
       </div>
     </section>

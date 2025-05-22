@@ -4,7 +4,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Search, Loader2, X } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { StoryCard } from "../story-card"
+import { StoryCard } from "./story-card"
 import { useDebounce } from "@/hooks/use-debounce"
 import { useLoading } from "@/providers/loading-provider"
 
