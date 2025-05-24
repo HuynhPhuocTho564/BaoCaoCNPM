@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import { MessageCircle, Lock, Sparkles, Wand2, Brain, BookOpen } from "lucide-react"
-=======
-import { MessageCircle, Lock, Sparkles, Zap, Crown, Rocket } from "lucide-react"
->>>>>>> 82701e9079b8c3e55f1246b3608c0f791964b58c
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
@@ -22,17 +18,12 @@ export function WelcomeScreen() {
       </div>
 
       <h1 className="text-4xl font-bold tracking-tight mb-4">
-<<<<<<< HEAD
         Trợ Lý Sáng Tạo Truyện AI
-=======
-        Trợ Lý Phát Triển Truyện Chat
->>>>>>> 82701e9079b8c3e55f1246b3608c0f791964b58c
       </h1>
       
       {isSupporter ? (
         <div className="space-y-6 max-w-2xl">
           <p className="text-lg text-muted-foreground leading-relaxed">
-<<<<<<< HEAD
             Trợ lý thông minh giúp bạn phát triển ý tưởng, xây dựng cốt truyện và sáng tạo nội dung thông qua trò chuyện tự nhiên với AI.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-3xl mx-auto">
@@ -56,24 +47,6 @@ export function WelcomeScreen() {
               </div>
               <h3 className="font-semibold mb-1">Quản Lý Chương</h3>
               <p className="text-sm text-muted-foreground">Tạo và chỉnh sửa nội dung từng chương</p>
-=======
-            Trợ lý thông minh giúp bạn phát triển ý tưởng, xây dựng cốt truyện và sáng tạo nội dung cho câu chuyện của mình.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
-            <div className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm text-center">
-              <div className="flex justify-center">
-                <Zap className="h-6 w-6 text-primary mb-2" />
-              </div>
-              <h3 className="font-semibold mb-1">Sáng Tạo Nhanh</h3>
-              <p className="text-sm text-muted-foreground">Phát triển ý tưởng truyện trong vài phút</p>
-            </div>
-            <div className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm text-center">
-              <div className="flex justify-center">
-                <Crown className="h-6 w-6 text-primary mb-2" />
-              </div>
-              <h3 className="font-semibold mb-1">Chất Lượng Cao</h3>
-              <p className="text-sm text-muted-foreground">Nội dung độc đáo và hấp dẫn</p>
->>>>>>> 82701e9079b8c3e55f1246b3608c0f791964b58c
             </div>
           </div>
         </div>
@@ -88,7 +61,6 @@ export function WelcomeScreen() {
             </h2>
             <ul className="space-y-3 text-base text-muted-foreground mb-6">
               <li className="flex items-center gap-2">
-<<<<<<< HEAD
                 <MessageCircle className="w-5 h-5 text-primary" />
                 <span>Tạo truyện thông qua trò chuyện tự nhiên với AI</span>
               </li>
@@ -99,18 +71,6 @@ export function WelcomeScreen() {
               <li className="flex items-center gap-2">
                 <Brain className="w-5 h-5 text-blue-500" />
                 <span>Công cụ AI thông minh hỗ trợ sáng tạo</span>
-=======
-                <Sparkles className="w-5 h-5 text-yellow-500" />
-                <span>Tạo truyện thông qua trò chuyện tự nhiên với AI</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Crown className="w-5 h-5 text-primary" />
-                <span>Nhận huy hiệu người ủng hộ đặc biệt</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Rocket className="w-5 h-5 text-blue-500" />
-                <span>Truy cập sớm các tính năng mới</span>
->>>>>>> 82701e9079b8c3e55f1246b3608c0f791964b58c
               </li>
             </ul>
             <Button 
