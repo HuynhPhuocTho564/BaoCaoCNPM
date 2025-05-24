@@ -51,7 +51,7 @@ export default function AIAssistantInfo() {
       <div className="container px-4 mx-auto max-w-7xl">
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-5xl font-bold mb-6">
-            AI Assistant - Người Bạn Đồng Hành Trong Sáng Tạo
+            Trợ Lý Sáng Tạo Truyện AI
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Trợ lý AI thông minh giúp bạn phát triển ý tưởng và quản lý truyện một cách hiệu quả

@@ -195,10 +195,18 @@ export function ChatInput({
 
   return (
     <div className="border-t bg-background/50 backdrop-blur-xl">
-      <div className="mx-auto max-w-4xl px-4 py-4">
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        onChange={handleFileChange}
+        accept="image/*"
+        multiple
+      />
+      <div className="mx-auto max-w-4xl px-2 sm:px-4 py-2 sm:py-4">
         {selectedImages.length > 0 && (
           <div className="relative">
-            <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+            <div className="flex gap-2 overflow-x-auto pb-2 mb-2 sm:mb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
               {selectedImages.map((image, index) => (
                 <div key={index} className="relative w-40 h-40 flex-shrink-0">
                   <div className="absolute inset-0">
@@ -237,7 +245,7 @@ export function ChatInput({
           </div>
         )}
         
-        <form className="flex gap-3 items-end" onSubmit={handleSubmit}>
+        <form className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:items-end" onSubmit={handleSubmit}>
           <Select
             value={selectedValue}
             onValueChange={async (value) => {
@@ -251,7 +259,7 @@ export function ChatInput({
               }
             }}
           >
-            <SelectTrigger className="w-[180px] h-[56px]">
+            <SelectTrigger className="w-full sm:w-[180px] h-[45px] sm:h-[56px]">
               <SelectValue placeholder={isLoadingStories ? "Đang tải..." : "Chọn truyện..."} />
             </SelectTrigger>
             <SelectContent className="max-h-[300px] overflow-y-auto">
@@ -268,55 +276,52 @@ export function ChatInput({
             </SelectContent>
           </Select>
 
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept="image/*"
-            multiple
-            className="hidden"
-          />
-          <Button 
-            type="button" 
-            size="icon" 
-            variant="ghost" 
-            className="h-[56px] w-[56px] shrink-0"
-            disabled={isLoading}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Plus className="h-5 w-5" />
-          </Button>
-
-          <div className="flex-1">
-            <Textarea
-              ref={textareaRef}
-              placeholder="Nhập câu hỏi của bạn..."
-              className="min-h-[56px] max-h-[200px] resize-none overflow-y-auto px-4 py-4 leading-relaxed"
-              value={input}
-              onChange={(e) => onInputChange(e.target.value)}
+          <div className="flex gap-2 sm:gap-3 flex-1">
+            <Button 
+              type="button" 
+              size="icon" 
+              variant="ghost" 
+              className="h-[45px] w-[45px] sm:h-[56px] sm:w-[56px] shrink-0"
               disabled={isLoading}
-              rows={1}
-              onKeyDown={handleKeyDown}
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = '56px';
-                target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
-              }}
-            />
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Plus className="h-5 w-5" />
+            </Button>
+
+            <div className="flex-1">
+              <Textarea
+                ref={textareaRef}
+                placeholder="Nhập câu hỏi của bạn..."
+                className="min-h-[45px] sm:min-h-[56px] max-h-[200px] resize-none overflow-y-auto px-3 sm:px-4 py-3 sm:py-4 leading-relaxed"
+                value={input}
+                onChange={(e) => onInputChange(e.target.value)}
+                disabled={isLoading}
+                rows={1}
+                onKeyDown={handleKeyDown}
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = '56px';
+                  target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
+                }}
+              />
+            </div>
+            <Button 
+              type="submit" 
+              size="icon" 
+              className="h-[45px] w-[45px] sm:h-[56px] sm:w-[56px] shrink-0"
+              disabled={isLoading || (!input.trim() && !selectedImages.length)}
+            >
+              <Send className="h-5 w-5" />
+            </Button>
           </div>
-          <Button 
-            type="submit" 
-            size="icon" 
-            className="h-[56px] w-[56px] shrink-0"
-            disabled={isLoading || (!input.trim() && !selectedImages.length)}
-          >
-            <Send className="h-5 w-5" />
-          </Button>
         </form>
         
         <div className="text-center mt-2">
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground hidden sm:inline">
             Gửi tin nhắn bằng Ctrl + Enter | Hỗ trợ tải ảnh lên bằng dấu &quot;+&quot;
+          </span>
+          <span className="text-xs text-muted-foreground sm:hidden">
+            Hỗ trợ tải ảnh lên bằng dấu &quot;+&quot;
           </span>
         </div>
       </div>

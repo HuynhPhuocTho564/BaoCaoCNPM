@@ -85,9 +85,12 @@ function Features() {
   return (
     <section className="w-full py-16 sm:py-24 overflow-hidden bg-gradient-to-b from-background to-background/80">
       <div className="container px-4 mx-auto max-w-7xl">
-        <h2 className="text-3xl sm:text-5xl font-bold text-center mb-10 sm:mb-16">
+        <h2 className="text-3xl sm:text-5xl font-bold text-center mb-6">
           Tính Năng Nổi Bật
         </h2>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-center mb-10 sm:mb-16">
+          Khám phá những công nghệ tiên tiến và tính năng độc đáo giúp việc sáng tạo trở nên dễ dàng và thú vị hơn bao giờ hết
+        </p>
         
         <motion.div 
           className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 relative"

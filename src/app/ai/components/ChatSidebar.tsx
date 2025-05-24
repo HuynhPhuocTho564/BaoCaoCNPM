@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { MessageSquarePlus, Trash2, Menu } from "lucide-react"
+import { MessageSquarePlus, Trash2, Menu, X } from "lucide-react"
 import { formatDistanceToNow } from 'date-fns'
 import { vi } from 'date-fns/locale'
 import { useState } from 'react'
@@ -35,11 +35,11 @@ export function ChatSidebar({
 
   return (
     <>
-      {/* Nút menu mobile */}
+      {/* Nút menu mobile - ẩn khi sidebar mở */}
       <Button
         variant="ghost"
         size="icon"
-        className="md:hidden fixed top-4 left-4 z-50"
+        className={`md:hidden fixed top-20 left-4 z-50 ${isOpen ? 'hidden' : 'block'}`}
         onClick={onToggle}
       >
         <Menu className="h-6 w-6" />
@@ -57,6 +57,18 @@ export function ChatSidebar({
         flex flex-col
         z-40
       `}>
+        {/* Thêm header với nút close */}
+        <div className="md:hidden flex items-center justify-between p-4 border-b">
+          <span className="font-semibold">Menu</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggle}
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+
         <div className="p-4">
           <Button 
             className="w-full" 
