@@ -1,88 +1,133 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import pool from "@/lib/db"
-import { GoogleDriveService } from "@/services/google-drive.service"
+import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/api-key-auth";
+import pool from "@/lib/db";
+import { GoogleDriveService } from "@/services/google-drive.service";
+
+// GET - Lấy thông tin nhân vật
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ id: string; characterId: string }> }
+) {
+  try {
+    const user = await requireAuth(request);
+
+    const resolvedParams = await context.params;
+    const { characterId } = resolvedParams;
+
+    const [characters] = (await pool.execute(
+      `SELECT
+        character_id,
+        name,
+        description,
+        role,
+        gender,
+        birthday,
+        height,
+        weight,
+        personality,
+        appearance,
+        background,
+        avatar_image,
+        avatar_file_id
+      FROM story_characters
+      WHERE character_id = ?`,
+      [characterId]
+    )) as any[];
+
+    if (!characters.length) {
+      return NextResponse.json(
+        { error: "Không tìm thấy nhân vật" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ character: characters[0] });
+  } catch (error: any) {
+    if (error.message === "Unauthorized") {
+      return NextResponse.json({ error: "Chưa xác thực" }, { status: 401 });
+    }
+
+    console.error("Lỗi khi lấy thông tin nhân vật:", error);
+    return NextResponse.json({ error: "Đã có lỗi xảy ra" }, { status: 500 });
+  }
+}
 
 // PUT - Cập nhật nhân vật
 export async function PUT(
-  request: Request,
-  context: { params: Promise<{ id: string, characterId: string }> }
+  request: NextRequest,
+  context: { params: Promise<{ id: string; characterId: string }> }
 ) {
   try {
-    const resolvedParams = await context.params
-    const { id: storyId, characterId } = resolvedParams
-    
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Không có quyền truy cập" },
-        { status: 401 }
-      )
-    }
+    const user = await requireAuth(request);
 
-    const formData = await request.formData()
-    const name = formData.get('name') as string
-    const description = formData.get('description') as string
-    const avatarImage = formData.get('avatarImage') as File | null
-    const role = formData.get('role') as 'main' | 'supporting'
-    const gender = formData.get('gender') as string
-    const birthday = formData.get('birthday') as string
-    const height = formData.get('height') as string
-    const weight = formData.get('weight') as string
-    const personality = formData.get('personality') as string
-    const appearance = formData.get('appearance') as string
-    const background = formData.get('background') as string
+    const resolvedParams = await context.params;
+    const { id: storyId, characterId } = resolvedParams;
 
-    const connection = await pool.getConnection()
-    
+    const formData = await request.formData();
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+    const avatarImage = formData.get("avatarImage") as File | null;
+    const role = formData.get("role") as "main" | "supporting";
+    const gender = formData.get("gender") as string;
+    const birthday = formData.get("birthday") as string;
+    const height = formData.get("height") as string;
+    const weight = formData.get("weight") as string;
+    const personality = formData.get("personality") as string;
+    const appearance = formData.get("appearance") as string;
+    const background = formData.get("background") as string;
+
+    const connection = await pool.getConnection();
+
     try {
-      await connection.beginTransaction()
+      await connection.beginTransaction();
 
       // Kiểm tra nếu đổi thành nhân vật chính
-      if (role === 'main') {
-        const [existingMain] = await connection.execute(
+      if (role === "main") {
+        const [existingMain] = (await connection.execute(
           `SELECT character_id FROM story_characters 
            WHERE story_id = ? AND role = 'main' AND character_id != ?`,
           [storyId, characterId]
-        ) as any[]
+        )) as any[];
 
         if (existingMain.length > 0) {
           return NextResponse.json(
             { error: "Truyện đã có nhân vật chính" },
             { status: 400 }
-          )
+          );
         }
       }
 
       // Lấy thông tin nhân vật cũ
-      const [characters] = await connection.execute(
-        'SELECT avatar_file_id FROM story_characters WHERE character_id = ?',
+      const [characters] = (await connection.execute(
+        "SELECT avatar_file_id FROM story_characters WHERE character_id = ?",
         [characterId]
-      ) as any[]
+      )) as any[];
 
-      let avatarUrl = null
-      let newFileId = null
+      let avatarUrl = null;
+      let newFileId = null;
 
       if (avatarImage instanceof File && avatarImage.size > 0) {
         // Upload ảnh mới trước
-        const buffer = Buffer.from(await avatarImage.arrayBuffer())
+        const buffer = Buffer.from(await avatarImage.arrayBuffer());
         const { directLink, fileId } = await GoogleDriveService.uploadFile(
           buffer,
           avatarImage.type,
           parseInt(storyId),
-          'character-avatar',
+          "character-avatar",
           parseInt(storyId),
           parseInt(characterId)
-        )
-        avatarUrl = directLink
-        newFileId = fileId
+        );
+        avatarUrl = directLink;
+        newFileId = fileId;
 
         // Chỉ xóa ảnh cũ sau khi upload thành công
-        if (characters[0]?.avatar_file_id && characters[0].avatar_file_id !== newFileId) {
-          await GoogleDriveService.deleteFile(characters[0].avatar_file_id)
+        if (
+          characters[0]?.avatar_file_id &&
+          characters[0].avatar_file_id !== newFileId
+        ) {
+          await GoogleDriveService.deleteFile(characters[0].avatar_file_id);
         }
       }
 
@@ -92,70 +137,91 @@ export async function PUT(
         SET name = ?, description = ?, role = ?, gender = ?,
             birthday = ?, height = ?, weight = ?, 
             personality = ?, appearance = ?, background = ?
-            ${avatarUrl ? ', avatar_image = ?, avatar_file_id = ?' : ''}
-        WHERE character_id = ?`
+            ${avatarUrl ? ", avatar_image = ?, avatar_file_id = ?" : ""}
+        WHERE character_id = ?`;
 
-      const updateParams = avatarUrl 
-        ? [name, description, role, gender, birthday, height, weight, personality, appearance, background, avatarUrl, newFileId, characterId]
-        : [name, description, role, gender, birthday, height, weight, personality, appearance, background, characterId]
+      const updateParams = avatarUrl
+        ? [
+            name,
+            description,
+            role,
+            gender,
+            birthday,
+            height,
+            weight,
+            personality,
+            appearance,
+            background,
+            avatarUrl,
+            newFileId,
+            characterId,
+          ]
+        : [
+            name,
+            description,
+            role,
+            gender,
+            birthday,
+            height,
+            weight,
+            personality,
+            appearance,
+            background,
+            characterId,
+          ];
 
-      await connection.execute(updateQuery, updateParams)
-      await connection.commit()
+      await connection.execute(updateQuery, updateParams);
+      await connection.commit();
 
-      return NextResponse.json({ message: "Cập nhật nhân vật thành công" })
+      return NextResponse.json({ message: "Cập nhật nhân vật thành công" });
     } catch (error) {
-      await connection.rollback()
-      throw error
+      await connection.rollback();
+      throw error;
     } finally {
-      connection.release()
+      connection.release();
     }
-  } catch (error) {
-    console.error("Lỗi khi cập nhật nhân vật:", error)
-    return NextResponse.json(
-      { error: "Đã có lỗi xảy ra" },
-      { status: 500 }
-    )
+  } catch (error: any) {
+    if (error.message === "Unauthorized") {
+      return NextResponse.json({ error: "Chưa xác thực" }, { status: 401 });
+    }
+
+    console.error("Lỗi khi cập nhật nhân vật:", error);
+    return NextResponse.json({ error: "Đã có lỗi xảy ra" }, { status: 500 });
   }
 }
 
 // DELETE - Xóa nhân vật
 export async function DELETE(
-  request: Request,
-  context: { params: Promise<{ id: string, characterId: string }> }
+  request: NextRequest,
+  context: { params: Promise<{ id: string; characterId: string }> }
 ) {
   try {
-    const resolvedParams = await context.params
-    const { id: storyId, characterId } = resolvedParams
-    
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Không có quyền truy cập" },
-        { status: 401 }
-      )
-    }
+    const user = await requireAuth(request);
+
+    const resolvedParams = await context.params;
+    const { id: storyId, characterId } = resolvedParams;
 
     // Lấy thông tin nhân vật để xóa ảnh
-    const [characters] = await pool.execute(
-      'SELECT avatar_file_id FROM story_characters WHERE character_id = ?',
+    const [characters] = (await pool.execute(
+      "SELECT avatar_file_id FROM story_characters WHERE character_id = ?",
       [characterId]
-    ) as any[]
+    )) as any[];
 
     if (characters.length && characters[0].avatar_file_id) {
-      await GoogleDriveService.deleteFile(characters[0].avatar_file_id)
+      await GoogleDriveService.deleteFile(characters[0].avatar_file_id);
     }
 
-    await pool.execute(
-      'DELETE FROM story_characters WHERE character_id = ?',
-      [characterId]
-    )
+    await pool.execute("DELETE FROM story_characters WHERE character_id = ?", [
+      characterId,
+    ]);
 
-    return NextResponse.json({ message: "Xóa nhân vật thành công" })
-  } catch (error) {
-    console.error("Lỗi khi xóa nhân vật:", error)
-    return NextResponse.json(
-      { error: "Đã có lỗi xảy ra" },
-      { status: 500 }
-    )
+    return NextResponse.json({ message: "Xóa nhân vật thành công" });
+  } catch (error: any) {
+    if (error.message === "Unauthorized") {
+      return NextResponse.json({ error: "Chưa xác thực" }, { status: 401 });
+    }
+
+    console.error("Lỗi khi xóa nhân vật:", error);
+    return NextResponse.json({ error: "Đã có lỗi xảy ra" }, { status: 500 });
   }
-} 
+}

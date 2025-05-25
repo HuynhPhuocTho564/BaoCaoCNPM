@@ -40,3 +40,30 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# deployment artifacts
+*.tar.gz
+deployment-*.tar.gz
+files_to_archive.txt
+
+# logs
+logs/
+*.log
+
+# temporary files
+tmp/
+temp/
+.cache/
+.nyc_output/
+
+# security reports
+security-report.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db

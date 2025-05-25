@@ -5,6 +5,40 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import pool from "@/lib/db";
 
+/**
+ * @swagger
+ * /api/stories/{id}/comments:
+ *   get:
+ *     summary: Lấy danh sách bình luận
+ *     description: Lấy tất cả bình luận của một truyện
+ *     tags:
+ *       - Stories
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của truyện
+ *     responses:
+ *       200:
+ *         description: Danh sách bình luận
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 comments:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Comment'
+ *       500:
+ *         description: Lỗi server
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -13,7 +47,8 @@ export async function GET(
     const resolvedParams = await params;
     const { id } = resolvedParams;
 
-    const [comments] = await pool.execute(`
+    const [comments] = (await pool.execute(
+      `
       SELECT 
         c.*,
         u.username,
@@ -23,14 +58,13 @@ export async function GET(
       JOIN users u ON c.user_id = u.user_id
       WHERE c.story_id = ?
       ORDER BY c.created_at DESC
-    `, [id]) as any[];
+    `,
+      [id]
+    )) as any[];
 
     return NextResponse.json({ comments });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Đã có lỗi xảy ra" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Đã có lỗi xảy ra" }, { status: 500 });
   }
 }
 
@@ -41,7 +75,7 @@ export async function POST(
   try {
     const resolvedParams = await params;
     const { id } = resolvedParams;
-    
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json(
@@ -52,22 +86,19 @@ export async function POST(
 
     const { content } = await request.json();
 
-    const [users] = await pool.execute(
-      'SELECT user_id FROM users WHERE email = ?',
+    const [users] = (await pool.execute(
+      "SELECT user_id FROM users WHERE email = ?",
       [session.user.email]
-    ) as any[];
+    )) as any[];
 
     await pool.execute(
-      'INSERT INTO story_comments (user_id, story_id, content) VALUES (?, ?, ?)',
+      "INSERT INTO story_comments (user_id, story_id, content) VALUES (?, ?, ?)",
       [users[0].user_id, id, content]
     );
 
     return NextResponse.json({ message: "Đã thêm bình luận" });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Đã có lỗi xảy ra" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Đã có lỗi xảy ra" }, { status: 500 });
   }
 }
 
@@ -78,7 +109,7 @@ export async function PUT(
   try {
     const resolvedParams = await params;
     const { id } = resolvedParams;
-    
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json(
@@ -89,12 +120,12 @@ export async function PUT(
 
     const { commentId, content } = await request.json();
 
-    const [comment] = await pool.execute(
+    const [comment] = (await pool.execute(
       `SELECT c.* FROM story_comments c 
        JOIN users u ON c.user_id = u.user_id 
        WHERE c.comment_id = ? AND u.email = ?`,
       [commentId, session.user.email]
-    ) as any[];
+    )) as any[];
 
     if (!comment.length) {
       return NextResponse.json(
@@ -104,16 +135,13 @@ export async function PUT(
     }
 
     await pool.execute(
-      'UPDATE story_comments SET content = ? WHERE comment_id = ?',
+      "UPDATE story_comments SET content = ? WHERE comment_id = ?",
       [content, commentId]
     );
 
     return NextResponse.json({ message: "Đã cập nhật bình luận" });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Đã có lỗi xảy ra" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Đã có lỗi xảy ra" }, { status: 500 });
   }
 }
 
@@ -124,7 +152,7 @@ export async function DELETE(
   try {
     const resolvedParams = await params;
     const { id } = resolvedParams;
-    
+
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json(
@@ -135,12 +163,12 @@ export async function DELETE(
 
     const { commentId } = await request.json();
 
-    const [comment] = await pool.execute(
+    const [comment] = (await pool.execute(
       `SELECT c.* FROM story_comments c 
        JOIN users u ON c.user_id = u.user_id 
        WHERE c.comment_id = ? AND u.email = ?`,
       [commentId, session.user.email]
-    ) as any[];
+    )) as any[];
 
     if (!comment.length) {
       return NextResponse.json(
@@ -149,16 +177,12 @@ export async function DELETE(
       );
     }
 
-    await pool.execute(
-      'DELETE FROM story_comments WHERE comment_id = ?',
-      [commentId]
-    );
+    await pool.execute("DELETE FROM story_comments WHERE comment_id = ?", [
+      commentId,
+    ]);
 
     return NextResponse.json({ message: "Đã xóa bình luận" });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Đã có lỗi xảy ra" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Đã có lỗi xảy ra" }, { status: 500 });
   }
-} 
+}

@@ -1,14 +1,40 @@
-version: '3.8'
+version: "3.8"
 
 services:
+  # MySQL Database Service
+  mysql:
+    image: mysql:8.0
+    container_name: chatstory_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: chatstoryai
+      MYSQL_USER: chatstory_user
+      MYSQL_PASSWORD: chatstory_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - chatstory_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Next.js Application Service
   app:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: chatstory_app
+    restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
-      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
@@ -26,3 +52,18 @@ services:
       - VNP_HASH_SECRET=${VNP_HASH_SECRET}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - TOGETHER_API_KEY=${TOGETHER_API_KEY}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - chatstory_network
+
+# Volumes for persistent data
+volumes:
+  mysql_data:
+    driver: local
+
+# Networks
+networks:
+  chatstory_network:
+    driver: bridge

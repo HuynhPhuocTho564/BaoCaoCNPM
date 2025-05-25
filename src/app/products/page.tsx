@@ -1,15 +1,26 @@
-'use client';
+"use client";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Check } from "lucide-react";
 import { handleVNPayPayment } from "@/lib/vnpay";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 export default function ProductsPage() {
   const { data: session, update } = useSession();
+
+  useEffect(() => {
+    document.title = "Giá Cả - ChatStoryAI";
+  }, []);
 
   const products = [
     {
@@ -20,11 +31,11 @@ export default function ProductsPage() {
         "Không giới hạn thời gian sử dụng",
         "Cập nhật tính năng mới thường xuyên",
         "Hỗ trợ qua cộng đồng",
-        "Không cần thanh toán"
+        "Không cần thanh toán",
       ],
       isPopular: false,
       showLabel: true,
-      label: "Bắt đầu ngay 🚀"
+      label: "Bắt đầu ngay 🚀",
     },
     {
       name: "Gói Hỗ trợ",
@@ -39,23 +50,23 @@ export default function ProductsPage() {
       ],
       isPopular: true,
       showLabel: true,
-      label: "Ủng hộ dự án ❤️"
+      label: "Ủng hộ dự án ❤️",
     },
     {
       name: "Gói Ủng Hộ Miễn Phí",
       price: "0đ",
       features: [
         "Truy cập sớm tính năng mới",
-        "Chế độ tạo truyện bằng trò chuyện AI", 
+        "Chế độ tạo truyện bằng trò chuyện AI",
         "Nhận khung avatar ủng hộ",
         "Hỗ trợ phát triển dự án",
-        "Không cần thanh toán"
+        "Không cần thanh toán",
       ],
       isPopular: false,
       showLabel: true,
-      label: "Ủng hộ miễn phí 🎁"
-    }
-  ]
+      label: "Ủng hộ miễn phí 🎁",
+    },
+  ];
 
   const handlePayment = async (product: any) => {
     if (product.price === "0đ") {
@@ -73,10 +84,10 @@ export default function ProductsPage() {
     try {
       const amount = 22000;
       const orderInfo = `Thanh toán ${product.name}`;
-      
+
       await handleVNPayPayment({
         amount,
-        orderInfo
+        orderInfo,
       });
     } catch (error) {
       console.error("Payment error:", error);
@@ -91,14 +102,14 @@ export default function ProductsPage() {
 
     try {
       // Gọi API cập nhật badge
-      await fetch('/api/user/update-badge', {
-        method: 'POST'
+      await fetch("/api/user/update-badge", {
+        method: "POST",
       });
-      
+
       // Cập nhật session
       await update({ hasBadge: true });
-      
-      toast.success('Bạn đã trở thành người ủng hộ!');
+
+      toast.success("Bạn đã trở thành người ủng hộ!");
     } catch (error) {
       console.error("Lỗi khi cập nhật:", error);
       toast.error("Có lỗi xảy ra khi xử lý yêu cầu");
@@ -110,7 +121,7 @@ export default function ProductsPage() {
       <main className="flex-1 bg-background">
         <div className="container mx-auto px-4 py-12">
           <div className="text-center space-y-4 mb-12">
-            <h1 className="text-4xl font-bold tracking-tight">Sản Phẩm</h1>
+            <h1 className="text-4xl font-bold tracking-tight">Giá Cả</h1>
             <p className="text-lg text-muted-foreground">
               Bạn có thể sử dụng miễn phí hoặc ủng hộ chúng tôi một tách cafe
             </p>
@@ -118,9 +129,11 @@ export default function ProductsPage() {
 
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
             {products.map((product, index) => (
-              <Card 
-                key={index} 
-                className={`flex flex-col relative mt-6 ${product.isPopular ? 'border-primary shadow-lg' : ''}`}
+              <Card
+                key={index}
+                className={`flex flex-col relative mt-6 ${
+                  product.isPopular ? "border-primary shadow-lg" : ""
+                }`}
               >
                 {product.showLabel && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -130,11 +143,17 @@ export default function ProductsPage() {
                   </div>
                 )}
                 <CardHeader className="space-y-2 text-center pt-8">
-                  <CardTitle className="text-2xl font-bold">{product.name}</CardTitle>
+                  <CardTitle className="text-2xl font-bold">
+                    {product.name}
+                  </CardTitle>
                   <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-3xl font-bold text-primary">{product.price}</span>
+                    <span className="text-3xl font-bold text-primary">
+                      {product.price}
+                    </span>
                     {product.price !== "0đ" && (
-                      <span className="text-sm text-muted-foreground">/một lần</span>
+                      <span className="text-sm text-muted-foreground">
+                        /một lần
+                      </span>
                     )}
                   </div>
                 </CardHeader>
@@ -149,8 +168,8 @@ export default function ProductsPage() {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Button 
-                    className="w-full text-lg py-6" 
+                  <Button
+                    className="w-full text-lg py-6"
                     onClick={() => handlePayment(product)}
                     variant={product.isPopular ? "default" : "outline"}
                   >
@@ -163,5 +182,5 @@ export default function ProductsPage() {
         </div>
       </main>
     </div>
-  )
-} 
+  );
+}

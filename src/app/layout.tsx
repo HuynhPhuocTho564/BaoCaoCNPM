@@ -9,6 +9,8 @@ import { Footer } from "@/components/footer";
 import { ChatBot } from "@/components/chat-bot";
 import { LoadingProvider } from "@/providers/loading-provider";
 import { InitialLoading } from "@/components/initial-loading";
+import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,6 +48,8 @@ export default function RootLayout({
             <ChatBot />
           </LoadingProvider>
         </AuthProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

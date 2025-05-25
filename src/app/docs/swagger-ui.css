@@ -1,0 +1,219 @@
+/* Custom styles for Swagger UI */
+.swagger-ui {
+  font-family: inherit !important;
+}
+
+.swagger-ui .topbar {
+  display: none !important;
+}
+
+.swagger-ui .info {
+  margin: 20px 0 !important;
+}
+
+.swagger-ui .info .title {
+  color: #1f2937 !important;
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+}
+
+.swagger-ui .info .description {
+  color: #6b7280 !important;
+  font-size: 1rem !important;
+  line-height: 1.6 !important;
+}
+
+.swagger-ui .scheme-container {
+  background: #f9fafb !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  margin: 20px 0 !important;
+}
+
+.swagger-ui .opblock {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  margin-bottom: 16px !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+.swagger-ui .opblock.opblock-get {
+  border-color: #10b981 !important;
+}
+
+.swagger-ui .opblock.opblock-post {
+  border-color: #3b82f6 !important;
+}
+
+.swagger-ui .opblock.opblock-put {
+  border-color: #f59e0b !important;
+}
+
+.swagger-ui .opblock.opblock-delete {
+  border-color: #ef4444 !important;
+}
+
+.swagger-ui .opblock .opblock-summary {
+  padding: 16px !important;
+}
+
+.swagger-ui .opblock .opblock-summary-method {
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  min-width: 80px !important;
+  text-align: center !important;
+}
+
+.swagger-ui .opblock.opblock-get .opblock-summary-method {
+  background: #10b981 !important;
+}
+
+.swagger-ui .opblock.opblock-post .opblock-summary-method {
+  background: #3b82f6 !important;
+}
+
+.swagger-ui .opblock.opblock-put .opblock-summary-method {
+  background: #f59e0b !important;
+}
+
+.swagger-ui .opblock.opblock-delete .opblock-summary-method {
+  background: #ef4444 !important;
+}
+
+.swagger-ui .opblock .opblock-summary-path {
+  color: #1f2937 !important;
+  font-weight: 600 !important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+}
+
+.swagger-ui .opblock .opblock-summary-description {
+  color: #6b7280 !important;
+}
+
+.swagger-ui .btn {
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.swagger-ui .btn.execute {
+  background: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+}
+
+.swagger-ui .btn.execute:hover {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+}
+
+.swagger-ui .btn.cancel {
+  background: #6b7280 !important;
+  border-color: #6b7280 !important;
+}
+
+.swagger-ui .btn.cancel:hover {
+  background: #4b5563 !important;
+  border-color: #4b5563 !important;
+}
+
+.swagger-ui .parameters-col_description {
+  color: #374151 !important;
+}
+
+.swagger-ui .parameter__name {
+  color: #1f2937 !important;
+  font-weight: 600 !important;
+}
+
+.swagger-ui .parameter__type {
+  color: #059669 !important;
+  font-weight: 500 !important;
+}
+
+.swagger-ui .response-col_status {
+  font-weight: 600 !important;
+}
+
+.swagger-ui .response-col_description {
+  color: #374151 !important;
+}
+
+.swagger-ui .model-box {
+  background: #f9fafb !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 6px !important;
+}
+
+.swagger-ui .model .property {
+  color: #374151 !important;
+}
+
+.swagger-ui .model .property-type {
+  color: #059669 !important;
+  font-weight: 500 !important;
+}
+
+.swagger-ui .model .property-format {
+  color: #6b7280 !important;
+}
+
+.swagger-ui .highlight-code {
+  background: #1f2937 !important;
+  color: #f9fafb !important;
+  border-radius: 6px !important;
+}
+
+.swagger-ui .microlight {
+  background: #1f2937 !important;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .swagger-ui .info .title {
+    color: #f9fafb !important;
+  }
+  
+  .swagger-ui .info .description {
+    color: #d1d5db !important;
+  }
+  
+  .swagger-ui .scheme-container {
+    background: #374151 !important;
+    border-color: #4b5563 !important;
+  }
+  
+  .swagger-ui .opblock {
+    background: #374151 !important;
+    border-color: #4b5563 !important;
+  }
+  
+  .swagger-ui .opblock .opblock-summary-path {
+    color: #f9fafb !important;
+  }
+  
+  .swagger-ui .opblock .opblock-summary-description {
+    color: #d1d5db !important;
+  }
+  
+  .swagger-ui .parameters-col_description {
+    color: #e5e7eb !important;
+  }
+  
+  .swagger-ui .parameter__name {
+    color: #f9fafb !important;
+  }
+  
+  .swagger-ui .response-col_description {
+    color: #e5e7eb !important;
+  }
+  
+  .swagger-ui .model-box {
+    background: #4b5563 !important;
+    border-color: #6b7280 !important;
+  }
+  
+  .swagger-ui .model .property {
+    color: #e5e7eb !important;
+  }
+}

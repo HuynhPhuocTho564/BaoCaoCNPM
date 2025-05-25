@@ -1,22 +1,22 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Header } from "./navbar"
-import { useSession } from "next-auth/react"
-import { Login } from "../login/login"
-import { UserMenu } from "./user-menu"
-import { useRouter } from "next/navigation"
-import { NotificationBell } from "../notification-bell"
-import { Button } from "@/components/ui/button"
-import { Search } from "lucide-react"
-import { SearchDialog } from "../search-dialog"
-import { useLoading } from "@/providers/loading-provider"
+import * as React from "react";
+import { Header } from "./navbar";
+import { useSession } from "next-auth/react";
+import { Login } from "../login/login";
+import { UserMenu } from "./user-menu";
+import { useRouter } from "next/navigation";
+import { NotificationBell } from "../notification-bell";
+import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
+import { SearchDialog } from "../search-dialog";
+import { useLoading } from "@/providers/loading-provider";
 
 // Sample menu items
 const menuItems = [
   {
     text: "Trang chủ",
-    to: "/"
+    to: "/",
   },
   {
     text: "Thư viện",
@@ -35,8 +35,8 @@ const menuItems = [
         text: "Tìm kiếm",
         description: "Tìm kiếm nâng cao",
         to: "/library/search",
-      }
-    ]
+      },
+    ],
   },
   {
     text: "Tạo truyện",
@@ -50,8 +50,12 @@ const menuItems = [
         text: "Tạo bằng AI",
         description: "Tạo truyện thông qua trò chuyện với AI",
         to: "/ai",
-      }
-    ]
+      },
+    ],
+  },
+  {
+    text: "Giá cả",
+    to: "/products",
   },
   {
     text: "Hướng dẫn",
@@ -65,48 +69,54 @@ const menuItems = [
         text: "Câu hỏi thường gặp",
         description: "Các câu hỏi thường gặp",
         to: "/guide/faq",
-      }
-    ]
-  }
-]
+      },
+    ],
+  },
+];
 
 // Theme switcher demo
 const Nav = () => {
-  const { data: session } = useSession()
-  const router = useRouter()
-  const [theme, setTheme] = React.useState<'light' | 'dark'>('light')
-  const [searchOpen, setSearchOpen] = React.useState(false)
-  const { startLoading } = useLoading()
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [theme, setTheme] = React.useState<"light" | "dark">("light");
+  const [searchOpen, setSearchOpen] = React.useState(false);
+  const { startLoading } = useLoading();
 
   React.useEffect(() => {
     // Get initial theme from localStorage or system preference
-    const savedTheme = localStorage.getItem('theme') || 'light'
-    setTheme(savedTheme as 'light' | 'dark')
-    document.documentElement.classList.toggle('dark', savedTheme === 'dark')
-  }, [])
+    const savedTheme = localStorage.getItem("theme") || "light";
+    setTheme(savedTheme as "light" | "dark");
+    document.documentElement.classList.toggle("dark", savedTheme === "dark");
+  }, []);
 
   const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light'
-    setTheme(newTheme)
-    localStorage.setItem('theme', newTheme)
-    document.documentElement.classList.toggle('dark')
-  }
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    document.documentElement.classList.toggle("dark");
+  };
 
   const handleLogoClick = () => {
-    startLoading('/')
-    router.push('/')
-  }
-  
+    startLoading("/");
+    router.push("/");
+  };
+
   return (
     <>
       <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
-      <div className={`w-full ${theme === 'dark' ? 'dark bg-[#0B0C0F]' : 'bg-white'}`}>
+      <div
+        className={`w-full ${
+          theme === "dark" ? "dark bg-[#0B0C0F]" : "bg-white"
+        }`}
+      >
         <Header
           theme={theme}
           logo={
-            <button 
+            <button
               onClick={handleLogoClick}
-              className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-black'}`}
+              className={`text-xl font-bold ${
+                theme === "dark" ? "text-white" : "text-black"
+              }`}
             >
               ChatStoryAI
             </button>
@@ -127,7 +137,7 @@ const Nav = () => {
               {session ? (
                 <>
                   <NotificationBell />
-                  <UserMenu isDarkTheme={theme === 'dark'} />
+                  <UserMenu isDarkTheme={theme === "dark"} />
                 </>
               ) : (
                 <Login />
@@ -137,8 +147,8 @@ const Nav = () => {
         />
       </div>
     </>
-  )
-}
+  );
+};
 
 // Export all variants
-export { Nav }
+export { Nav };

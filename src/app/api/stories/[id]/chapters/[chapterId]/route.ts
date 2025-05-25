@@ -1,26 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import pool from "@/lib/db"
+import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/api-key-auth";
+import pool from "@/lib/db";
 
 // GET - Lấy thông tin chương
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string; chapterId: string }> }
 ) {
   try {
-    const resolvedParams = await params
-    const { chapterId } = resolvedParams
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Không có quyền truy cập" },
-        { status: 401 }
-      )
-    }
+    await requireAuth(request);
 
-    const [chapters] = await pool.execute(`
+    const resolvedParams = await params;
+    const { chapterId } = resolvedParams;
+
+    const [chapters] = (await pool.execute(
+      `
       SELECT 
         sc.chapter_id,
         sc.title,
@@ -29,86 +24,83 @@ export async function GET(
         (SELECT COUNT(*) FROM chapter_dialogues WHERE chapter_id = sc.chapter_id) as dialogue_count
       FROM story_chapters sc
       WHERE sc.chapter_id = ?
-    `, [chapterId]) as any[]
+    `,
+      [chapterId]
+    )) as any[];
 
     if (!chapters.length) {
       return NextResponse.json(
         { error: "Không tìm thấy chương" },
         { status: 404 }
-      )
+      );
     }
 
-    return NextResponse.json({ chapter: chapters[0] })
-  } catch (error) {
-    console.error("Lỗi khi lấy thông tin chương:", error)
-    return NextResponse.json(
-      { error: "Đã có lỗi xảy ra" },
-      { status: 500 }
-    )
+    return NextResponse.json({ chapter: chapters[0] });
+  } catch (error: any) {
+    if (error.message === "Unauthorized") {
+      return NextResponse.json({ error: "Chưa xác thực" }, { status: 401 });
+    }
+
+    console.error("Lỗi khi lấy thông tin chương:", error);
+    return NextResponse.json({ error: "Đã có lỗi xảy ra" }, { status: 500 });
   }
 }
 
 // PUT - Cập nhật chương
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string; chapterId: string }> }
 ) {
-  const resolvedParams = await params
-  const { id: storyId, chapterId } = resolvedParams
-  
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Không có quyền truy cập" },
-        { status: 401 }
-      )
-    }
+    await requireAuth(request);
 
-    const { title, summary, status: newStatus } = await request.json()
+    const resolvedParams = await params;
+    const { id: storyId, chapterId } = resolvedParams;
+
+    const { title, summary, status: newStatus } = await request.json();
 
     // Kiểm tra nội dung chương nếu muốn xuất bản
-    if (newStatus === 'published') {
-      const [dialogues] = await pool.execute(
+    if (newStatus === "published") {
+      const [dialogues] = (await pool.execute(
         `SELECT COUNT(*) as count FROM chapter_dialogues WHERE chapter_id = ?`,
         [chapterId]
-      ) as any[]
+      )) as any[];
 
       if (dialogues[0].count === 0) {
         return NextResponse.json(
           { error: "Cần có ít nhất một tin nhắn trong chương để xuất bản" },
           { status: 400 }
-        )
+        );
       }
     }
 
     // Lấy thông tin chương hiện tại
-    const [currentChapter] = await pool.execute(
+    const [currentChapter] = (await pool.execute(
       `SELECT status, publish_order FROM story_chapters WHERE chapter_id = ?`,
       [chapterId]
-    ) as any[]
+    )) as any[];
 
     if (!currentChapter.length) {
       return NextResponse.json(
         { error: "Không tìm thấy chương" },
         { status: 404 }
-      )
+      );
     }
 
     // Sử dụng status mới nếu được cung cấp, ngược lại giữ nguyên status cũ
-    const status = newStatus || currentChapter[0].status
+    const status = newStatus || currentChapter[0].status;
 
-    let publishOrder = currentChapter[0].publish_order
+    let publishOrder = currentChapter[0].publish_order;
 
-    if (status === 'published' && !publishOrder) {
-      const [result] = await pool.execute(
+    if (status === "published" && !publishOrder) {
+      const [result] = (await pool.execute(
         `SELECT MAX(publish_order) as max_order 
          FROM story_chapters 
          WHERE story_id = ? AND status = 'published'`,
         [storyId]
-      ) as any[]
+      )) as any[];
 
-      publishOrder = (result[0].max_order || 0) + 1
+      publishOrder = (result[0].max_order || 0) + 1;
 
       await pool.execute(
         `UPDATE story_chapters 
@@ -118,33 +110,36 @@ export async function PUT(
              publish_order = ?
          WHERE chapter_id = ?`,
         [title, summary, status, publishOrder, chapterId]
-      )
+      );
 
       // Chỉ tạo thông báo khi chương được xuất bản lần đầu
-      const [followers] = await pool.execute(
+      const [followers] = (await pool.execute(
         "SELECT user_id FROM story_bookmarks WHERE story_id = ?",
         [storyId]
-      ) as any[]
+      )) as any[];
 
       if (followers.length > 0) {
-        const [storyInfo] = await pool.execute(
+        const [storyInfo] = (await pool.execute(
           "SELECT title FROM stories WHERE story_id = ?",
           [storyId]
-        ) as any[]
+        )) as any[];
 
         const notifications = followers.map((follower: any) => [
           follower.user_id,
           storyId,
           chapterId,
           `Chương mới: ${title}`,
-          `Truyện "${storyInfo[0].title}" vừa cập nhật chương mới`
-        ])
+          `Truyện "${storyInfo[0].title}" vừa cập nhật chương mới`,
+        ]);
 
-        await pool.query(`
+        await pool.query(
+          `
           INSERT INTO notifications 
           (user_id, story_id, chapter_id, title, message)
           VALUES ?
-        `, [notifications])
+        `,
+          [notifications]
+        );
       }
     } else {
       await pool.execute(
@@ -154,56 +149,51 @@ export async function PUT(
              status = ?
          WHERE chapter_id = ?`,
         [title, summary, status, chapterId]
-      )
+      );
     }
 
     // Trả về chapter đã cập nhật
-    return NextResponse.json({ 
+    return NextResponse.json({
       message: "Cập nhật chương thành công",
       chapter: {
         chapter_id: parseInt(chapterId),
         title,
         summary,
-        status
-      }
-    })
-  } catch (error) {
-    console.error("Lỗi khi cập nhật chương:", error)
-    return NextResponse.json(
-      { error: "Đã có lỗi xảy ra" },
-      { status: 500 }
-    )
+        status,
+      },
+    });
+  } catch (error: any) {
+    if (error.message === "Unauthorized") {
+      return NextResponse.json({ error: "Chưa xác thực" }, { status: 401 });
+    }
+
+    console.error("Lỗi khi cập nhật chương:", error);
+    return NextResponse.json({ error: "Đã có lỗi xảy ra" }, { status: 500 });
   }
 }
 
 // DELETE - Xóa chương
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string; chapterId: string }> }
 ) {
-  const resolvedParams = await params
-  const { chapterId } = resolvedParams
-  
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Không có quyền truy cập" },
-        { status: 401 }
-      )
+    await requireAuth(request);
+
+    const resolvedParams = await params;
+    const { chapterId } = resolvedParams;
+
+    await pool.execute("DELETE FROM story_chapters WHERE chapter_id = ?", [
+      chapterId,
+    ]);
+
+    return NextResponse.json({ message: "Xóa chương thành công" });
+  } catch (error: any) {
+    if (error.message === "Unauthorized") {
+      return NextResponse.json({ error: "Chưa xác thực" }, { status: 401 });
     }
 
-    await pool.execute(
-      'DELETE FROM story_chapters WHERE chapter_id = ?',
-      [chapterId]
-    )
-
-    return NextResponse.json({ message: "Xóa chương thành công" })
-  } catch (error) {
-    console.error("Lỗi khi xóa chương:", error)
-    return NextResponse.json(
-      { error: "Đã có lỗi xảy ra" },
-      { status: 500 }
-    )
+    console.error("Lỗi khi xóa chương:", error);
+    return NextResponse.json({ error: "Đã có lỗi xảy ra" }, { status: 500 });
   }
-} 
+}

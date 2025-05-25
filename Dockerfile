@@ -8,8 +8,8 @@ WORKDIR /app
 # Sao chép package.json
 COPY package.json ./
 
-# Cài đặt dependencies
-RUN npm install
+# Cài đặt dependencies với legacy peer deps để tránh xung đột React 19
+RUN npm install --legacy-peer-deps
 
 # Builder
 FROM base AS builder

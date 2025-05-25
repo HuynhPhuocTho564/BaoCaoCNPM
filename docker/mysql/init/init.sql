@@ -1,13 +1,13 @@
--- MariaDB dump 10.19  Distrib 10.4.32-MariaDB, for Win64 (AMD64)
+-- MySQL dump 10.13  Distrib 8.0.42, for Win64 (x86_64)
 --
 -- Host: localhost    Database: chatstoryai
 -- ------------------------------------------------------
--- Server version	5.7.44-log
+-- Server version	8.0.42
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+/*!50503 SET NAMES utf8 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -16,24 +16,16 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Current Database: `chatstoryai`
---
-
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `chatstoryai` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */;
-
-USE `chatstoryai`;
-
---
 -- Table structure for table `ai_chat_history`
 --
 
 DROP TABLE IF EXISTS `ai_chat_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ai_chat_history` (
-  `chat_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `title` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `chat_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`chat_id`),
@@ -58,12 +50,12 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `ai_chat_images`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ai_chat_images` (
-  `image_id` int(11) NOT NULL AUTO_INCREMENT,
-  `message_id` int(11) NOT NULL,
-  `file_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `image_url` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `image_id` int NOT NULL AUTO_INCREMENT,
+  `message_id` int NOT NULL,
+  `file_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `image_url` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`image_id`),
   KEY `message_id` (`message_id`),
@@ -86,14 +78,14 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `ai_chat_messages`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ai_chat_messages` (
-  `message_id` int(11) NOT NULL AUTO_INCREMENT,
-  `chat_id` int(11) NOT NULL,
-  `role` enum('user','assistant') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `content` text COLLATE utf8mb4_unicode_ci,
+  `message_id` int NOT NULL AUTO_INCREMENT,
+  `chat_id` int NOT NULL,
+  `role` enum('user','assistant') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `command_status` enum('loading','success','error') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `command_status` enum('loading','success','error') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`message_id`),
   KEY `chat_id` (`chat_id`),
   CONSTRAINT `ai_chat_messages_ibfk_1` FOREIGN KEY (`chat_id`) REFERENCES `ai_chat_history` (`chat_id`) ON DELETE CASCADE
@@ -116,14 +108,14 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `ai_generated_dialogues`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ai_generated_dialogues` (
-  `dialogue_id` int(11) NOT NULL AUTO_INCREMENT,
-  `story_id` int(11) NOT NULL,
-  `chapter_id` int(11) NOT NULL,
-  `content` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `type` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'dialogue',
-  `character_names` text COLLATE utf8mb4_unicode_ci,
+  `dialogue_id` int NOT NULL AUTO_INCREMENT,
+  `story_id` int NOT NULL,
+  `chapter_id` int NOT NULL,
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'dialogue',
+  `character_names` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `is_added` tinyint(1) DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`dialogue_id`),
@@ -144,20 +136,57 @@ LOCK TABLES `ai_generated_dialogues` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `api_keys`
+--
+
+DROP TABLE IF EXISTS `api_keys`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `api_keys` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `api_key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `expires_at` timestamp NULL DEFAULT NULL,
+  `last_used_at` timestamp NULL DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT '1',
+  `permissions` json DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `api_key` (`api_key`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_api_key` (`api_key`),
+  KEY `idx_is_active` (`is_active`),
+  KEY `idx_expires_at` (`expires_at`),
+  CONSTRAINT `api_keys_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `api_keys`
+--
+
+LOCK TABLES `api_keys` WRITE;
+/*!40000 ALTER TABLE `api_keys` DISABLE KEYS */;
+/*!40000 ALTER TABLE `api_keys` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `chapter_dialogues`
 --
 
 DROP TABLE IF EXISTS `chapter_dialogues`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `chapter_dialogues` (
-  `dialogue_id` int(11) NOT NULL AUTO_INCREMENT,
-  `chapter_id` int(11) NOT NULL,
-  `character_id` int(11) DEFAULT NULL,
-  `content` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `order_number` int(11) NOT NULL,
+  `dialogue_id` int NOT NULL AUTO_INCREMENT,
+  `chapter_id` int NOT NULL,
+  `character_id` int DEFAULT NULL,
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `order_number` int NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `type` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'dialogue',
+  `type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'dialogue',
   PRIMARY KEY (`dialogue_id`),
   KEY `chapter_id` (`chapter_id`),
   KEY `character_id` (`character_id`),
@@ -182,11 +211,11 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `chapter_reads`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `chapter_reads` (
-  `read_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `chapter_id` int(11) NOT NULL,
+  `read_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `chapter_id` int NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`read_id`),
   UNIQUE KEY `unique_read` (`user_id`,`chapter_id`),
@@ -213,11 +242,11 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `main_categories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `main_categories` (
-  `category_id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `category_id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`category_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -239,14 +268,14 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `notifications`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `notifications` (
-  `notification_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `story_id` int(11) NOT NULL,
-  `chapter_id` int(11) NOT NULL,
-  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `message` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `notification_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `story_id` int NOT NULL,
+  `chapter_id` int NOT NULL,
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `is_read` tinyint(1) DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`notification_id`),
@@ -274,11 +303,11 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `reset_codes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `reset_codes` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `code` varchar(6) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `code` varchar(6) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `expires_at` datetime NOT NULL,
   `used` tinyint(1) DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -302,19 +331,19 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `stories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `stories` (
-  `story_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
-  `cover_image` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `status` enum('draft','published','archived') COLLATE utf8mb4_unicode_ci DEFAULT 'draft',
-  `view_count` int(11) DEFAULT '0',
+  `story_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `cover_image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` enum('draft','published','archived') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'draft',
+  `view_count` int DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `cover_file_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `main_category_id` int(11) DEFAULT NULL,
+  `cover_file_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `main_category_id` int DEFAULT NULL,
   PRIMARY KEY (`story_id`),
   KEY `user_id` (`user_id`),
   KEY `stories_category_fk` (`main_category_id`),
@@ -339,11 +368,11 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `story_bookmarks`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `story_bookmarks` (
-  `bookmark_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `story_id` int(11) NOT NULL,
+  `bookmark_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `story_id` int NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`bookmark_id`),
   UNIQUE KEY `unique_bookmark` (`user_id`,`story_id`),
@@ -369,17 +398,17 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `story_chapters`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `story_chapters` (
-  `chapter_id` int(11) NOT NULL AUTO_INCREMENT,
-  `story_id` int(11) NOT NULL,
-  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `order_number` int(11) NOT NULL,
-  `status` enum('draft','published') COLLATE utf8mb4_unicode_ci DEFAULT 'draft',
+  `chapter_id` int NOT NULL AUTO_INCREMENT,
+  `story_id` int NOT NULL,
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `order_number` int NOT NULL,
+  `status` enum('draft','published') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'draft',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `publish_order` int(11) DEFAULT NULL,
-  `summary` text COLLATE utf8mb4_unicode_ci,
+  `publish_order` int DEFAULT NULL,
+  `summary` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   PRIMARY KEY (`chapter_id`),
   KEY `story_id` (`story_id`),
   CONSTRAINT `story_chapters_ibfk_1` FOREIGN KEY (`story_id`) REFERENCES `stories` (`story_id`) ON DELETE CASCADE
@@ -402,24 +431,24 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `story_characters`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `story_characters` (
-  `character_id` int(11) NOT NULL AUTO_INCREMENT,
-  `story_id` int(11) NOT NULL,
-  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `avatar_image` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `avatar_file_id` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `character_id` int NOT NULL AUTO_INCREMENT,
+  `story_id` int NOT NULL,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `avatar_image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `avatar_file_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `role` enum('main','supporting') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'supporting',
-  `gender` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `role` enum('main','supporting') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'supporting',
+  `gender` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `birthday` date DEFAULT NULL,
-  `height` int(11) DEFAULT NULL,
-  `weight` int(11) DEFAULT NULL,
-  `personality` text COLLATE utf8mb4_unicode_ci,
-  `appearance` text COLLATE utf8mb4_unicode_ci,
-  `background` text COLLATE utf8mb4_unicode_ci,
+  `height` int DEFAULT NULL,
+  `weight` int DEFAULT NULL,
+  `personality` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `appearance` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `background` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   PRIMARY KEY (`character_id`),
   KEY `story_id` (`story_id`),
   CONSTRAINT `story_characters_ibfk_1` FOREIGN KEY (`story_id`) REFERENCES `stories` (`story_id`) ON DELETE CASCADE
@@ -442,14 +471,14 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `story_comments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `story_comments` (
-  `comment_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `story_id` int(11) NOT NULL,
-  `chapter_id` int(11) DEFAULT NULL,
-  `content` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `parent_id` int(11) DEFAULT NULL,
+  `comment_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `story_id` int NOT NULL,
+  `chapter_id` int DEFAULT NULL,
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `parent_id` int DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`comment_id`),
@@ -479,11 +508,11 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `story_favorites`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `story_favorites` (
-  `favorite_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `story_id` int(11) NOT NULL,
+  `favorite_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `story_id` int NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`favorite_id`),
   UNIQUE KEY `unique_favorite` (`user_id`,`story_id`),
@@ -509,13 +538,13 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `story_outlines`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `story_outlines` (
-  `outline_id` int(11) NOT NULL AUTO_INCREMENT,
-  `story_id` int(11) NOT NULL,
-  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
-  `order_number` int(11) NOT NULL,
+  `outline_id` int NOT NULL AUTO_INCREMENT,
+  `story_id` int NOT NULL,
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `order_number` int NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`outline_id`),
@@ -540,10 +569,10 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `story_tag_relations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `story_tag_relations` (
-  `story_id` int(11) NOT NULL,
-  `tag_id` int(11) NOT NULL,
+  `story_id` int NOT NULL,
+  `tag_id` int NOT NULL,
   PRIMARY KEY (`story_id`,`tag_id`),
   KEY `tag_id` (`tag_id`),
   CONSTRAINT `story_tag_relations_ibfk_1` FOREIGN KEY (`story_id`) REFERENCES `stories` (`story_id`) ON DELETE CASCADE,
@@ -567,11 +596,11 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `story_tags`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `story_tags` (
-  `tag_id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
+  `tag_id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`tag_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -593,10 +622,10 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `subscribers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `subscribers` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
@@ -618,20 +647,20 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `users` (
-  `user_id` int(11) NOT NULL AUTO_INCREMENT,
-  `username` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `user_password` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `avatar` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT '/default-user.webp',
-  `drive_file_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `avatar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT '/default-user.webp',
+  `drive_file_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `has_badge` tinyint(1) DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -640,7 +669,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'Sakae Tomi','tomisakaeap1@gmail.com',NULL,'https://lh3.googleusercontent.com/a/ACg8ocLA1eLGOrPUELOSBCGVeV-l3Cspl0xaWSgkAf4R80j_viklkLg=s96-c',NULL,1,'2025-02-24 01:40:20','2025-03-04 14:57:00'),(2,'Khoa Nguyễn Đinh Tuấn','khoanguyen.tv0505@gmail.com',NULL,'https://lh3.googleusercontent.com/a/ACg8ocJhMNA68wxXLu_yj014n0Zfe0jcDBFXqzXIJZcKXGokgye3YA=s96-c',NULL,0,'2025-02-27 12:26:48','2025-02-27 12:26:48'),(3,'TomiSakae','tomisakae@gmail.com','$2b$10$iz.4R7l4BPO1kbgknAsVZORbkYQ/WMUPNfzs/VKC.pr19CVZLz1jy','https://drive.google.com/uc?export=view&id=1U1Q98Yi5XTpez2cKMySz9CDjc01ccNn0&t=1740668905828','1U1Q98Yi5XTpez2cKMySz9CDjc01ccNn0',1,'2025-02-27 15:07:26','2025-03-03 15:04:01'),(4,'Test','tomisakaeap2@gmail.com','$2b$10$95Jtaos9gVG3DgeCjusdVOwjyog3z9MA7b284aLE53dt5gUWI3PtK',NULL,NULL,0,'2025-02-28 16:14:54','2025-02-28 16:14:54');
+INSERT INTO `users` VALUES (1,'Sakae Tomi','tomisakaeap1@gmail.com',NULL,'https://lh3.googleusercontent.com/a/ACg8ocLA1eLGOrPUELOSBCGVeV-l3Cspl0xaWSgkAf4R80j_viklkLg=s96-c',NULL,1,'2025-02-24 01:40:20','2025-03-04 14:57:00'),(2,'Khoa Nguyễn Đinh Tuấn','khoanguyen.tv0505@gmail.com',NULL,'https://lh3.googleusercontent.com/a/ACg8ocJhMNA68wxXLu_yj014n0Zfe0jcDBFXqzXIJZcKXGokgye3YA=s96-c',NULL,0,'2025-02-27 12:26:48','2025-02-27 12:26:48'),(3,'TomiSakae','tomisakae@gmail.com','$2b$10$iz.4R7l4BPO1kbgknAsVZORbkYQ/WMUPNfzs/VKC.pr19CVZLz1jy','https://drive.google.com/uc?export=view&id=1U1Q98Yi5XTpez2cKMySz9CDjc01ccNn0&t=1740668905828','1U1Q98Yi5XTpez2cKMySz9CDjc01ccNn0',1,'2025-02-27 15:07:26','2025-03-03 15:04:01'),(4,'Test','tomisakaeap2@gmail.com','$2b$10$95Jtaos9gVG3DgeCjusdVOwjyog3z9MA7b284aLE53dt5gUWI3PtK',NULL,NULL,0,'2025-02-28 16:14:54','2025-02-28 16:14:54'),(5,'Itsuki','vinhxx@gmail.com','$2b$10$Tt5EYBNZfXjIkfH14cHYv.xng78XfzP1wBO.82cTkuyDk30ziQak2',NULL,NULL,0,'2025-06-10 15:16:29','2025-06-10 15:16:29');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -650,11 +679,11 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `view_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `view_history` (
-  `history_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `story_id` int(11) NOT NULL,
+  `history_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `story_id` int NOT NULL,
   `view_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`history_id`),
   KEY `user_id` (`user_id`),
@@ -673,14 +702,6 @@ LOCK TABLES `view_history` WRITE;
 INSERT INTO `view_history` VALUES (23,1,31,'2025-02-28 13:53:59'),(24,1,31,'2025-02-28 14:49:59'),(28,3,31,'2025-03-03 18:35:18'),(29,3,32,'2025-03-03 18:35:41'),(30,3,66,'2025-03-03 18:57:47'),(31,3,66,'2025-03-03 19:03:04'),(33,1,120,'2025-03-04 22:28:29'),(34,1,120,'2025-03-04 22:28:34'),(35,1,120,'2025-03-05 12:01:01');
 /*!40000 ALTER TABLE `view_history` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Dumping events for database 'chatstoryai'
---
-
---
--- Dumping routines for database 'chatstoryai'
---
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -691,4 +712,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-05 12:31:55
+-- Dump completed on 2025-06-10 22:19:59

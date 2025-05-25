@@ -7,12 +7,12 @@ import {
 } from "@google/generative-ai";
 
 const generationConfig = {
-    temperature: 1,
-    topP: 0.95,
-    topK: 40,
-    maxOutputTokens: 8192,
-    responseMimeType: "text/plain",
-  };
+  temperature: 1,
+  topP: 0.95,
+  topK: 40,
+  maxOutputTokens: 8192,
+  responseMimeType: "text/plain",
+};
 
 const safetySettings = [
   {
@@ -33,15 +33,13 @@ const safetySettings = [
   },
 ];
 
-
-
 let apiKey: string | null = null;
 
 async function getApiKey() {
   if (!apiKey) {
-    const response = await fetch('/api/ai/gemini');
+    const response = await fetch("/api/ai/gemini");
     if (!response.ok) {
-      throw new Error('Không thể lấy API key');
+      throw new Error("Không thể lấy API key");
     }
     const data = await response.json();
     apiKey = data.apiKey;
@@ -90,7 +88,7 @@ interface ChapterSelection {
     title: string;
     summary: string;
     dialogues?: {
-      type: 'dialogue' | 'aside';
+      type: "dialogue" | "aside";
       content: string;
       character_name?: string;
     }[];
@@ -105,8 +103,8 @@ interface Chapter {
 }
 
 export async function chatWithAssistant(
-  message: string, 
-  history: any[] = [], 
+  message: string,
+  history: any[] = [],
   stream = false,
   context?: {
     title?: string;
@@ -137,43 +135,54 @@ Hãy trả lời một cách thân thiện, chuyên nghiệp và dễ hiểu.
 Luôn giữ giọng điệu tích cực và khuyến khích người dùng.`;
 
     if (context) {
-      let contextString = '\n\nNgữ cảnh hiện tại của truyện:';
-      
+      let contextString = "\n\nNgữ cảnh hiện tại của truyện:";
+
       // Thông tin cơ bản
       if (context.title) contextString += `\n- Tên truyện: ${context.title}`;
-      if (context.description) contextString += `\n- Mô tả: ${context.description}`;
-      if (context.category) contextString += `\n- Thể loại: ${context.category}`;
-      if (context.tags?.length) contextString += `\n- Tags: ${context.tags.join(', ')}`;
+      if (context.description)
+        contextString += `\n- Mô tả: ${context.description}`;
+      if (context.category)
+        contextString += `\n- Thể loại: ${context.category}`;
+      if (context.tags?.length)
+        contextString += `\n- Tags: ${context.tags.join(", ")}`;
 
       // Thông tin chương
       if (context.chapters) {
-        contextString += '\n\nDanh sách chương:';
-        Object.entries(context.chapters).forEach(([chapterId, chapterContext]) => {
-          console.log('Processing chapter:', chapterContext); // Debug log
+        contextString += "\n\nDanh sách chương:";
+        Object.entries(context.chapters).forEach(
+          ([chapterId, chapterContext]) => {
+            console.log("Processing chapter:", chapterContext); // Debug log
 
-          contextString += `\n\nChương: ${chapterContext.data.title}`;
-          
-          if (chapterContext.summary) {
-            contextString += `\nTóm tắt: ${chapterContext.data.summary}`;
+            contextString += `\n\nChương: ${chapterContext.data.title}`;
+
+            if (chapterContext.summary) {
+              contextString += `\nTóm tắt: ${chapterContext.data.summary}`;
+            }
+
+            if (
+              chapterContext.dialogues &&
+              chapterContext.data.dialogues &&
+              chapterContext.data.dialogues.length > 0
+            ) {
+              contextString += "\nHội thoại trong chương:";
+              chapterContext.data.dialogues.forEach((dialogue) => {
+                if (dialogue.type === "dialogue") {
+                  contextString += `\n- ${
+                    dialogue.character_name || "Không rõ"
+                  }: "${dialogue.content}"`;
+                } else {
+                  contextString += `\n- ${dialogue.content}`;
+                }
+              });
+            }
           }
-          
-          if (chapterContext.dialogues && chapterContext.data.dialogues && chapterContext.data.dialogues.length > 0) {
-            contextString += '\nHội thoại trong chương:';
-            chapterContext.data.dialogues.forEach(dialogue => {
-              if (dialogue.type === 'dialogue') {
-                contextString += `\n- ${dialogue.character_name || 'Không rõ'}: "${dialogue.content}"`;
-              } else {
-                contextString += `\n- ${dialogue.content}`;
-              }
-            });
-          }
-        });
+        );
       }
 
       // Thông tin nhân vật
       if (context.characters && context.characterData) {
-        contextString += '\n\nThông tin nhân vật:';
-        context.characterData.forEach(char => {
+        contextString += "\n\nThông tin nhân vật:";
+        context.characterData.forEach((char) => {
           const charContext = context.characters?.[char.character_id];
           if (charContext) {
             contextString += `\n\nNhân vật: ${char.name}`;
@@ -187,21 +196,25 @@ Luôn giữ giọng điệu tích cực và khuyến khích người dùng.`;
               contextString += `\n- Chiều cao: ${char.height}`;
               contextString += `\n- Cân nặng: ${char.weight}`;
             }
-            if (charContext.appearance) contextString += `\n- Ngoại hình: ${char.appearance}`;
-            if (charContext.personality) contextString += `\n- Tính cách: ${char.personality}`;
-            if (charContext.background) contextString += `\n- Tiểu sử: ${char.background}`;
+            if (charContext.appearance)
+              contextString += `\n- Ngoại hình: ${char.appearance}`;
+            if (charContext.personality)
+              contextString += `\n- Tính cách: ${char.personality}`;
+            if (charContext.background)
+              contextString += `\n- Tiểu sử: ${char.background}`;
           }
         });
       }
 
       // Thông tin đại cương
       if (context.outlines && context.outlineData) {
-        contextString += '\n\nĐại cương:';
-        context.outlineData.forEach(outline => {
+        contextString += "\n\nĐại cương:";
+        context.outlineData.forEach((outline) => {
           const outlineContext = context.outlines?.[outline.outline_id];
           if (outlineContext) {
             if (outlineContext.title) contextString += `\n\n${outline.title}`;
-            if (outlineContext.description) contextString += `\n${outline.description}`;
+            if (outlineContext.description)
+              contextString += `\n${outline.description}`;
           }
         });
       }
@@ -209,13 +222,13 @@ Luôn giữ giọng điệu tích cực và khuyến khích người dùng.`;
       systemPrompt += contextString;
     }
 
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.0-flash",
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash-preview-05-20",
       generationConfig,
       safetySettings,
-      systemInstruction: systemPrompt
+      systemInstruction: systemPrompt,
     });
-    
+
     if (stream) {
       const chat = model.startChat({
         history: history,
@@ -237,7 +250,7 @@ Luôn giữ giọng điệu tích cực và khuyến khích người dùng.`;
 
     const result = await chat.sendMessage(message);
     const response = result.response.text();
-    
+
     return response;
   } catch (error) {
     console.error("Lỗi khi chat với trợ lý:", error);
@@ -248,4 +261,4 @@ Luôn giữ giọng điệu tích cực và khuyến khích người dùng.`;
 export interface Message {
   role: "user" | "assistant";
   content: string;
-} 
+}
