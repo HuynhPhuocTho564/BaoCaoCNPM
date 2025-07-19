@@ -1,0 +1,38 @@
+{
+  "name": "chatstoryai-api-tests",
+  "version": "1.0.0",
+  "description": "API testing scripts for ChatStoryAI platform",
+  "main": "test_api.js",
+  "scripts": {
+    "test": "node test_api.js",
+    "test:comprehensive": "node comprehensive_test.js",
+    "test:performance": "node performance_test.js",
+    "test:auth": "node -e \"require('./comprehensive_test.js').runTestSuite('authentication', require('./comprehensive_test.js').TEST_SUITES.authentication)\"",
+    "test:stories": "node -e \"require('./comprehensive_test.js').runTestSuite('stories', require('./comprehensive_test.js').TEST_SUITES.stories)\"",
+    "test:library": "node -e \"require('./comprehensive_test.js').runTestSuite('library', require('./comprehensive_test.js').TEST_SUITES.library)\"",
+    "demo": "node run_demo.js",
+    "help": "echo 'Available commands:\n  npm test - Run basic API tests\n  npm run test:comprehensive - Run all API tests\n  npm run test:performance - Run performance tests\n  npm run demo - Run complete test demo\n  npm run test:auth - Test authentication endpoints\n  npm run test:stories - Test stories management\n  npm run test:library - Test public library'"
+  },
+  "keywords": [
+    "api",
+    "testing",
+    "chatstoryai",
+    "automation",
+    "nodejs"
+  ],
+  "author": "ChatStoryAI Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "devDependencies": {},
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NguyenHuynhPhuVinh-TomiSakae/ChatStoryAI"
+  },
+  "bugs": {
+    "url": "https://github.com/NguyenHuynhPhuVinh-TomiSakae/ChatStoryAI/issues"
+  },
+  "homepage": "https://github.com/NguyenHuynhPhuVinh-TomiSakae/ChatStoryAI#readme"
+}

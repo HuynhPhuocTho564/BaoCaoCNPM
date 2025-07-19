@@ -1,0 +1,67 @@
+{
+  "id": "chatstoryai-env",
+  "name": "ChatStoryAI Environment",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "description": "Base URL của API server",
+      "enabled": true
+    },
+    {
+      "key": "email",
+      "value": "test@example.com",
+      "description": "Email để test authentication",
+      "enabled": true
+    },
+    {
+      "key": "password",
+      "value": "password123",
+      "description": "Password để test authentication",
+      "enabled": true
+    },
+    {
+      "key": "story_id",
+      "value": "1",
+      "description": "ID của story để test các API liên quan",
+      "enabled": true
+    },
+    {
+      "key": "user_id",
+      "value": "1",
+      "description": "ID của user để test",
+      "enabled": true
+    },
+    {
+      "key": "chapter_id",
+      "value": "1",
+      "description": "ID của chapter để test",
+      "enabled": true
+    },
+    {
+      "key": "category_id",
+      "value": "1",
+      "description": "ID của category để test",
+      "enabled": true
+    },
+    {
+      "key": "tag_ids",
+      "value": "1,2,3",
+      "description": "Danh sách tag IDs để test",
+      "enabled": true
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "description": "Authentication token (sẽ được set tự động)",
+      "enabled": true
+    },
+    {
+      "key": "session_cookie",
+      "value": "",
+      "description": "Session cookie (sẽ được set tự động)",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

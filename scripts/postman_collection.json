@@ -1,0 +1,583 @@
+{
+  "info": {
+    "name": "ChatStoryAI API Collection",
+    "description": "Complete API collection for ChatStoryAI platform",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "noauth"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set base URL if not set",
+          "if (!pm.environment.get('base_url')) {",
+          "    pm.environment.set('base_url', 'http://localhost:3000');",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "{{base_url}}",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"username\": \"testuser\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/forgot-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "forgot-password"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Reset Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"code\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/verify-reset-code",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "verify-reset-code"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"code\": \"123456\",\n  \"newPassword\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "reset-password"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📚 Stories Management",
+      "item": [
+        {
+          "name": "Get User Stories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/stories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stories"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Story",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Tên truyện mới\",\n  \"description\": \"Mô tả truyện\",\n  \"main_category_id\": 1,\n  \"tag_ids\": [1, 2, 3]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/stories/create",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stories", "create"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Story Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/stories/{{story_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stories", "{{story_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Story",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Tên truyện đã cập nhật\",\n  \"description\": \"Mô tả mới\",\n  \"main_category_id\": 2,\n  \"tag_ids\": [2, 3, 4]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/stories/{{story_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stories", "{{story_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Story",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/stories/{{story_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stories", "{{story_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Publish Story",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"published\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/stories/{{story_id}}/publish",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stories", "{{story_id}}", "publish"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📖 Public Library",
+      "item": [
+        {
+          "name": "Get New Stories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/library/new?page=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "library", "new"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Popular Stories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/library/popular",
+              "host": ["{{base_url}}"],
+              "path": ["api", "library", "popular"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Stories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/library/search?q=keyword&category=1&tags=1,2",
+              "host": ["{{base_url}}"],
+              "path": ["api", "library", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "keyword"
+                },
+                {
+                  "key": "category",
+                  "value": "1"
+                },
+                {
+                  "key": "tags",
+                  "value": "1,2"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Public Story Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/library/{{story_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "library", "{{story_id}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📑 Chapters Management",
+      "item": [
+        {
+          "name": "Get Story Chapters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/stories/{{story_id}}/chapters",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stories", "{{story_id}}", "chapters"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Chapter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Chương 1\",\n  \"content\": \"Nội dung chương\",\n  \"order\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/stories/{{story_id}}/chapters",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stories", "{{story_id}}", "chapters"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🏷️ Categories & Tags",
+      "item": [
+        {
+          "name": "Get Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "👤 User Management",
+      "item": [
+        {
+          "name": "Update Avatar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/update-avatar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "update-avatar"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Username",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"new_username\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/update-username",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "update-username"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Password",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"current_password\",\n  \"newPassword\": \"new_password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/update-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "update-password"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🤖 AI Features",
+      "item": [
+        {
+          "name": "Get Gemini API Key",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/ai/gemini",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ai", "gemini"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Save Chat History",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Hello AI\"\n    },\n    {\n      \"role\": \"assistant\",\n      \"content\": \"Hello! How can I help you?\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/ai/chat-history/messages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ai", "chat-history", "messages"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "💳 Payment (VNPay)",
+      "item": [
+        {
+          "name": "Create Payment URL",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100000,\n  \"orderInfo\": \"Thanh toán gói premium\",\n  \"returnUrl\": \"{{base_url}}/payment/success\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/vnpay",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vnpay"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Payment Callback",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/vnpay/callback?vnp_Amount=10000000&vnp_BankCode=NCB&vnp_ResponseCode=00",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vnpay", "callback"],
+              "query": [
+                {
+                  "key": "vnp_Amount",
+                  "value": "10000000"
+                },
+                {
+                  "key": "vnp_BankCode",
+                  "value": "NCB"
+                },
+                {
+                  "key": "vnp_ResponseCode",
+                  "value": "00"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📄 Documentation",
+      "item": [
+        {
+          "name": "Get OpenAPI Spec",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/docs",
+              "host": ["{{base_url}}"],
+              "path": ["api", "docs"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

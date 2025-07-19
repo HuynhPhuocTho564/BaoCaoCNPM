@@ -1,0 +1,140 @@
+{
+  "startTime": "2025-07-19T07:14:46.387Z",
+  "endTime": "2025-07-19T07:14:49.459Z",
+  "totalTests": 13,
+  "passedTests": 8,
+  "failedTests": 5,
+  "results": [
+    {
+      "testName": "POST /api/auth/login",
+      "passed": false,
+      "timestamp": "2025-07-19T07:14:46.584Z",
+      "status": 401,
+      "expectedStatus": [
+        200,
+        201
+      ],
+      "endpoint": "/api/auth/login",
+      "method": "POST",
+      "responseData": {
+        "error": "Email hoặc mật khẩu không đúng"
+      }
+    },
+    {
+      "testName": "POST /api/auth/register",
+      "passed": true,
+      "timestamp": "2025-07-19T07:14:47.091Z",
+      "status": 201,
+      "endpoint": "/api/auth/register",
+      "method": "POST"
+    },
+    {
+      "testName": "POST /api/auth/forgot-password",
+      "passed": false,
+      "timestamp": "2025-07-19T07:14:47.365Z",
+      "status": 400,
+      "expectedStatus": [
+        200,
+        201,
+        404
+      ],
+      "endpoint": "/api/auth/forgot-password",
+      "method": "POST",
+      "responseData": {
+        "error": "Email không tồn tại trong hệ thống"
+      }
+    },
+    {
+      "testName": "GET /api/stories",
+      "passed": false,
+      "timestamp": "2025-07-19T07:14:47.561Z",
+      "status": 401,
+      "expectedStatus": [
+        200
+      ],
+      "endpoint": "/api/stories",
+      "method": "GET",
+      "responseData": {
+        "error": "Chưa xác thực"
+      }
+    },
+    {
+      "testName": "POST /api/stories/create",
+      "passed": false,
+      "timestamp": "2025-07-19T07:14:47.782Z",
+      "status": 401,
+      "expectedStatus": [
+        200,
+        201
+      ],
+      "endpoint": "/api/stories/create",
+      "method": "POST",
+      "responseData": {
+        "error": "Chưa xác thực"
+      }
+    },
+    {
+      "testName": "GET /api/stories/[id]",
+      "passed": false,
+      "timestamp": "2025-07-19T07:14:47.890Z",
+      "reason": "Dependency not met",
+      "dependency": "createdStoryId"
+    },
+    {
+      "testName": "GET /api/library/new",
+      "passed": true,
+      "timestamp": "2025-07-19T07:14:48.049Z",
+      "status": 200,
+      "endpoint": "/api/library/new?page=1",
+      "method": "GET"
+    },
+    {
+      "testName": "GET /api/library/popular",
+      "passed": true,
+      "timestamp": "2025-07-19T07:14:48.276Z",
+      "status": 200,
+      "endpoint": "/api/library/popular",
+      "method": "GET"
+    },
+    {
+      "testName": "GET /api/library/search",
+      "passed": true,
+      "timestamp": "2025-07-19T07:14:48.535Z",
+      "status": 200,
+      "endpoint": "/api/library/search?q=test&category=1",
+      "method": "GET"
+    },
+    {
+      "testName": "GET /api/categories",
+      "passed": true,
+      "timestamp": "2025-07-19T07:14:48.797Z",
+      "status": 200,
+      "endpoint": "/api/categories",
+      "method": "GET"
+    },
+    {
+      "testName": "GET /api/ai/gemini",
+      "passed": true,
+      "timestamp": "2025-07-19T07:14:48.971Z",
+      "status": 401,
+      "endpoint": "/api/ai/gemini",
+      "method": "GET"
+    },
+    {
+      "testName": "POST /api/ai/chat-history/messages",
+      "passed": true,
+      "timestamp": "2025-07-19T07:14:49.170Z",
+      "status": 401,
+      "endpoint": "/api/ai/chat-history/messages",
+      "method": "POST"
+    },
+    {
+      "testName": "GET /api/docs",
+      "passed": true,
+      "timestamp": "2025-07-19T07:14:49.346Z",
+      "status": 200,
+      "endpoint": "/api/docs",
+      "method": "GET"
+    }
+  ]
+}

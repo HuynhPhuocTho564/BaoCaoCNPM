@@ -1,0 +1,20 @@
+{
+  "timestamp": "2025-07-19T07:14:17.170Z",
+  "baseUrl": "http://localhost:3000",
+  "tests": {
+    "comprehensive": {
+      "totalTests": 13,
+      "passedTests": 8,
+      "failedTests": 5,
+      "successRate": "61.54%"
+    },
+    "performance": {
+      "totalRequests": 50,
+      "successfulRequests": 50,
+      "failedRequests": 0,
+      "averageResponseTime": "280.14ms",
+      "requestsPerSecond": "9.65",
+      "successRate": "100.00%"
+    }
+  }
+}
