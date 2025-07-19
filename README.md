@@ -1,6 +1,6 @@
 # ChatStoryAI
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/NguyenHuynhPhuVinh-TomiSakae/ChatStoryAI)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/HuynhPhuocTho564/BaoCaoCNPM)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node.js-20.x-green.svg)](https://nodejs.org/)
 [![Next.js](https://img.shields.io/badge/next.js-15.3.3-black.svg)](https://nextjs.org/)
@@ -192,8 +192,8 @@ graph TB
 1. **Clone repository**:
 
 ````bash
-git clone https://github.com/NguyenHuynhPhuVinh-TomiSakae/ChatStoryAI.git
-cd ChatStoryAI
+git clone https://github.com/HuynhPhuocTho564/BaoCaoCNPM.git
+cd BaoCaoCNPM
 ```
 
 2. **Cài đặt dependencies**:
@@ -422,7 +422,7 @@ Thêm vào `claude_desktop_config.json`:
   "mcpServers": {
     "chatstoryai": {
       "command": "node",
-      "args": ["/path/to/ChatStoryAI/mcp/build/index.js"],
+      "args": ["/path/to/BaoCaoCNPM/mcp/build/index.js"],
       "env": {
         "CHATSTORYAI_API_KEY": "your_api_key"
       }
@@ -461,7 +461,7 @@ Claude sẽ tự động gọi MCP tools để tạo truyện trong ChatStoryAI.
 ### Project Structure
 
 ```
-ChatStoryAI/
+BaoCaoCNPM/
 ├── .bmad-core/                 # BMAD framework configuration
 ├── mcp/                        # Model Context Protocol Server
 │   ├── src/                    # MCP server source code
@@ -633,7 +633,7 @@ copies or substantial portions of the Software.
 
 - **Email**: [chatstoryai@gmail.com](mailto:chatstoryai@gmail.com)
 - **Phone**: +84 762 605 309
-- **GitHub Issues**: [Report Issues](https://github.com/NguyenHuynhPhuVinh-TomiSakae/ChatStoryAI/issues)
+- **GitHub Issues**: [Report Issues](https://github.com/HuynhPhuocTho564/BaoCaoCNPM/issues)
 
 ### Documentation
 
@@ -656,11 +656,11 @@ copies or substantial portions of the Software.
 **Trường Đại học Trà Vinh - DA22TTC**
 _Báo cáo môn học Công Nghệ Phần Mềm_
 
-| Thành Viên                | Vai Trò                    | Liên Hệ                                                       |
-| ------------------------- | -------------------------- | ------------------------------------------------------------- |
-| **Nguyễn Huỳnh Phú Vinh** | Lead Developer & Architect | [@TomiSakae](https://github.com/NguyenHuynhPhuVinh-TomiSakae) |
-| **Nguyễn Phú Vinh**       | Backend Developer          | -                                                             |
-| **Huỳnh Phước Thọ**       | Frontend Developer         | -                                                             |
+| Thành Viên                | Vai Trò                    | Liên Hệ                                                      |
+| ------------------------- | -------------------------- | ------------------------------------------------------------ |
+| **Nguyễn Huỳnh Phú Vinh** | Lead Developer & Architect | [@NguyenHuynhPhuVinh](https://github.com/NguyenHuynhPhuVinh) |
+| **Nguyễn Phú Vinh**       | Backend Developer          | -                                                            |
+| **Huỳnh Phước Thọ**       | Frontend Developer         | -                                                            |
 
 ### Acknowledgments
 
@@ -703,6 +703,6 @@ _Báo cáo môn học Công Nghệ Phần Mềm_
 
 Made with ❤️ by ChatStoryAI Team
 
-[🏠 Homepage](https://chatstoryai.com) • [📚 Docs](docs/) • [🐛 Issues](https://github.com/NguyenHuynhPhuVinh-TomiSakae/ChatStoryAI/issues) • [💬 Discussions](https://github.com/NguyenHuynhPhuVinh-TomiSakae/ChatStoryAI/discussions)
+[🏠 Homepage](https://chatstoryai.com) • [📚 Docs](docs/) • [🐛 Issues](https://github.com/HuynhPhuocTho564/BaoCaoCNPM/issues) • [💬 Discussions](https://github.com/HuynhPhuocTho564/BaoCaoCNPM/discussions)
 
 </div>
